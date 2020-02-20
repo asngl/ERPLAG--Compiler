@@ -1,5 +1,7 @@
 #define Max_Token_Size 30
 #define No_Of_Tokens 150
+#define mod 150
+//Keep No of tokens and mod same when necessary
 #define No_Of_Rules 50
 #define Max_Rule_Size 150
 #define No_Of_NT 50
@@ -26,6 +28,9 @@ typedef struct MT MappingTable[No_Of_Tokens];
 
 MappingTable mapping;
 //Global variable for hard-coded Mapping table
+
+MappingTable mappingString;
+//Global variable for hash coded Mapping table
 
 enum type_of_symbol{terminal, nonTerminal};
 struct rhsnode{
@@ -58,6 +63,12 @@ struct MT SearchMappingTable(char str[]){
 	printf("Token Not Found");
 
 }
+//Function for searching returning the mapping of str Token
+
+int HashCodeMappingTable(){
+	
+}
+
 
 int ParseGrammarFile(char FileName[]){
 	FILE *fp;
