@@ -2,7 +2,7 @@
 start
 	declare num, k:integer;
 	declare A:array [1..10] of integer;
-	num:=5;
+	num:=5.05;
 	** COMMENT **
 	for( k in 1..10)
 	start

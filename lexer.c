@@ -11,8 +11,6 @@
 	what do you return on end of file ? RETURN EOF
 	getStream() in getNextToken()??? BUFFER ERROR what if we dont have fp
 	Do you denote space and empty characters as EPS token on NULL
-
-
 */
 void initLexer()
 {
@@ -267,18 +265,21 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 		}
 		else
 			read_char=buffer[buffer_pointer];
-		//if end==1 TODO
 		if(lexeme_size>20)
 		{
 			lexeme_size=0;
 			token_info.lexeme[0]='\0';
 			token_info.lineno=curr_lineno;
 			token_info.value.tag=2;
+			state=1;
 		} 
 		if(read_char=='\0')
 		{
 			if(retract_character_flag==0)
-			fp=getStream(fp);
+			{
+				fp=getStream(fp);
+				continue;
+			}
 		}
 		else if(read_char==EOF)
 			end=1;
@@ -360,7 +361,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 						}
 						else
 						{	
-							printf("LEXD");
+							lexeme_size=0;
+							token_info.lexeme[0]='\0';
+							token_info.lineno=curr_lineno;
+							token_info.value.tag=2;
+							state=1;
 						}
 						break;
 				}
@@ -521,7 +526,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=23;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 23:
 				token_info.token=EQ;
@@ -536,7 +545,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=23;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 25:
 				token_info.token=NE;
@@ -551,7 +564,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=27;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 27:
 				token_info.token=RANGEOP;
@@ -607,10 +624,9 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 			     	state = 35;
 			    }
 			    else if(c=='.'){
-			    	//look back TODO
-			 		token_info.lexeme[lexeme_size]=read_char;
-					lexeme_size++;
-					popChar(read_char);
+			 	token_info.lexeme[lexeme_size]=read_char;
+				lexeme_size++;
+				popChar(read_char);
 			     	state = 37;
 			    }
 			    else {
@@ -628,21 +644,35 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 				final=1;
 				break;
 			case 37:
-				// check for look ahead
 				if(read_char=='.')
 				{
-					//CONFUSED TODO
+					//retract(1);
+					retract_size=1;
+					final=1;
+					lexeme_size-=1;
+					token_info.token=NUM;
+					token_info.value.value.num = 0;
+					token_info.value.tag = 0;
+					for(int i = 0; i<lexeme_size; i++){
+						token_info.value.value.num *= 10;
+						token_info.value.value.num += token_info.lexeme[i]-'0'; 
+					}
+					final=1;
 				}
 				else if(read_char >='0' && read_char <='9')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
 					popChar(read_char);
-					state=37;
+					state=38;
 				}
 				else
 				{
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				}
 				break;
 			case 38:
@@ -701,7 +731,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=42;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 41:
 				if(read_char >='0' && read_char <='9')
@@ -712,7 +746,11 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=42;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 42:
 				if(read_char >='0' && read_char <='9')
@@ -741,8 +779,8 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 				final=1;
 				break;
 			case 46:
-				token_info.token=EOF;
-				end=1;// return NULL????? TODO
+				token_info.token=FEOF;
+				end=1;
 				final=1;
 				break;
 			case 47:
