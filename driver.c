@@ -14,11 +14,12 @@ int main()
 	printf("HI\n");
 	fp=getStream(fp);
 	printf("HI\n");
-	for(int i=1;i<=6;i++)
+	for(int i=1;i<=110;i++)
 	{
-		struct TOKEN_INFO token_info=getNextToken();
+		struct TOKEN_INFO token_info=getNextToken(fp);
 		printf(":%s",token_info.lexeme);
 		printf("::%d\n",token_info.token);
+		//if(token_info.lexeme[0]==EOF)break;
 	}	
 	//token_info=getNextToken();
 	//printf("%s",token_info.lexeme);

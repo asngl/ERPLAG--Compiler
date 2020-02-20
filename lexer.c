@@ -3,16 +3,14 @@
 #include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 /*  DESIGN ISSUES  */
 /*
-	what do you return on lexical error 
-	what do you return on end of file 
+	what do you return on lexical error ? RETURN NEXT LEXICAL TOKEN
+	what do you return on end of file ? RETURN EOF
 	getStream() in getNextToken()??? BUFFER ERROR what if we dont have fp
 	Do you denote space and empty characters as EPS token on NULL
-
-
 */
 void initLexer()
 {
@@ -107,7 +105,145 @@ void popChar(char read_char)
 		updateLookBack(read_char);
 	}
 }
-struct TOKEN_INFO getNextToken()
+enum TOKENS lookupTable(char *str)
+{
+	if(strcmp(str,"integer")==0)
+	{
+		return INTEGER;
+	}
+	else if(strcmp(str,"real")==0)
+	{
+		return REAL;
+	}
+	else if(strcmp(str,"boolean")==0)
+	{
+		return BOOLEAN;
+	}
+	else if(strcmp(str,"of")==0)
+	{
+		return OF;
+	}
+	else if(strcmp(str,"array")==0)
+	{
+		return ARRAY;
+	}
+	else if(strcmp(str,"start")==0)
+	{
+		return START;
+	}
+	else if(strcmp(str,"end")==0)
+	{
+		return END;
+	}
+	else if(strcmp(str,"declare")==0)
+	{
+		return DECLARE;
+	}
+	else if(strcmp(str,"module")==0)
+	{
+		return MODULE;
+	}
+	else if(strcmp(str,"driver")==0)
+	{
+		return DRIVER;
+	}
+	else if(strcmp(str,"program")==0)
+	{
+		return PROGRAM;
+	}
+	else if(strcmp(str,"record")==0)
+	{
+		return RECORD;
+	}
+	else if(strcmp(str,"union")==0)
+	{
+		return UNION;
+	}
+	else if(strcmp(str,"tagged")==0)
+	{
+		return TAGGED;
+	}
+	else if(strcmp(str,"get_value")==0)
+	{
+		return GET_VALUE;
+	}
+	else if(strcmp(str,"print")==0)
+	{
+		return PRINT;
+	}
+	else if(strcmp(str,"use")==0)
+	{
+		return USE;
+	}
+	else if(strcmp(str,"with")==0)
+	{
+		return WITH;
+	}
+	else if(strcmp(str,"parameters")==0)
+	{
+		return PARAMETERS;
+	}
+	else if(strcmp(str,"true")==0)
+	{
+		return TRUE;
+	}
+	else if(strcmp(str,"false")==0)
+	{
+		return FALSE;
+	}
+	else if(strcmp(str,"takes")==0)
+	{
+		return TAKES;
+	}
+	else if(strcmp(str,"input")==0)
+	{
+		return INPUT;
+	}
+	else if(strcmp(str,"returns")==0)
+	{
+		return RETURNS;
+	}
+	else if(strcmp(str,"AND")==0)
+	{
+		return AND;
+	}
+	else if(strcmp(str,"OR")==0)
+	{
+		return OR;
+	}
+	else if(strcmp(str,"for")==0)
+	{
+		return FOR;
+	}
+	else if(strcmp(str,"in")==0)
+	{
+		return IN;
+	}
+	else if(strcmp(str,"switch")==0)
+	{
+		return SWITCH;
+	}
+	else if(strcmp(str,"case")==0)
+	{
+		return CASE;
+	}
+	else if(strcmp(str,"break")==0)
+	{
+		return BREAK;
+	}
+	else if(strcmp(str,"default")==0)
+	{
+		return DEFAULT;
+	}
+	else if(strcmp(str,"while")==0)
+	{
+		return WHILE;
+	}
+	else
+		return ID;
+	 
+}
+struct TOKEN_INFO getNextToken(FILE *fp)
 {
 	int state=1;
 	int final=0;
@@ -129,11 +265,21 @@ struct TOKEN_INFO getNextToken()
 		}
 		else
 			read_char=buffer[buffer_pointer];
-		//if end==1 TODO
-		// if lexeme_size >20 TODO
+		if(lexeme_size>20)
+		{
+			lexeme_size=0;
+			token_info.lexeme[0]='\0';
+			token_info.lineno=curr_lineno;
+			token_info.value.tag=2;
+			state=1;
+		} 
 		if(read_char=='\0')
 		{
-			//TODO getStream()?? 
+			if(retract_character_flag==0)
+			{
+				fp=getStream(fp);
+				continue;
+			}
 		}
 		else if(read_char==EOF)
 			end=1;
@@ -198,7 +344,7 @@ struct TOKEN_INFO getNextToken()
 					case '\n':
 						state=44;
 					break;
-					case ' ':case '\t':
+					case ' ':case '\t':case '\r':
 						state=45;
 					break;
 					case EOF:
@@ -215,7 +361,11 @@ struct TOKEN_INFO getNextToken()
 						}
 						else
 						{	
-							printf("LEXD");
+							lexeme_size=0;
+							token_info.lexeme[0]='\0';
+							token_info.lineno=curr_lineno;
+							token_info.value.tag=2;
+							state=1;
 						}
 						break;
 				}
@@ -376,7 +526,11 @@ struct TOKEN_INFO getNextToken()
 					state=23;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 23:
 				token_info.token=EQ;
@@ -391,7 +545,11 @@ struct TOKEN_INFO getNextToken()
 					state=23;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 25:
 				token_info.token=NE;
@@ -406,7 +564,11 @@ struct TOKEN_INFO getNextToken()
 					state=27;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 27:
 				token_info.token=RANGEOP;
@@ -444,7 +606,6 @@ struct TOKEN_INFO getNextToken()
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
 					popChar(read_char);
-					//if lexeme_size>20 TODO
 			     	state = 33;
 			    }
 			    else {
@@ -452,8 +613,7 @@ struct TOKEN_INFO getNextToken()
 			    }
 				break;
 			case 34:
-				token_info.token=ID;
-				//LOOKUP TABLE, action 34 TODO
+				token_info.token=lookupTable(token_info.lexeme);
 				final=1;
 				break;
 			case 35:
@@ -464,10 +624,9 @@ struct TOKEN_INFO getNextToken()
 			     	state = 35;
 			    }
 			    else if(c=='.'){
-			    	//look back TODO
-			 		token_info.lexeme[lexeme_size]=read_char;
-					lexeme_size++;
-					popChar(read_char);
+			 	token_info.lexeme[lexeme_size]=read_char;
+				lexeme_size++;
+				popChar(read_char);
 			     	state = 37;
 			    }
 			    else {
@@ -485,21 +644,35 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 			case 37:
-				// check for look ahead
 				if(read_char=='.')
 				{
-					//CONFUSED TODO
+					//retract(1);
+					retract_size=1;
+					final=1;
+					lexeme_size-=1;
+					token_info.token=NUM;
+					token_info.value.value.num = 0;
+					token_info.value.tag = 0;
+					for(int i = 0; i<lexeme_size; i++){
+						token_info.value.value.num *= 10;
+						token_info.value.value.num += token_info.lexeme[i]-'0'; 
+					}
+					final=1;
 				}
 				else if(read_char >='0' && read_char <='9')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
 					popChar(read_char);
-					state=37;
+					state=38;
 				}
 				else
 				{
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				}
 				break;
 			case 38:
@@ -558,7 +731,11 @@ struct TOKEN_INFO getNextToken()
 					state=42;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 41:
 				if(read_char >='0' && read_char <='9')
@@ -569,7 +746,11 @@ struct TOKEN_INFO getNextToken()
 					state=42;
 				}
 				else
-					printf("LEX");
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
 				break;
 			case 42:
 				if(read_char >='0' && read_char <='9')
@@ -598,8 +779,8 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 			case 46:
-				token_info.token=EPS;
-				end=1;// return NULL????? TODO
+				token_info.token=FEOF;
+				end=1;
 				final=1;
 				break;
 			case 47:
