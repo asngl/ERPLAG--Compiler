@@ -526,11 +526,13 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=23;
 				}
 				else
+				{
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
 					token_info.value.tag=2;
 					state=1;
+				}
 				break;
 			case 23:
 				token_info.token=EQ;
@@ -545,11 +547,13 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=23;
 				}
 				else
+				{
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
 					token_info.value.tag=2;
 					state=1;
+				}
 				break;
 			case 25:
 				token_info.token=NE;
@@ -564,11 +568,13 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=27;
 				}
 				else
+				{
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
 					token_info.value.tag=2;
 					state=1;
+				}
 				break;
 			case 27:
 				token_info.token=RANGEOP;
@@ -731,11 +737,13 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=42;
 				}
 				else
+				{
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
 					token_info.value.tag=2;
 					state=1;
+				}
 				break;
 			case 41:
 				if(read_char >='0' && read_char <='9')
@@ -746,11 +754,13 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=42;
 				}
 				else
+				{
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
 					token_info.value.tag=2;
 					state=1;
+				}
 				break;
 			case 42:
 				if(read_char >='0' && read_char <='9')
