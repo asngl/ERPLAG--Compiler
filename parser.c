@@ -2,7 +2,7 @@
 #define No_Of_Tokens 150
 #define mod 150
 //Keep No of tokens and mod same when necessary, Keep them accurate as they are needed for Mapping table
-#define No_Of_Rules 50
+#define No_Of_Rules 100
 #define Max_Rule_Size 150
 #define No_Of_NT 50
 #define No_Of_T 100
@@ -10,6 +10,7 @@
 #include<string.h>
 #include<stdlib.h>
 
+int TotalRules=0;
 
 union Symb{
 	Terminal T;
@@ -161,6 +162,7 @@ int ParseGrammarFile(char FileName[]){
 		ruleNo++;
 	}
 	fclose(fp);
+	TotalRules=ruleNo;
 }
 
 
@@ -171,15 +173,53 @@ struct FAndF{
 
 };
 
-typedef FAndF FirstAndFollow[No_Of_NT];
-
 //Structure for First and Follow sets of our Grammar
 
-FirstAndFollow FAndFSet;
-//Global variable for first and follow set
+struct FAndF FAndF_NT[No_Of_NT];
+struct FAndF FAndF_Rules[No_Of_Rules];
+//Global variable for first and follow sets for Non terminals and Rules correspondingly
 
 int ComputeFirstAndFollowSets(){
-
+	int computeStopFlag=1; //Flag to check whether the computation has to be stopped or not
+	int eps_enum;
+	struct MT EPSToken;
+	EPSToken = SearchMappingTable("EPS");
+	eps_enum = EPSToken.s.T;
+	struct FAndF EPS;
+	EPS.First[eps_enum/32]= 1<<(eps_enum % 32);
+	//BITSET for testing EPS bit
+	while(computeStopFlag==1){
+		computeStopFlag=0;
+		for(int i=0;i<TotalRules;i++){
+			struct cell currentRule;
+			currentRule=grammarRules[i];
+			int LHS=currentRule.sym;
+			RHSNODE *token;
+			if(token->tag==0){ // In case of first being a terminal
+				int num= token->s.T;
+				if(FAndF_Rules[i].First[num/32] != (FAndF_Rules[i].First[num/32] | 1<<(num%32))){
+					computeStopFlag=1;
+					FAndF_Rules[i].First[num/32] = (FAndF_Rules[i].First[num/32] | 1<<(num%32));
+					FAndF_NT[LHS].First[num/32] = FAndF_NT[LHS].First[num/32] | FAndF_Rules[i].First[num/32];
+					
+				}
+			}
+			else{
+				int num = token->s.NT;
+				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1])) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+					computeStopFlag=1;
+					FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
+					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1]);
+					FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
+					FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
+					FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
+					FAndF_NT[LHS].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[LHS].First[2]);
+				}
+				while()
+				//Write functionality for EPS
+			}
+		}
+	}
 }
 
 
