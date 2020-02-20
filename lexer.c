@@ -117,10 +117,10 @@ struct TOKEN_INFO getNextToken()
 	struct TOKEN_INFO token_info;
 	token_info.lineno=curr_lineno;
 	token_info.value.tag=2;
-	printf("\nCALLED\n");
+	//printf("\nCALLED %d\n",state);
 	while(!end)
 	{
-		printf("HERE%d->",state);
+		printf("%d->",state);
 		if(retract_size>0)
 		{
 			retract_character_flag=1;
@@ -138,6 +138,7 @@ struct TOKEN_INFO getNextToken()
 		else if(read_char==EOF)
 			end=1;
 		char c=read_char;
+		//printf("%c",read_char);
 		switch(state)
 		{
 			case 1:
@@ -214,9 +215,9 @@ struct TOKEN_INFO getNextToken()
 						}
 						else
 						{	
-							printf("LEXICAL_ERROR: Read incorrect character %c at line %d at state %d",read_char,curr_lineno,state);
+							printf("LEXD");
 						}
-
+						break;
 				}
 				break;
 			case 2:
