@@ -10,7 +10,7 @@
 	what do you return on lexical error 
 	what do you return on end of file 
 	getStream() in getNextToken()??? BUFFER ERROR what if we dont have fp
-
+	Do you denote space and empty characters as EPS token on NULL
 
 
 */
@@ -97,7 +97,7 @@ void updateLookBack(char c)
 		look_back[i]=look_back[i-1];
 	look_back[0]=c;
 }
-void popChar()
+void popChar(char read_char)
 {
 	if(retract_character_flag==1)
 		retract_character_flag=0;
@@ -117,9 +117,10 @@ struct TOKEN_INFO getNextToken()
 	struct TOKEN_INFO token_info;
 	token_info.lineno=curr_lineno;
 	token_info.value.tag=2;
-
+	printf("\nCALLED\n");
 	while(!end)
 	{
+		printf("HERE%d->",state);
 		if(retract_size>0)
 		{
 			retract_character_flag=1;
@@ -136,12 +137,13 @@ struct TOKEN_INFO getNextToken()
 		}
 		else if(read_char==EOF)
 			end=1;
+		char c=read_char;
 		switch(state)
 		{
 			case 1:
 				token_info.lexeme[lexeme_size]=read_char;
 				lexeme_size++;
-				popChar();
+				popChar(read_char);
 				switch(read_char)
 				{
 					case '+':
@@ -212,7 +214,7 @@ struct TOKEN_INFO getNextToken()
 						}
 						else
 						{	
-							printf("LEXICAL_ERROR: Read incorrect character %c at line %d at state %d",read_char,lineno,state);
+							printf("LEXICAL_ERROR: Read incorrect character %c at line %d at state %d",read_char,curr_lineno,state);
 						}
 
 				}
@@ -230,7 +232,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=6;
 				}
 				else
@@ -243,7 +245,7 @@ struct TOKEN_INFO getNextToken()
 			case 6:
 				token_info.lexeme[lexeme_size]=read_char;
 				lexeme_size++;
-				popChar();
+				popChar(read_char);
 				if(read_char=='*')
 				{
 					state=7;
@@ -254,7 +256,7 @@ struct TOKEN_INFO getNextToken()
 			case 7:
 				token_info.lexeme[lexeme_size]=read_char;
 				lexeme_size++;
-				popChar();
+				popChar(read_char);
 				if(read_char=='*')
 				{
 					state=8;
@@ -275,14 +277,14 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=11;
 				}
 				else if (read_char=='=')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=12;
 				}
 				else
@@ -293,7 +295,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=47;
 				}
 				else
@@ -330,14 +332,14 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=19;
 				}
 				else if (read_char=='=')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();	
+					popChar(read_char);	
 					state=20;
 				}
 				else
@@ -348,7 +350,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=49;
 				}
 				else
@@ -369,7 +371,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=23;
 				}
 				else
@@ -384,7 +386,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=23;
 				}
 				else
@@ -399,7 +401,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=27;
 				}
 				else
@@ -422,7 +424,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=31;
 				}
 				else
@@ -437,11 +439,10 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 			case 33:
-			    char c = read_char;
 			    if(c>='a'&&c<='z' || c>='A'&&c<='Z' || c>='0'&&c<='9'|| c=='_'){
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					//if lexeme_size>20 TODO
 			     	state = 33;
 			    }
@@ -455,18 +456,17 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 			case 35:
-				char c = read_char;
 			    if(c>='0'&&c<='9'){
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 			     	state = 35;
 			    }
 			    else if(c=='.'){
 			    	//look back TODO
 			 		token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 			     	state = 37;
 			    }
 			    else {
@@ -475,11 +475,11 @@ struct TOKEN_INFO getNextToken()
 				break;
 			case 36:
 				token_info.token=NUM;
-				token_info.value.num = 0;
+				token_info.value.value.num = 0;
 				token_info.value.tag = 0;
 				for(int i = 0; i<lexeme_size; i++){
-					token_info.value.num *= 10;
-					token_info.value.num += lexeme[i]-'0'; 
+					token_info.value.value.num *= 10;
+					token_info.value.value.num += token_info.lexeme[i]-'0'; 
 				}
 				final=1;
 				break;
@@ -493,7 +493,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=37;
 				}
 				else
@@ -506,14 +506,14 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=38;
 				}
 				else if(read_char=='e'||read_char=='E')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=40;
 				}
 				else 
@@ -521,24 +521,24 @@ struct TOKEN_INFO getNextToken()
 				break;
 			case 39:
 				token_info.token=RNUM;
-				token_info.value.rnum = 0;
+				token_info.value.value.rnum = 0;
 				token_info.value.tag = 1;
 				int i=0;
 				for(i = 0; i<lexeme_size; i++){
-					if(lexeme[i]=='.')
+					if(token_info.lexeme[i]=='.')
 						break;
-					token_info.value.rnum *= 10;
-					token_info.value.rnum += lexeme[i]-'0'; 
+					token_info.value.value.rnum *= 10;
+					token_info.value.value.rnum += token_info.lexeme[i]-'0'; 
 				}
 				i++;
 				float place_value=1;
 				int decimal_value=0;
 				for(; i<lexeme_size; i++){
 					decimal_value*=10;
-					decimal_value += lexeme[i]-'0'; 
+					decimal_value += token_info.lexeme[i]-'0'; 
 					place_value*=10;
 				}
-				token_info.value.rnum+=((float)decimal_value)/place_value;
+				token_info.value.value.rnum+=((float)decimal_value)/place_value;
 				final=1;
 				break;
 			case 40:
@@ -546,14 +546,14 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=41;
 				}
 				else if(read_char >='0' && read_char <='9')
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=42;
 				}
 				else
@@ -564,7 +564,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=42;
 				}
 				else
@@ -575,7 +575,7 @@ struct TOKEN_INFO getNextToken()
 				{
 					token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
-					popChar();
+					popChar(read_char);
 					state=42;
 				}
 				else
@@ -584,29 +584,20 @@ struct TOKEN_INFO getNextToken()
 			case 43:
 				token_info.token=RNUM;
 				token_info.value.tag=1;
-				token_info.value.rnum=atof(lexeme);
+				token_info.value.value.rnum=atof(token_info.lexeme);
 				final=1;
 				break;
 			case 44:
 				token_info.token=EPS;
-				token_info.lexeme[lexeme_size]=read_char;
-				lexeme_size++;
-				popChar();
 				curr_lineno=curr_lineno+1;
 				final=1;
 				break;
 			case 45:
 				token_info.token=EPS;
-				token_info.lexeme[lexeme_size]=read_char;
-				lexeme_size++;
-				popChar();
 				final=1;
 				break;
 			case 46:
 				token_info.token=EPS;
-				token_info.lexeme[lexeme_size]=read_char;
-				lexeme_size++;
-				popChar();
 				end=1;// return NULL????? TODO
 				final=1;
 				break;
@@ -627,7 +618,11 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 		}
+		if(final==1)break;
 	}
+	printf("\n");
+	token_info.lexeme[lexeme_size]='\0';
+	return token_info;
 }
 #endif
 
