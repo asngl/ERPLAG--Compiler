@@ -3,7 +3,7 @@
 #include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 /*  DESIGN ISSUES  */
 /*
@@ -271,7 +271,7 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 		if(lexeme_size>20)
 		{
 			lexeme_size=0;
-			token_info.lexeme[0]='\0'
+			token_info.lexeme[0]='\0';
 			token_info.lineno=curr_lineno;
 			token_info.value.tag=2;
 		} 
