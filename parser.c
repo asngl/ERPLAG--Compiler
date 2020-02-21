@@ -179,15 +179,13 @@ struct FAndF FAndF_NT[No_Of_NT];
 struct FAndF FAndF_Rules[No_Of_Rules];
 //Global variable for first and follow sets for Non terminals and Rules correspondingly
 
-int ComputeFirstAndFollowSets(){
+int ComputeFirstSet(){
 	int computeStopFlag=1; //Flag to check whether the computation has to be stopped or not
 	int eps_enum;
 	struct MT EPSToken;
 	EPSToken = SearchMappingTable("EPS");
 	eps_enum = EPSToken.s.T;
-	struct FAndF EPS;
-	EPS.First[eps_enum/32]= 1<<(eps_enum % 32);
-	//BITSET for testing EPS bit
+	//Enum for etsting eps bit
 	while(computeStopFlag==1){
 		computeStopFlag=0;
 		for(int i=0;i<TotalRules;i++){
@@ -195,6 +193,7 @@ int ComputeFirstAndFollowSets(){
 			currentRule=grammarRules[i];
 			int LHS=currentRule.sym;
 			RHSNODE *token;
+			token=currentRule.head;
 			if(token->tag==0){ // In case of first being a terminal
 				int num= token->s.T;
 				if(FAndF_Rules[i].First[num/32] != (FAndF_Rules[i].First[num/32] | 1<<(num%32))){
@@ -204,7 +203,7 @@ int ComputeFirstAndFollowSets(){
 					
 				}
 			}
-			else{
+			else{ //In case it is non terminal
 				int num = token->s.NT;
 				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1])) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 					computeStopFlag=1;
@@ -215,8 +214,43 @@ int ComputeFirstAndFollowSets(){
 					FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
 					FAndF_NT[LHS].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[LHS].First[2]);
 				}
-				while()
+				// If there is an eps in the first set of non terminal
+				while(FAndF_NT[num].First[eps_enum/32] & (1<<(eps_enum%32))){
+					token=token->next;
+					if(token==NULL){
+						if(FAndF_Rules[i].First[eps_enum/32] != (FAndF_Rules[i].First[eps_enum/32] | 1<<(eps_enum%32))){
+							computeStopFlag=1;
+							FAndF_Rules[i].First[eps_enum/32] = (FAndF_Rules[i].First[eps_enum/32] | 1<<(eps_enum%32));
+							FAndF_NT[LHS].First[eps_enum/32] |= FAndF_Rules[i].First[eps_enum/32]; 
+						}
+						break;
+					}
+					//write for Terminal and Non Terminal
+					if(token->tag==0){
+						num = token->s.T;
+						if(FAndF_Rules[i].First[num/32] != (FAndF_Rules[i].First[num/32] | 1<<(num%32))){
+							computeStopFlag=1;
+							FAndF_Rules[i].First[num/32] = (FAndF_Rules[i].First[num/32] | 1<<(num%32));
+							FAndF_NT[LHS].First[num/32] = FAndF_NT[LHS].First[num/32] | FAndF_Rules[i].First[num/32];
+					
+						}
+						break;
+					}
+					else{
+						num=token->s.NT;
+						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1])) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+							computeStopFlag=1;
+							FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
+							FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1]);
+							FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
+							FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
+							FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
+							FAndF_NT[LHS].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[LHS].First[2]);
+						}
+					}
+				}
 				//Write functionality for EPS
+				
 			}
 		}
 	}
