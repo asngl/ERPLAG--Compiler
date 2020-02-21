@@ -12,14 +12,15 @@ int main()
 	//removeComments(in,out);
 	FILE *fp=fopen(in,"r");
 	printf("HI\n");
+	printf("%d %d",EPS,FEOF);
 	fp=getStream(fp);
 	printf("HI\n");
-	for(int i=1;i<=110;i++)
+	while(1)
 	{
 		struct TOKEN_INFO token_info=getNextToken(fp);
 		printf(":%s",token_info.lexeme);
 		printf("::%d\n",token_info.token);
-		//if(token_info.lexeme[0]==EOF)break;
+		if(token_info.token==FEOF)break;
 	}	
 	//token_info=getNextToken();
 	//printf("%s",token_info.lexeme);

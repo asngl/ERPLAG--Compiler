@@ -5,44 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*  DESIGN ISSUES  */
-/*
-	what do you return on lexical error ? RETURN NEXT LEXICAL TOKEN
-	what do you return on end of file ? RETURN EOF
-	getStream() in getNextToken()??? BUFFER ERROR what if we dont have fp
-	Do you denote space and empty characters as EPS token on NULL
-*/
 void initLexer()
 {
 	curr_lineno = 1;
 	buffer_pointer=0;
 	look_back_size=0;
+	active_buffer=1;// This ensures that the next buffer read is buffer 0. 
 	retract_size=0;
 	retract_character_flag=0;
+	for(int i=0;i<=MAX_BUFFER_SIZE;i++)
+	{
+		buffer[0][i]='\0';
+		buffer[1][i]='\0';
+	}	
 	for(int i=0;i<=MAX_LOOK_BACK_SIZE;i++)
 		look_back[i]='\0';
 }
-FILE *getStream(FILE *fp)
+
+FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the non-active buffer
 {
 	buffer_pointer=0;
+	nonactivefilled_flag=0;
+	active_buffer=(active_buffer+1)%2;//Cycle between the two buffers
 	int i=0;
 	for(i=0;i<MAX_BUFFER_SIZE;i++)
 	{   
 		char c=fgetc(fp);
-		buffer[i]=c;
+		buffer[active_buffer][i]=c;
 		if(c==EOF)
 		{
 			i++;
 			break;
 		}
 	}
-	buffer[i] = '\0';
+	buffer[active_buffer][i] = '\0';
 	return fp;
 }
-// struct TOKEN_INFO getNextToken()
-// {
-// 	return NULL;
-// }
+
 void removeComments(char *testcaseFile, char *cleanFile)
 {
 	FILE *readFile=fopen(testcaseFile,"r");
@@ -81,7 +80,6 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				else
 				{
 					CURR_STATE=2;
-					//fprintf(writeFile,"%c%c",'*',character);
 				}
 				break;
 		}		
@@ -89,6 +87,7 @@ void removeComments(char *testcaseFile, char *cleanFile)
 	if(CURR_STATE==1)
 			fprintf(writeFile,"%c",'*');
 }
+
 void updateLookBack(char c)
 {
 	for(int i=MAX_LOOK_BACK_SIZE-1;i>0;i--)
@@ -248,15 +247,14 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 	int state=1;
 	int final=0;
 	char read_char;
-	int end=0;
 	int lexeme_size=0;
 	struct TOKEN_INFO token_info;
 	token_info.lineno=curr_lineno;
 	token_info.value.tag=2;
 	//printf("\nCALLED %d\n",state);
-	while(!end)
+	while(1)
 	{
-		printf("%d->",state);
+		//printf("%d->",state);// Can be used to print state transitions for debugging purposes
 		if(retract_size>0)
 		{
 			retract_character_flag=1;
@@ -275,16 +273,16 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 		} 
 		if(read_char=='\0')
 		{
+			//printf("Buffered");
 			if(retract_character_flag==0)
 			{
 				fp=getStream(fp);
 				continue;
 			}
 		}
-		else if(read_char==EOF)
-			end=1;
 		char c=read_char;
 		//printf("%c",read_char);
+		//printf("Switching %c \n",c);
 		switch(state)
 		{
 			case 1:
@@ -347,9 +345,6 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					case ' ':case '\t':case '\r':
 						state=45;
 					break;
-					case EOF:
-						state=46;
-					break;
 					default:
 						if(((c>='a')&&(c<='z'))||((c>='A')&&(c<='Z')))
 						{
@@ -358,6 +353,10 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 						else if((c>='0')&&(c<='9'))
 						{
 							state=35;
+						}
+						else if(c==EOF)
+						{
+							state=46;
 						}
 						else
 						{	
@@ -790,7 +789,6 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 				break;
 			case 46:
 				token_info.token=FEOF;
-				end=1;
 				final=1;
 				break;
 			case 47:

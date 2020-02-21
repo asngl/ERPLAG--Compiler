@@ -6,7 +6,7 @@ start
 	** COMMENT **
 	for( k in 1..10)
 	start
-		A[k]:=(num – k)*(num-k);
+		A[k]:=(num - k)*(num-k);
 		print(A[k]);
 	end
 	** COMMENT **
