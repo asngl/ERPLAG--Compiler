@@ -8,8 +8,10 @@
 
 unsigned int curr_lineno;
 
-char buffer[MAX_BUFFER_SIZE+1];//buffer[MAX_BUFFER_SIZE]='\0'
+char buffer[2][MAX_BUFFER_SIZE+1];//buffer[MAX_BUFFER_SIZE]='\0'
+int active_buffer;
 int buffer_pointer;
+int nonactivefilled_flag;
 
 char look_back[MAX_LOOK_BACK_SIZE];//look_back[i] denotes the (i+1)'th character before the current character
 int look_back_size;
