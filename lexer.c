@@ -5,21 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+FILE *context;// Stores the fp of the file we are currently working on
+
 void initLexer()
 {
 	curr_lineno = 1;
 	buffer_pointer=0;
-	look_back_size=0;
 	active_buffer=1;// This ensures that the next buffer read is buffer 0. 
-	retract_size=0;
-	retract_character_flag=0;
 	for(int i=0;i<=MAX_BUFFER_SIZE;i++)
 	{
 		buffer[0][i]='\0';
 		buffer[1][i]='\0';
 	}	
-	for(int i=0;i<=MAX_LOOK_BACK_SIZE;i++)
-		look_back[i]='\0';
 }
 
 FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the non-active buffer
@@ -90,22 +87,35 @@ void removeComments(char *testcaseFile, char *cleanFile)
 
 void updateLookBack(char c)
 {
-	for(int i=MAX_LOOK_BACK_SIZE-1;i>0;i--)
-		look_back[i]=look_back[i-1];
-	look_back[0]=c;
+	return;
 }
-void popChar(char read_char)
+void popChar(char read_char)// Remove a character from the input stream
 {
-	if(retract_character_flag==1)
-		retract_character_flag=0;
-	else
+	buffer_pointer++;
+	if(buffer_pointer==MAX_BUFFER_SIZE)
 	{
-		buffer_pointer++;
-		updateLookBack(read_char);
+		if(nonactivefilled_flag==0)
+			context=getStream(context);
+		else
+		{
+			active_buffer=(active_buffer+1)%2;
+			buffer_pointer=0;
+		}
 	}
 }
-enum TOKENS lookupTable(char *str)
+void retractCharacters(int n)// Adds n character in front of the input stream
 {
+	buffer_pointer-=n;
+	if(buffer_pointer<0)
+	{
+		nonactivefilled_flag=1;
+		buffer_pointer+=MAX_BUFFER_SIZE;
+		active_buffer=(active_buffer+1)%2;
+	}
+}
+enum Terminals lookupTable(char *str)
+{
+	//printf("\nTrying to lookup %s\n",str);
 	if(strcmp(str,"integer")==0)
 	{
 		return INTEGER;
@@ -137,6 +147,10 @@ enum TOKENS lookupTable(char *str)
 	else if(strcmp(str,"declare")==0)
 	{
 		return DECLARE;
+	}
+	else if(strcmp(str,"begin")==0)
+	{
+		return BEGIN;
 	}
 	else if(strcmp(str,"module")==0)
 	{
@@ -244,6 +258,7 @@ enum TOKENS lookupTable(char *str)
 }
 struct TOKEN_INFO getNextToken(FILE *fp)
 {
+	context=fp;
 	int state=1;
 	int final=0;
 	char read_char;
@@ -255,31 +270,7 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 	while(1)
 	{
 		//printf("%d->",state);// Can be used to print state transitions for debugging purposes
-		if(retract_size>0)
-		{
-			retract_character_flag=1;
-			retract_size--;
-			read_char=look_back[retract_size];
-		}
-		else
-			read_char=buffer[buffer_pointer];
-		if(lexeme_size>20)
-		{
-			lexeme_size=0;
-			token_info.lexeme[0]='\0';
-			token_info.lineno=curr_lineno;
-			token_info.value.tag=2;
-			state=1;
-		} 
-		if(read_char=='\0')
-		{
-			//printf("Buffered");
-			if(retract_character_flag==0)
-			{
-				fp=getStream(fp);
-				continue;
-			}
-		}
+		read_char=buffer[active_buffer][buffer_pointer];
 		char c=read_char;
 		//printf("%c",read_char);
 		//printf("Switching %c \n",c);
@@ -393,8 +384,6 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 				final=1;
 				break;
 			case 6:
-				token_info.lexeme[lexeme_size]=read_char;
-				lexeme_size++;
 				popChar(read_char);
 				if(read_char=='*')
 				{
@@ -404,8 +393,6 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 					state=6;
 				break;
 			case 7:
-				token_info.lexeme[lexeme_size]=read_char;
-				lexeme_size++;
 				popChar(read_char);
 				if(read_char=='*')
 				{
@@ -608,7 +595,8 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 				break;
 			case 33:
 			    if(c>='a'&&c<='z' || c>='A'&&c<='Z' || c>='0'&&c<='9'|| c=='_'){
-					token_info.lexeme[lexeme_size]=read_char;
+					if(lexeme_size<=19)
+						token_info.lexeme[lexeme_size]=read_char;
 					lexeme_size++;
 					popChar(read_char);
 			     	state = 33;
@@ -618,8 +606,21 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 			    }
 				break;
 			case 34:
-				token_info.token=lookupTable(token_info.lexeme);
-				final=1;
+				if(lexeme_size>20)
+				{
+					//LEXICAL ERROR
+					lexeme_size=0;
+					token_info.lexeme[0]='\0';
+					token_info.lineno=curr_lineno;
+					token_info.value.tag=2;
+					state=1;
+				}
+				else
+				{
+					token_info.lexeme[lexeme_size]='\0';
+					token_info.token=lookupTable(token_info.lexeme);
+					final=1;
+				}
 				break;
 			case 35:
 			    if(c>='0'&&c<='9'){
@@ -651,9 +652,7 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 			case 37:
 				if(read_char=='.')
 				{
-					//retract(1);
-					retract_size=1;
-					final=1;
+					retractCharacters(1);
 					lexeme_size-=1;
 					token_info.token=NUM;
 					token_info.value.value.num = 0;
@@ -810,8 +809,9 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 		}
 		if(final==1)break;
 	}
-	printf("\n");
+	//printf("\n");
 	token_info.lexeme[lexeme_size]='\0';
+	fp=context;
 	return token_info;
 }
 #endif

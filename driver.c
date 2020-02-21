@@ -5,21 +5,19 @@
 // #define macrolexerc
 // #include "lexer.c"
 // #endif
-int main()
+int main(int argc, char *argv[])
 {	
-	char *in="in.txt";
 	//char *out="out.txt";
 	//removeComments(in,out);
-	FILE *fp=fopen(in,"r");
-	printf("HI\n");
-	printf("%d %d",EPS,FEOF);
+	FILE *fp=fopen(argv[1],"r");
+	//printf("HI\n");
+	//printf("%d %d",EPS,FEOF);
 	fp=getStream(fp);
-	printf("HI\n");
+	//printf("HI\n");
 	while(1)
 	{
 		struct TOKEN_INFO token_info=getNextToken(fp);
-		printf(":%s",token_info.lexeme);
-		printf("::%d\n",token_info.token);
+		printf("%d, ",token_info.token);
 		if(token_info.token==FEOF)break;
 	}	
 	//token_info=getNextToken();

@@ -1,6 +1,6 @@
 #ifndef macrolexerh
 #define macrolexerh
-#include "token.h"
+#include "parser.h"
 #include <stdio.h>
 #define MAX_BUFFER_SIZE 100
 #define MAX_LOOK_BACK_SIZE 2
@@ -29,7 +29,7 @@ struct TAGGED_VALUE{
 
 struct TOKEN_INFO{
 	char lexeme[MAX_LEXEME_SIZE+1];
-	enum TOKENS token;
+	enum Terminals token;
 	struct TAGGED_VALUE value;
 	unsigned int lineno;
 };
