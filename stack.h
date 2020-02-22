@@ -1,7 +1,14 @@
 #ifndef _STACKH
 #define _STACKH
+struct ParseTreeNode{
+	struct TaggedSymbol s;
+	struct ParseTreeNode *leftChild;// Leftmost child
+	struct ParseTreeNode *rightSibling;
+	struct ParseTreeNode *parent;
+};
 struct stackItem{
 	struct TaggedSymbol s;
+	struct ParseTreeNode *ptn;
 };
 struct STACK{
 	int top;
