@@ -55,18 +55,36 @@ typedef struct cell GRAMMAR[No_Of_Rules];
 GRAMMAR grammarRules;
 //Global Variable for Grammar Rules
 
+
+
+struct FAndF{
+	int First[3];
+	int Follow[3];
+
+};
+
+//Structure for First and Follow sets of our Grammar
+
+struct FAndF FAndF_NT[No_Of_NT];
+struct FAndF FAndF_Rules[No_Of_Rules];
+//Global variable for first and follow sets for Non terminals and Rules correspondingly
+
+
+
 void init_mappingtable();
 
 
 struct MT SearchMappingTable(char str[]){
 	int c=0;
 	int curr=0;
+	printf("%s\n",str);
 	while(str[curr]!='\0'){
 		c+=(int)str[curr];
 		curr++;
 	}
 	c=c%mod;
-	while(mappingString[c].flag==1 && strcmp(str,mappingString[c].str)!=0){
+	//printf("c=%d\n",c);
+	while(mappingString[c].flag==1 &&strcmp(str,mappingString[c].str)!=0){
 		c++;
 		c=c%mod;
 	}
@@ -92,9 +110,14 @@ int HashCodeMappingTable(){
 			curr++;
 		}
 		c=c%mod;
+		/*printf("\n%d::%s\n",c,mapping[i].str);
+		*/
 		while(mappingString[c].flag==1){
 			c++;
 			c=c%mod;
+			/*if(strcmp(mapping[i].str,"EPS")==0){
+				printf("c=%d \n",c);
+			}*/
 		}
 		mappingString[c]=mapping[i];
 	}
@@ -134,7 +157,7 @@ void ParseGrammarFile(char FileName[]){
 		grammarRules[ruleNo].head=NULL;
 		while(1){
 			i=0;
-			while(grammarString[currentPos]!=' ' && grammarString[currentPos]!='\n'){
+			while(grammarString[currentPos]!=' ' && grammarString[currentPos]!='\n' && grammarString[currentPos]!='\r'){
 				grammarToken[i]=grammarString[currentPos];
 				currentPos++;
 				i++;
@@ -158,7 +181,7 @@ void ParseGrammarFile(char FileName[]){
 					ptr=ptr->next;
 				ptr->next=newElement;
 			}
-			if(grammarString[currentPos]=='\n')
+			if(grammarString[currentPos]=='\n' || grammarString[currentPos]=='\r')
 				break;
 			currentPos++;
 		}
@@ -173,16 +196,19 @@ void ParseGrammarFile(char FileName[]){
 
 
 int PrintGrammar(){
+	printf("Total Rules=%d",TotalRules);
 	for(int i=0;i<TotalRules;i++){
 		printf("LHS = %d, RHS =",grammarRules[i].sym);
 		RHSNODE *token;
-		while(token->next !=NULL){
+		token= grammarRules[i].head;
+		while(token !=NULL){
 			if(token->tag==0){
 				printf("T,%d  ",token->s.T);
 			}
 			else{
 				printf("NT,%d  ",token->s.NT);
 			}
+			token=token->next;
 		}
 		printf("\n");
 	}
@@ -193,18 +219,18 @@ int PrintGrammar(){
 int main(){
 	init_mappingtable();
 	HashCodeMappingTable(); //Calling function to generate String hashed mapping table
-	/*int noflag=0;
-	for(int i=0;i<No_Of_Tokens;i++){
+	int noflag=0;
+	/*for(int i=0;i<No_Of_Tokens;i++){
 		printf("i=%d, T=%d , NT=%d , String= %s, Flag=%d, Tag=%d\n",i,mappingString[i].s.T,mappingString[i].s.NT,mappingString[i].str,mappingString[i].flag, mappingString[i].tag);
 		if(mappingString[i].flag==1)
 			noflag++;
 	}
-	printf("%d",noflag);*/
-	struct MT eps;
-	eps=SearchMappingTable("EPS");
-	printf("EPS=%d",eps.s.T);
-	//ParseGrammarFile("grammar.txt");
-	//PrintGrammar();
+	*/
+	//struct MT tok;
+	//tok = SearchMappingTable("program");
+	//printf("Value=%s",tok.str);
+	ParseGrammarFile("grammar.txt");
+	PrintGrammar();
 	return 0;
 }
 
@@ -214,17 +240,6 @@ int main(){
 
 
 
-struct FAndF{
-	int First[3];
-	int Follow[3];
-
-};
-
-//Structure for First and Follow sets of our Grammar
-
-struct FAndF FAndF_NT[No_Of_NT];
-struct FAndF FAndF_Rules[No_Of_Rules];
-//Global variable for first and follow sets for Non terminals and Rules correspondingly
 
 int ComputeFirstSet(){
 	int computeStopFlag=1; //Flag to check whether the computation has to be stopped or not
@@ -632,7 +647,7 @@ void init_mappingtable(){
 	mapping[59].flag = 1;
 
 	mapping[60].s.T = EPS ;
-	strcpy(mapping[60].str, "EPS ");
+	strcpy(mapping[60].str, "EPS");
 	mapping[60].tag = terminal;
 	mapping[60].flag = 1;
 

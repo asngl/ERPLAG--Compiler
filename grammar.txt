@@ -9,7 +9,7 @@ module DEF MODULE ID ENDDEF TAKES INPUT SQBO input_plist SQBC SEMICOL ret module
 ret RETURNS SQBO output_plist SQBC SEMICOL
 ret EPS
 input_plist ID COLON dataType more_input_plist
-more_input_plist COMMA ID COLON dataType more_input_plist 
+more_input_plist COMMA ID COLON dataType more_input_plist
 more_input_plist EPS
 output_plist ID COLON type more_output_plist
 more_output_plist COMMA ID COLON type more_output_plist
@@ -51,7 +51,7 @@ lvalueIDStmt ASSIGNOP expression SEMICOL
 lvalueARRStmt SQBO Index SQBC ASSIGNOP expression SEMICOL
 Index NUM
 Index ID
-moduleReuseStmt optional USE MODULE ID WITH PARAMETERS idListSEMICOL
+moduleReuseStmt optional USE MODULE ID WITH PARAMETERS idList SEMICOL
 optional SQBO idList SQBC ASSIGNOP
 optional EPS
 more_id COMMA ID more_id
@@ -68,7 +68,7 @@ relExpr2 relOp addExpr
 relExpr2 EPS
 addExpr multExpr addExpr2
 addExpr2 pmOp multExpr addExpr2
-addExpr2 EPSmultExpr basicExpr multExpr2
+addExpr2 EPS multExpr basicExpr multExpr2
 multExpr basicExpr multExpr2
 multExpr2 mdOp basicExpr multExpr2
 multExpr2 EPS
@@ -87,8 +87,8 @@ relOp GE
 relOp EQ
 relOp NE
 declareStmt DECLARE idList COLON dataType SEMICOL
-conditionalStmt SWITCH BO ID BC START caseStmtDefault END
-caseStmt CASE value COLON statements BREAK SEMICOL caseStmts 
+conditionalStmt SWITCH BO ID BC START caseStmt Default END
+caseStmt CASE value COLON statements BREAK SEMICOL caseStmts
 caseStmts CASE value COLON statements BREAK SEMICOL caseStmts
 caseStmts EPS
 value NUM
