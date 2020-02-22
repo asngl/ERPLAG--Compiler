@@ -267,9 +267,9 @@ int ComputeFirstSet(){
 	eps_enum = EPSToken.s.T;
 	//Enum for etsting eps bit
 	
-	int enum_remove=0;
-	enum_remove=1<<(eps_enum%32);
-	enum_remove= ~enum_remove;
+	int eps_remove=0;
+	eps_remove=1<<(eps_enum%32);
+	eps_remove= ~eps_remove;
 	while(computeStopFlag==1){
 		computeStopFlag=0;
 		for(int i=0;i<TotalRules;i++){
@@ -289,10 +289,10 @@ int ComputeFirstSet(){
 			}
 			else{ //In case it is non terminal
 				int num = token->s.NT;
-				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1] & enum_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1] & eps_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 					computeStopFlag=1;
 					FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
-					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove));
+					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove));
 					FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
 					FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
 					FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
@@ -322,10 +322,10 @@ int ComputeFirstSet(){
 					}
 					else{
 						num=token->s.NT;
-						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 							computeStopFlag=1;
 							FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
-							FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove));
+							FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove));
 							FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
 							FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
 							FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
