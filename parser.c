@@ -9,15 +9,17 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
-
+#include "parser.h"
 int TotalRules=0;
 
 union Symb{
-	Terminal T;
-	NonTerminal NT;
+	enum Terminals T;
+	enum NonTerminals NT;
 };
 typedef union Symb Symbol;
 // Union for enumeration of terminals and nonterminals
+
+enum type_of_symbol{terminal, nonTerminal};
 
 struct MT{
 	Symbol s;
@@ -34,7 +36,7 @@ MappingTable mapping;
 MappingTable mappingString;
 //Global variable for hash coded Mapping table
 
-enum type_of_symbol{terminal, nonTerminal};
+
 struct rhsnode{
 	Symbol s;
 	enum type_of_symbol tag;
@@ -44,7 +46,7 @@ typedef struct rhsnode RHSNODE;
 // Structure for individual grammar rule
 
 struct cell{
-	NonTerminal sym;
+	enum NonTerminals sym;
 	RHSNODE *head;
 };
 typedef struct cell GRAMMAR[No_Of_Rules];
@@ -69,7 +71,7 @@ struct MT SearchMappingTable(char str[]){
 	}
 	if(mappingString[c].flag==0){
 		printf("%s Token Not found",str);
-		return NULL;
+		return mappingString[c];
 	}
 	return mappingString[c];
 
@@ -100,17 +102,17 @@ int HashCodeMappingTable(){
 //Function to convert enum hashed Mapping table to String hashed Mapping table
 
 
-int ParseGrammarFile(char FileName[]){
+void ParseGrammarFile(char FileName[]){
 	FILE *fp;
 	fp = fopen(FileName,"r");
 	if(fp==NULL){
 		printf("Could not find Grammar Source File");
-		return 0;
+		return ;
 	}
 	
 	HashCodeMappingTable(); //Calling function to generate String hashed mapping table
 	int ruleNo = 0; // Vairable for tracking the current rule number
-	char grammarString[Max_Rule_size];
+	char grammarString[Max_Rule_Size];
 	while(fgets(grammarString,Max_Rule_Size,fp)!= NULL){
 		char grammarToken[Max_Token_Size];
 		int currentPos=0;
@@ -124,10 +126,10 @@ int ParseGrammarFile(char FileName[]){
 		grammarToken[i]='\0';
 		struct MT tokenMap;
 		tokenMap=SearchMappingTable(grammarToken);
-		if(tokenMap==NULL){
+		if(tokenMap.flag==0){
 			continue;
 		}
-		grammarRules[ruleNo].sym = tokenMap.S.NT;
+		grammarRules[ruleNo].sym = tokenMap.s.NT;
 		grammarRules[ruleNo].head=NULL;
 		while(1){
 			i=0;
@@ -138,7 +140,7 @@ int ParseGrammarFile(char FileName[]){
 			}
 			grammarToken[i]='\0';
 			tokenMap=SearchMappingTable(grammarToken);
-			if(tokenMap==NULL){
+			if(tokenMap.flag==0){
 				continue;
 			}
 			RHSNODE *ptr,*newElement;
@@ -163,7 +165,40 @@ int ParseGrammarFile(char FileName[]){
 	}
 	fclose(fp);
 	TotalRules=ruleNo;
+	return ;
 }
+
+
+
+
+int PrintGrammar(){
+	for(int i=0;i<TotalRules;i++){
+		printf("LHS = %d, RHS =",grammarRules[i].sym);
+		RHSNODE *token;
+		while(token->next !=NULL){
+			if(token->tag==0){
+				printf("T,%d  ",token->s.T);
+			}
+			else{
+				printf("NT,%d  ",token->s.NT);
+			}
+		}
+		printf("\n");
+	}
+	return 0;
+}
+
+
+int main(){
+	printf("Hi");
+	ParseGrammarFile("grammar.txt");
+	PrintGrammar();
+	return 0;
+}
+
+
+
+
 
 
 
@@ -249,17 +284,37 @@ int ComputeFirstSet(){
 						}
 					}
 				}
-				//Write functionality for EPS
 				
 			}
 		}
 	}
 }
 
+/*
+int ComputeFollowSet(){
+	//initial feof in <program>
+	//EPS in case of NT 
+	//Iterative
+	int computeStopFlag=1;
+	int eps_enum=0;
+	struct MT EPSToken;
+	EPSToken = SearchMappingTable("EPS");
+	eps_enum = EPSToken.s.T;
+	//Enum for etsting eps bit
+	while(computeStopFlag==1){
+		computeStopFlag=0;
+		for(int i=0;i<TotalRules; i++){
+			struct cell currentRule;
+			currentRule=grammarRules[i];
+			int LHS=currentRule.sym;
+			RHSNODE *token;
+			token=currentRule.head;
+			
+		}
+	}
+}
 
-
-
-
+*/
 
 
 
