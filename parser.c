@@ -67,6 +67,7 @@ struct FAndF FAndF_Rules[No_Of_Rules];
 
 
 void init_mappingtable();
+int ComputeFirstSet();
 
 
 struct MT SearchMappingTable(char str[]){
@@ -210,6 +211,14 @@ int PrintGrammar(){
 	return 0;
 }
 
+int PrintFirstSet_NT(){
+	printf("First set\n");
+	for(int i=0;mapping[i+63].flag==1;i++){
+		printf("String:%s, First set= %d,%d,%d \n",mapping[i+63].str,FAndF_NT[i].First[2],FAndF_NT[i].First[1],FAndF_NT[i].First[0]);
+	}
+	return 0;
+}
+
 
 int main(){
 	init_mappingtable();
@@ -226,6 +235,9 @@ int main(){
 	//printf("Value=%s",tok.str);
 	ParseGrammarFile("grammar.txt");
 	PrintGrammar();
+	ComputeFirstSet();
+	PrintFirstSet_NT();
+	
 	return 0;
 }
 
