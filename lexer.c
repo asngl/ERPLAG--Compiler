@@ -352,6 +352,7 @@ struct TOKEN_INFO getNextToken()
 						}
 						else
 						{	
+							printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 							lexeme_size=0;
 							token_info.lexeme[0]='\0';
 							token_info.lineno=curr_lineno;
@@ -514,6 +515,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -535,6 +537,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -556,6 +559,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -609,7 +613,7 @@ struct TOKEN_INFO getNextToken()
 			case 34:
 				if(lexeme_size>20)
 				{
-					//LEXICAL ERROR
+					printf("Encountered lexeme sequence of too much length.\n %d\t%s %c",curr_lineno,token_info.lexeme,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -673,6 +677,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -737,6 +742,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -754,6 +760,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
+					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
