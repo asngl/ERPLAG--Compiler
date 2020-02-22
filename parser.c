@@ -339,7 +339,7 @@ int ComputeFirstSet(){
 	}
 }
 
-/*
+
 int ComputeFollowSet(){
 	//initial feof in <program>
 	//EPS in case of NT 
@@ -363,7 +363,7 @@ int ComputeFollowSet(){
 	}
 }
 
-*/
+
 
 
 
