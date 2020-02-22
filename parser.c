@@ -12,11 +12,6 @@
 #include "parser.h"
 int TotalRules=0;
 
-union Symb{
-	enum Terminals T;
-	enum NonTerminals NT;
-};
-
 typedef union Symb Symbol;
 
 enum type_of_symbol{terminal, nonTerminal};
