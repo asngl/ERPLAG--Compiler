@@ -70,7 +70,7 @@ struct FAndF FAndF_Rules[No_Of_Rules];
 
 void init_mappingtable();
 int ComputeFirstSet();
-
+int ComputeFollowSet();
 
 struct MT SearchMappingTable(char str[]){
 	int c=0;
@@ -230,6 +230,16 @@ int PrintFirstSet_NT(){
 	return 0;
 }
 
+int PrintFollowSet_NT(){
+	printf("Follow set\n");
+	for(int i=0;mapping[i+63].flag==1;i++){
+		printf("\nString:%s, Follow set=",mapping[i+63].str);
+		getElementSet(FAndF_NT[i].Follow);
+	}
+	return 0;
+}
+
+
 
 int main(){
 	init_mappingtable();
@@ -248,7 +258,8 @@ int main(){
 	PrintGrammar();
 	ComputeFirstSet();
 	PrintFirstSet_NT();
-	
+	ComputeFollowSet();
+	PrintFollowSet_NT();
 	return 0;
 }
 
@@ -266,7 +277,22 @@ int ComputeFirstSet(){
 	EPSToken = SearchMappingTable("EPS");
 	eps_enum = EPSToken.s.T;
 	//Enum for etsting eps bit
-	
+	for(int i=0;i<No_Of_NT;i++){
+		FAndF_NT[i].First[0]=0;
+		FAndF_NT[i].First[1]=0;
+		FAndF_NT[i].First[2]=0;
+		FAndF_NT[i].Follow[0]=0;
+		FAndF_NT[i].Follow[1]=0;
+		FAndF_NT[i].Follow[2]=0;
+	}
+	for(int i=0;i<No_Of_Rules;i++){
+		FAndF_Rules[i].First[0]=0;
+		FAndF_Rules[i].First[1]=0;
+		FAndF_Rules[i].First[2]=0;
+		FAndF_Rules[i].Follow[0]=0;
+		FAndF_Rules[i].Follow[1]=0;
+		FAndF_Rules[i].Follow[2]=0;
+	}
 	int eps_remove=0;
 	eps_remove=1<<(eps_enum%32);
 	eps_remove= ~eps_remove;
@@ -353,7 +379,7 @@ int ComputeFollowSet(){
 	eps_remove=~eps_remove;
 	FEOFToken = SearchMappingTable("FEOF");
 	int feof_enum = FEOFToken.s.T;
-	FANDF_NT[0].Follow[feof_enum/32]=1<<feof_enum%32;
+	FAndF_NT[0].Follow[feof_enum/32]=1<<feof_enum%32;
 	while(computeStopFlag==1){
 		computeStopFlag=0;
 		for(int i=0;i<TotalRules; i++){
@@ -369,7 +395,7 @@ int ComputeFollowSet(){
 					continue;				
 				}				
 				if(token2 == NULL){
-					if((FAndF_NT[token1->s.NT].Follow[0] != FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0])||(FAndF_NT[token1->s.NT].Follow[1] != FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1])||(FAndF_NT[token1->s.NT].Follow[2] != FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2])){
+					if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 						computeStopFlag = 1;
 						FAndF_NT[token1->s.NT].Follow[0] |= FAndF_NT[LHS].Follow[0];
 						FAndF_NT[token1->s.NT].Follow[1] |= FAndF_NT[LHS].Follow[1];
@@ -379,15 +405,15 @@ int ComputeFollowSet(){
 				}
 				if(token2->tag == terminal){
 					int num = token2->s.T;
-					if(FAndF_NT[token1->s.NT].Follow[num/32] != FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32))){
+					if(FAndF_NT[token1->s.NT].Follow[num/32] != (FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32)))){
 						computeStopFlag=1;
-						FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32))
+						FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32));
 					}
 					
 				}
 				else{
 					int num=token2->s.NT;
-					if((FAndF_NT[token1->s.NT].Follow[0] != FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0])||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1])||(FAndF_NT[token1->s.NT].Follow[2] != FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2])){
+					if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != ((FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 						FAndF_NT[token1->s.NT].Follow[0] = FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0];
 						FAndF_NT[token1->s.NT].Follow[1] = (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1];	
 						FAndF_NT[token1->s.NT].Follow[2] = FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2];
@@ -395,7 +421,7 @@ int ComputeFollowSet(){
 						while(FAndF_NT[num].First[eps_enum/32]&(1<<(eps_enum%32))){
 							token2=token2->next;
 							if(token2==NULL){
-								if((FAndF_NT[token1->s.NT].Follow[0] != FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0])||(FAndF_NT[token1->s.NT].Follow[1] != FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1])||(FAndF_NT[token1->s.NT].Follow[2] != FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2])){
+								if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 									computeStopFlag=1;
 									FAndF_NT[token1->s.NT].Follow[0] |= FAndF_NT[LHS].Follow[0];
 									FAndF_NT[token1->s.NT].Follow[1] |= FAndF_NT[LHS].Follow[1];
@@ -405,14 +431,15 @@ int ComputeFollowSet(){
 							}
 							if(token2->tag==terminal){
 								int num=token2->s.T;
-								if(FAndF_NT[token1->s.NT].Follow[num/32] !=FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32))){
+								if(FAndF_NT[token1->s.NT].Follow[num/32] !=(FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32)))){
 									computeStopFlag=1;
-									FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32))
+									FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32));
 								}
 								break;	
 							}
 							else{
-								if((FAndF_NT[token1->s.NT].Follow[0] != FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0])||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1])||(FAndF_NT[token1->s.NT].Follow[2] != FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2])){
+								int num=token2->s.NT;
+								if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != ((FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 									FAndF_NT[token1->s.NT].Follow[0] = FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0];
 									FAndF_NT[token1->s.NT].Follow[1] = (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1];	
 									FAndF_NT[token1->s.NT].Follow[2] = FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2];
