@@ -18,7 +18,7 @@ dataType INTEGER
 dataType REAL
 dataType BOOLEAN
 dataType ARRAY SQBO range_arrays SQBC OF type
-range_arrays index RANGEOP index
+range_arrays Index RANGEOP Index
 type INTEGER
 type REAL
 type BOOLEAN
@@ -48,9 +48,9 @@ assignmentStmt ID whichStmt
 whichStmt lvalueIDStmt
 whichStmt lvalueARRStmt
 lvalueIDStmt ASSIGNOP expression SEMICOL
-lvalueARRStmt SQBO index SQBC ASSIGNOP expression SEMICOL
-index NUM
-index ID
+lvalueARRStmt SQBO Index SQBC ASSIGNOP expression SEMICOL
+Index NUM
+Index ID
 moduleReuseStmt optional USE MODULE ID WITH PARAMETERS idListSEMICOL
 optional SQBO idList SQBC ASSIGNOP
 optional EPS
