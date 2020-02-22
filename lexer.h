@@ -34,7 +34,7 @@ struct TOKEN_INFO{
 	unsigned int lineno;
 };
 
-
+extern void initLexer(char inputFile[]);
 extern FILE *getStream(FILE *fp);
 extern struct TOKEN_INFO getNextToken();
 extern void removeComments(char *testcaseFile, char *cleanFile);

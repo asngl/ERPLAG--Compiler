@@ -9,14 +9,13 @@ int main(int argc, char *argv[])
 {	
 	//char *out="out.txt";
 	//removeComments(in,out);
-	FILE *fp=fopen(argv[1],"r");
 	//printf("HI\n");
 	//printf("%d %d",EPS,FEOF);
-	fp=getStream(fp);
+	initLexer(argv[1]);
 	//printf("HI\n");
 	while(1)
 	{
-		struct TOKEN_INFO token_info=getNextToken(fp);
+		struct TOKEN_INFO token_info=getNextToken();
 		printf("%d, ",token_info.token);
 		if(token_info.token==FEOF)break;
 	}	

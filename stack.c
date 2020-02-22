@@ -1,23 +1,10 @@
 #ifndef _STACK
 #define _STACK
 #include <stdlib.h>
+#include "stack.h"
 #include "parser.h"
 
-#define MAX_CAPACITY 500 
-
-struct stackItem{
-	struct TaggedSymbol s;
-};
-
 struct stackItem ERR_stackItem;
-
-struct STACK{
-	int top;
-	int capacity;
-	struct stackItem * array; 
-};
-
-
 
 struct STACK createStack(int capacity){
 	struct STACK s;
