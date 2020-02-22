@@ -589,7 +589,7 @@ void init_mappingtable(){
 	mapping[116].flag = 1;
 }
 
-#endif	
+
 
 
 

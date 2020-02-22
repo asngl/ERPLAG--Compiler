@@ -2,7 +2,7 @@
 #define No_Of_Tokens 150
 #define mod 150
 //Keep No of tokens and mod same when necessary, Keep them accurate as they are needed for Mapping table
-#define No_Of_Rules 100
+#define No_Of_Rules 200
 #define Max_Rule_Size 150
 #define No_Of_NT 70
 #define No_Of_T 100
@@ -11,6 +11,8 @@
 #include<stdlib.h>
 #include "parser.h"
 int TotalRules=0;
+
+//Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
 
 typedef union Symb Symbol;
 
@@ -73,7 +75,6 @@ int ComputeFirstSet();
 struct MT SearchMappingTable(char str[]){
 	int c=0;
 	int curr=0;
-	printf("%s\n",str);
 	while(str[curr]!='\0'){
 		c+=(int)str[curr];
 		curr++;
@@ -211,10 +212,20 @@ int PrintGrammar(){
 	return 0;
 }
 
+void getElementSet(int A[]){
+	for(int i=0;i<96;i++){
+		if(A[i/32] & (1<<(i%32))){
+			printf("%s,", mapping[i].str);
+		}
+	}
+
+}
+
 int PrintFirstSet_NT(){
 	printf("First set\n");
 	for(int i=0;mapping[i+63].flag==1;i++){
-		printf("String:%s, First set= %d,%d,%d \n",mapping[i+63].str,FAndF_NT[i].First[2],FAndF_NT[i].First[1],FAndF_NT[i].First[0]);
+		printf("\nString:%s, First set=",mapping[i+63].str);
+		getElementSet(FAndF_NT[i].First);
 	}
 	return 0;
 }
@@ -255,6 +266,10 @@ int ComputeFirstSet(){
 	EPSToken = SearchMappingTable("EPS");
 	eps_enum = EPSToken.s.T;
 	//Enum for etsting eps bit
+	
+	int enum_remove=0;
+	enum_remove=1<<(eps_enum%32);
+	enum_remove= ~enum_remove;
 	while(computeStopFlag==1){
 		computeStopFlag=0;
 		for(int i=0;i<TotalRules;i++){
@@ -274,10 +289,10 @@ int ComputeFirstSet(){
 			}
 			else{ //In case it is non terminal
 				int num = token->s.NT;
-				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1])) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1] & enum_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 					computeStopFlag=1;
 					FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
-					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1]);
+					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove));
 					FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
 					FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
 					FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
@@ -307,10 +322,10 @@ int ComputeFirstSet(){
 					}
 					else{
 						num=token->s.NT;
-						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1])) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
+						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 							computeStopFlag=1;
 							FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
-							FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[num].First[1]);
+							FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&enum_remove));
 							FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
 							FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
 							FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
@@ -668,272 +683,272 @@ void init_mappingtable(){
 	mapping[62].tag = terminal;
 	mapping[62].flag = 1;
 
-	mapping[63].s.T = program;
+	mapping[63].s.NT = program;
 	strcpy(mapping[63].str, "program");
 	mapping[63].tag = nonTerminal;
 	mapping[63].flag = 1;
 
-	mapping[64].s.T = moduleDeclarations;
+	mapping[64].s.NT = moduleDeclarations;
 	strcpy(mapping[64].str, "moduleDeclarations");
 	mapping[64].tag = nonTerminal;
 	mapping[64].flag = 1;
 
-	mapping[65].s.T = moduleDeclaration;
+	mapping[65].s.NT = moduleDeclaration;
 	strcpy(mapping[65].str, "moduleDeclaration");
 	mapping[65].tag = nonTerminal;
 	mapping[65].flag = 1;
 
-	mapping[66].s.T = otherModules;
+	mapping[66].s.NT = otherModules;
 	strcpy(mapping[66].str, "otherModules");
 	mapping[66].tag = nonTerminal;
 	mapping[66].flag = 1;
 
-	mapping[67].s.T = driverModule;
+	mapping[67].s.NT = driverModule;
 	strcpy(mapping[67].str, "driverModule");
 	mapping[67].tag = nonTerminal;
 	mapping[67].flag = 1;
 
-	mapping[68].s.T = module;
+	mapping[68].s.NT = module;
 	strcpy(mapping[68].str, "module");
 	mapping[68].tag = nonTerminal;
 	mapping[68].flag = 1;
 
-	mapping[69].s.T = ret;
+	mapping[69].s.NT = ret;
 	strcpy(mapping[69].str, "ret");
 	mapping[69].tag = nonTerminal;
 	mapping[69].flag = 1;
 
-	mapping[70].s.T = input_plist;
+	mapping[70].s.NT = input_plist;
 	strcpy(mapping[70].str, "input_plist");
 	mapping[70].tag = nonTerminal;
 	mapping[70].flag = 1;
 
-	mapping[71].s.T = more_input_plist;
+	mapping[71].s.NT = more_input_plist;
 	strcpy(mapping[71].str, "more_input_plist");
 	mapping[71].tag = nonTerminal;
 	mapping[71].flag = 1;
 
-	mapping[72].s.T = output_plist;
+	mapping[72].s.NT = output_plist;
 	strcpy(mapping[72].str, "output_plist");
 	mapping[72].tag = nonTerminal;
 	mapping[72].flag = 1;
 
-	mapping[73].s.T = more_output_plist;
+	mapping[73].s.NT = more_output_plist;
 	strcpy(mapping[73].str, "more_output_plist");
 	mapping[73].tag = nonTerminal;
 	mapping[73].flag = 1;
 
-	mapping[74].s.T = dataType;
+	mapping[74].s.NT = dataType;
 	strcpy(mapping[74].str, "dataType");
 	mapping[74].tag = nonTerminal;
 	mapping[74].flag = 1;
 
-	mapping[75].s.T = range_arrays;
+	mapping[75].s.NT = range_arrays;
 	strcpy(mapping[75].str, "range_arrays");
 	mapping[75].tag = nonTerminal;
 	mapping[75].flag = 1;
 
-	mapping[76].s.T = type;
+	mapping[76].s.NT = type;
 	strcpy(mapping[76].str, "type");
 	mapping[76].tag = nonTerminal;
 	mapping[76].flag = 1;
 
-	mapping[77].s.T = moduleDef;
+	mapping[77].s.NT = moduleDef;
 	strcpy(mapping[77].str, "moduleDef");
 	mapping[77].tag = nonTerminal;
 	mapping[77].flag = 1;
 
-	mapping[78].s.T = statements;
+	mapping[78].s.NT = statements;
 	strcpy(mapping[78].str, "statements");
 	mapping[78].tag = nonTerminal;
 	mapping[78].flag = 1;
 
-	mapping[79].s.T = statement;
+	mapping[79].s.NT = statement;
 	strcpy(mapping[79].str, "statement");
 	mapping[79].tag = nonTerminal;
 	mapping[79].flag = 1;
 
-	mapping[80].s.T = ioStmt;
+	mapping[80].s.NT = ioStmt;
 	strcpy(mapping[80].str, "ioStmt");
 	mapping[80].tag = nonTerminal;
 	mapping[80].flag = 1;
 
-	mapping[81].s.T = var2;
+	mapping[81].s.NT = var2;
 	strcpy(mapping[81].str, "var2");
 	mapping[81].tag = nonTerminal;
 	mapping[81].flag = 1;
 
-	mapping[82].s.T = var;
+	mapping[82].s.NT = var;
 	strcpy(mapping[82].str, "var");
 	mapping[82].tag = nonTerminal;
 	mapping[82].flag = 1;
 
-	mapping[83].s.T = whichId;
+	mapping[83].s.NT = whichId;
 	strcpy(mapping[83].str, "whichId");
 	mapping[83].tag = nonTerminal;
 	mapping[83].flag = 1;
 
-	mapping[84].s.T = whichIndex;
+	mapping[84].s.NT = whichIndex;
 	strcpy(mapping[84].str, "whichIndex");
 	mapping[84].tag = nonTerminal;
 	mapping[84].flag = 1;
 
-	mapping[85].s.T = simpleStmt;
+	mapping[85].s.NT = simpleStmt;
 	strcpy(mapping[85].str, "simpleStmt");
 	mapping[85].tag = nonTerminal;
 	mapping[85].flag = 1;
 
-	mapping[86].s.T = assignmentStmt;
+	mapping[86].s.NT = assignmentStmt;
 	strcpy(mapping[86].str, "assignmentStmt");
 	mapping[86].tag = nonTerminal;
 	mapping[86].flag = 1;
 
-	mapping[87].s.T = whichStmt;
+	mapping[87].s.NT = whichStmt;
 	strcpy(mapping[87].str, "whichStmt");
 	mapping[87].tag = nonTerminal;
 	mapping[87].flag = 1;
 
-	mapping[88].s.T = lvalueIDStmt;
+	mapping[88].s.NT = lvalueIDStmt;
 	strcpy(mapping[88].str, "lvalueIDStmt");
 	mapping[88].tag = nonTerminal;
 	mapping[88].flag = 1;
 
-	mapping[89].s.T = lvalueARRStmt;
+	mapping[89].s.NT = lvalueARRStmt;
 	strcpy(mapping[89].str, "lvalueARRStmt");
 	mapping[89].tag = nonTerminal;
 	mapping[89].flag = 1;
 
-	mapping[90].s.T = Index;
+	mapping[90].s.NT = Index;
 	strcpy(mapping[90].str, "Index");
 	mapping[90].tag = nonTerminal;
 	mapping[90].flag = 1;
 
-	mapping[91].s.T = moduleReuseStmt;
+	mapping[91].s.NT = moduleReuseStmt;
 	strcpy(mapping[91].str, "moduleReuseStmt");
 	mapping[91].tag = nonTerminal;
 	mapping[91].flag = 1;
 
-	mapping[92].s.T = optional;
+	mapping[92].s.NT = optional;
 	strcpy(mapping[92].str, "optional");
 	mapping[92].tag = nonTerminal;
 	mapping[92].flag = 1;
 
-	mapping[93].s.T = idList;
+	mapping[93].s.NT = idList;
 	strcpy(mapping[93].str, "idList");
 	mapping[93].tag = nonTerminal;
 	mapping[93].flag = 1;
 
-	mapping[94].s.T = more_id;
+	mapping[94].s.NT = more_id;
 	strcpy(mapping[94].str, "more_id");
 	mapping[94].tag = nonTerminal;
 	mapping[94].flag = 1;
 
-	mapping[95].s.T = expression;
+	mapping[95].s.NT = expression;
 	strcpy(mapping[95].str, "expression");
 	mapping[95].tag = nonTerminal;
 	mapping[95].flag = 1;
 
-	mapping[96].s.T = posExpr;
+	mapping[96].s.NT = posExpr;
 	strcpy(mapping[96].str, "posExpr");
 	mapping[96].tag = nonTerminal;
 	mapping[96].flag = 1;
 
-	mapping[97].s.T = posExpr2;
+	mapping[97].s.NT = posExpr2;
 	strcpy(mapping[97].str, "posExpr2");
 	mapping[97].tag = nonTerminal;
 	mapping[97].flag = 1;
 
-	mapping[98].s.T = relExpr;
+	mapping[98].s.NT = relExpr;
 	strcpy(mapping[98].str, "relExpr");
 	mapping[98].tag = nonTerminal;
 	mapping[98].flag = 1;
 
-	mapping[99].s.T = relExpr2;
+	mapping[99].s.NT = relExpr2;
 	strcpy(mapping[99].str, "relExpr2");
 	mapping[99].tag = nonTerminal;
 	mapping[99].flag = 1;
 
-	mapping[100].s.T = addExpr;
+	mapping[100].s.NT = addExpr;
 	strcpy(mapping[100].str, "addExpr");
 	mapping[100].tag = nonTerminal;
 	mapping[100].flag = 1;
 
-	mapping[101].s.T = addExpr2;
+	mapping[101].s.NT = addExpr2;
 	strcpy(mapping[101].str, "addExpr2");
 	mapping[101].tag = nonTerminal;
 	mapping[101].flag = 1;
 
-	mapping[102].s.T = multExpr;
+	mapping[102].s.NT = multExpr;
 	strcpy(mapping[102].str, "multExpr");
 	mapping[102].tag = nonTerminal;
 	mapping[102].flag = 1;
 
-	mapping[103].s.T = multExpr2;
+	mapping[103].s.NT = multExpr2;
 	strcpy(mapping[103].str, "multExpr2");
 	mapping[103].tag = nonTerminal;
 	mapping[103].flag = 1;
 
-	mapping[104].s.T = basicExpr;
+	mapping[104].s.NT = basicExpr;
 	strcpy(mapping[104].str, "basicExpr");
 	mapping[104].tag = nonTerminal;
 	mapping[104].flag = 1;
 
-	mapping[105].s.T = logOp;
+	mapping[105].s.NT = logOp;
 	strcpy(mapping[105].str, "logOp");
 	mapping[105].tag = nonTerminal;
 	mapping[105].flag = 1;
 
-	mapping[106].s.T = pmOp;
+	mapping[106].s.NT = pmOp;
 	strcpy(mapping[106].str, "pmOp");
 	mapping[106].tag = nonTerminal;
 	mapping[106].flag = 1;
 
-	mapping[107].s.T = mdOp;
+	mapping[107].s.NT = mdOp;
 	strcpy(mapping[107].str, "mdOp");
 	mapping[107].tag = nonTerminal;
 	mapping[107].flag = 1;
 
-	mapping[108].s.T = relOp;
+	mapping[108].s.NT = relOp;
 	strcpy(mapping[108].str, "relOp");
 	mapping[108].tag = nonTerminal;
 	mapping[108].flag = 1;
 
-	mapping[109].s.T = declareStmt;
+	mapping[109].s.NT = declareStmt;
 	strcpy(mapping[109].str, "declareStmt");
 	mapping[109].tag = nonTerminal;
 	mapping[109].flag = 1;
 
-	mapping[110].s.T = conditionalStmt;
+	mapping[110].s.NT = conditionalStmt;
 	strcpy(mapping[110].str, "conditionalStmt");
 	mapping[110].tag = nonTerminal;
 	mapping[110].flag = 1;
 
-	mapping[111].s.T = caseStmt;
+	mapping[111].s.NT = caseStmt;
 	strcpy(mapping[111].str, "caseStmt");
 	mapping[111].tag = nonTerminal;
 	mapping[111].flag = 1;
 
-	mapping[112].s.T = caseStmts;
+	mapping[112].s.NT = caseStmts;
 	strcpy(mapping[112].str, "caseStmts");
 	mapping[112].tag = nonTerminal;
 	mapping[112].flag = 1;
 
-	mapping[113].s.T = value;
+	mapping[113].s.NT = value;
 	strcpy(mapping[113].str, "value");
 	mapping[113].tag = nonTerminal;
 	mapping[113].flag = 1;
 
-	mapping[114].s.T = Default;
+	mapping[114].s.NT = Default;
 	strcpy(mapping[114].str, "Default");
 	mapping[114].tag = nonTerminal;
 	mapping[114].flag = 1;
 
-	mapping[115].s.T = iterativeStmt;
+	mapping[115].s.NT = iterativeStmt;
 	strcpy(mapping[115].str, "iterativeStmt");
 	mapping[115].tag = nonTerminal;
 	mapping[115].flag = 1;
 
-	mapping[116].s.T = range;
+	mapping[116].s.NT = range;
 	strcpy(mapping[116].str, "range");
 	mapping[116].tag = nonTerminal;
 	mapping[116].flag = 1;

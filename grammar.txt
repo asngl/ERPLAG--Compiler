@@ -54,6 +54,7 @@ Index ID
 moduleReuseStmt optional USE MODULE ID WITH PARAMETERS idList SEMICOL
 optional SQBO idList SQBC ASSIGNOP
 optional EPS
+idList ID more_id
 more_id COMMA ID more_id
 more_id EPS
 expression posExpr
