@@ -7,8 +7,9 @@
 
 FILE *context;// Stores the fp of the file we are currently working on
 
-void initLexer()
+void initLexer(char inputFile[])
 {
+	context=fopen(inputFile,"r");
 	curr_lineno = 1;
 	buffer_pointer=0;
 	active_buffer=1;// This ensures that the next buffer read is buffer 0. 
@@ -17,6 +18,7 @@ void initLexer()
 		buffer[0][i]='\0';
 		buffer[1][i]='\0';
 	}	
+	context=getStream(context);
 }
 
 FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the non-active buffer
@@ -85,7 +87,7 @@ void removeComments(char *testcaseFile, char *cleanFile)
 			fprintf(writeFile,"%c",'*');
 }
 
-void updateLookBack(char c)
+void updateLookBack(char c)// Deprecated
 {
 	return;
 }
@@ -256,9 +258,8 @@ enum Terminals lookupTable(char *str)
 		return ID;
 	 
 }
-struct TOKEN_INFO getNextToken(FILE *fp)
+struct TOKEN_INFO getNextToken()
 {
-	context=fp;
 	int state=1;
 	int final=0;
 	char read_char;
@@ -811,7 +812,6 @@ struct TOKEN_INFO getNextToken(FILE *fp)
 	}
 	//printf("\n");
 	token_info.lexeme[lexeme_size]='\0';
-	fp=context;
 	return token_info;
 }
 #endif
