@@ -6,6 +6,17 @@ enum NonTerminals{program, moduleDeclarations, moduleDeclaration, otherModules, 
 typedef enum Terminals Terminal;
 typedef enum NonTerminals NonTerminal;
 
+union Symb{
+	Terminal T;
+	NonTerminal NT;
+};
+
+// Union for enumeration of terminals and nonterminals
+struct TaggedSymbol
+{
+	union Symb s;
+	int tag;// tag=0 for terminal,1 for non terminal,2 for not defined
+};
 // Hardcoded enum values for Symbols
 #endif
 

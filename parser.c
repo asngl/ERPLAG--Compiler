@@ -9,15 +9,10 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
-
+#include "parser.h"
 int TotalRules=0;
 
-union Symb{
-	Terminal T;
-	NonTerminal NT;
-};
 typedef union Symb Symbol;
-// Union for enumeration of terminals and nonterminals
 
 struct MT{
 	Symbol s;
