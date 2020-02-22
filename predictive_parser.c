@@ -117,7 +117,7 @@ int main()
 		if(readNextTokenFlag==1)
 		{
 			struct TOKEN_INFO token_info=getNextToken();
-			printf("TOKEN READ IS %d\n",token_info.token);
+			//printf("TOKEN READ IS %d\n",token_info.token);
 			readNextTokenFlag=0;
 		}
 		struct stackItem topOfStack=peek(stack);
@@ -128,6 +128,7 @@ int main()
 			printf("Invalid operation on stack: Exit with error code 1");
 			exit(0);
 		}
+
 		if(readTerminal==FEOF)
 		{
 			if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
@@ -161,22 +162,36 @@ int main()
 			}
 			else
 			{
-				// PANICCCCCCC ???????? O-O
+				//MAPPING TABLE NEEDED???
+				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
+				readNextTokenFlag=1;
+				continue;
 			}
 		}
-		else if(topOfStack.s.tag==1)
+		else if(topOfStack.s.tag==1)// IF top of stack is a non terminal
 		{
 			enum NonTerminals stackTopNonTerminal=topOfStack.s.symbol.NT;
 			int parsingTableEntry=parseTable[stackTopNonTerminal][readTerminal];
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
+				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
 			else if(parsingTableEntry==-2)
 			{
 				// HANDLE SYN
+				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
+				pop(stack);
+				if(currNode->rightSibling==NULL)
+				{
+					while(currNode->rightSibling==NULL)
+						currNode=currNode->parent;
+					currNode=currNode->rightSibling;
+				}
+				else
+					currNode=currNode->next;
 			}
 			else
 			{
