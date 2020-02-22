@@ -8,8 +8,7 @@ typedef enum NonTerminals NonTerminal;
 
 // Hardcoded enum values for Symbols
 #endif
-<<<<<<< HEAD
-=======
+
 
 // IN RULES FILE , use Index instead of index
->>>>>>> f94f6dcc1695ab8842d3ceb529a9be953315b7f5
+
