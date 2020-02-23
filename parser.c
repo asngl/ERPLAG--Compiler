@@ -430,7 +430,7 @@ int ComputeFollowSet(){
 								break;	
 							}
 							if(token2->tag==terminal){
-								int num=token2->s.T;
+								num=token2->s.T;
 								if(FAndF_NT[token1->s.NT].Follow[num/32] !=(FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32)))){
 									computeStopFlag=1;
 									FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32));
@@ -438,7 +438,7 @@ int ComputeFollowSet(){
 								break;	
 							}
 							else{
-								int num=token2->s.NT;
+								num=token2->s.NT;
 								if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != ((FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 									FAndF_NT[token1->s.NT].Follow[0] = FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0];
 									FAndF_NT[token1->s.NT].Follow[1] = (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1];	
