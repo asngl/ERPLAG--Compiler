@@ -57,7 +57,7 @@ void initParser()
 	startSymbol.s.tag=1;
 	startSymbol.s.symbol.NT=program;
 	startSymbol.ptn=tree;
-
+	startSymbol.ptn->rightSibling=endNode;
 	push(stack,bottomOfStack);
 	push(stack,startSymbol);
 }
@@ -177,7 +177,9 @@ int main()
 			printf("\nNEW FRAME :%s %s\n  ","EPS",mapping[token_info.token].str);
 			printStack(stack);
 			pop(stack);
-			currNode=currNode->parent;
+			while(currNode->rightSibling==NULL)
+				currNode=currNode->parent;
+			currNode=currNode->rightSibling;
 			continue;
 		}
 		if(topOfStack.s.tag==1)
