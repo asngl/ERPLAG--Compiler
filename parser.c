@@ -1,11 +1,3 @@
-#define Max_Token_Size 30
-#define No_Of_Tokens 150
-#define mod 150
-//Keep No of tokens and mod same when necessary, Keep them accurate as they are needed for Mapping table
-#define No_Of_Rules 200
-#define Max_Rule_Size 150
-#define No_Of_NT 70
-#define No_Of_T 100
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -251,7 +243,7 @@ int PrintParseTable(){
 	}
 }
 
-int main(){
+void initGrammar(char *filename){
 	init_mappingtable();
 	HashCodeMappingTable(); //Calling function to generate String hashed mapping table
 	int noflag=0;
@@ -265,13 +257,13 @@ int main(){
 	//tok = SearchMappingTable("program");
 	//printf("Value=%s",tok.str);
 	ParseGrammarFile("grammar.txt");
-	PrintGrammar();
+	//PrintGrammar();
 	ComputeFirstSet();
-	PrintFirstSet_Rules();
+	//PrintFirstSet_Rules();
 	ComputeFollowSet();
-	PrintFollowSet_NT();
+	//PrintFollowSet_NT();
 	CreateParseTable();
-	PrintParseTable();
+	//PrintParseTable();
 }
 
 

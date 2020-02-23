@@ -1,7 +1,9 @@
 #ifndef _PREDICTIVE_PARSER
 #define _PREDICTIVE_PARSER
+#include <stdlib.h>
 #include "lexer.h"
 #include "parser.h"
+#include "predictive_parser.h"
 #include "stack.h"
 #define STACK_CAPACITY 1000
 #define MAX_RHS_LENGTH 100
@@ -9,23 +11,32 @@ int panicFlag;
 struct ParseTreeNode *tree;
 struct ParseTreeNode *currNode;
 struct ParseTreeNode *endNode;
+struct STACK *stack;
+
+char *filename="Test1/t2.txt";
+char *grammarFilename="grammar.txt";
+
 struct ParseTreeNode *newTNode(enum Terminals terminal)
 {
-	tree=(ParseTreeNode *)malloc(sizeof(ParseTreeNode));
+	struct ParseTreeNode *tree;
+	tree=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
 	tree->leftChild=NULL;
 	tree->rightSibling=NULL;
 	tree->parent=NULL;
 	tree->s.tag=0;
 	tree->s.symbol.T=terminal;
+	return tree;
 }
 struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 {
-	tree=(ParseTreeNode *)malloc(sizeof(ParseTreeNode));
+	struct ParseTreeNode *tree;
+	tree=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
 	tree->leftChild=NULL;
 	tree->rightSibling=NULL;
 	tree->parent=NULL;
 	tree->s.tag=1;
 	tree->s.symbol.NT=nonterminal;
+	return tree;
 }
 void initParser()
 {
@@ -34,25 +45,28 @@ void initParser()
 	currNode=tree;
 	
 	panicFlag=0;
-	initLexer(filename);
-	struct STACK stack=createStack(STACK_CAPACITY);
+	printf("AAAAAA");
+	initLexer("Test1/t2.txt");
+	initGrammar("grammar.txt");
+	stack=createStack(STACK_CAPACITY);
 	
-	struct StackItem bottomOfStack;
+	struct stackItem bottomOfStack;
 	bottomOfStack.s.tag=0;
-	bottomOfStack.s.symbol=FEOF;
+	bottomOfStack.s.symbol.T=FEOF;
 
-	struct StackItem startSymbol;
+	struct stackItem startSymbol;
 	startSymbol.s.tag=1;
-	startSymbol.s.symbol=program;
+	startSymbol.s.symbol.NT=program;
 	startSymbol.ptn=tree;
 
 	push(stack,bottomOfStack);
 	push(stack,startSymbol);
+	printf("AAAAAA");
 }
 
-struct ParseTreeNode * createNodes(struct STACK stack,struct ParseTreeNode* parentNode,struct rhsnode *head)
+struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* parentNode,struct rhsnode *head)
 {   
-	struct STACK stemp=createStack(MAX_RHS_LENGTH);
+	struct STACK *stemp=createStack(MAX_RHS_LENGTH);
 	struct rhsnode *temp=head;
 	while(temp!=NULL)
 	{	
@@ -61,17 +75,17 @@ struct ParseTreeNode * createNodes(struct STACK stack,struct ParseTreeNode* pare
 		node->parent=parentNode;
 		if(temp->tag==terminal)
 		{
-			node=newTNode(temp->symbol.T);
+			node=newTNode(temp->s.T);
 			item.ptn = node;
 			item.s.tag = 0;
-			item.s.symbol.T = temp->symbol.T;
+			item.s.symbol.T = temp->s.T;
 		}
 		else
 		{
-			node=newNTNode(temp->symbol.NT);
+			node=newNTNode(temp->s.NT);
 			item.ptn = node;
 			item.s.tag = 1;
-			item.s.symbol.NT = temp->symbol.NT;
+			item.s.symbol.NT = temp->s.NT;
 		}
 		push(stemp,item);
 		temp=temp->next;
@@ -90,41 +104,44 @@ struct ParseTreeNode * createNodes(struct STACK stack,struct ParseTreeNode* pare
 	return next.ptn;
 }
 
-void pushReverse(struct STACK stack,struct rhsnode *head)
+void pushReverse(struct STACK *stack,struct rhsnode *head)
 {
 	if(head==NULL)return;
 	pushReverse(stack,head->next);
 	struct stackItem item;
-	if(head.tag==terminal)
+	if(head->tag==terminal)
 	{
 		item.s.tag=0;
-		item.s.symbol.T=head.s.T;
+		item.s.symbol.T=head->s.T;
 	}
 	else
 	{
 		item.s.tag=1;
-		item.s.symbol.NT=head.s.NT;
+		item.s.symbol.NT=head->s.NT;
 	}
 	push(stack,item);
 }
 int main()
 {
-	char *filename="Test1/t2.txt";
+	//initGrammar(grammarFilename);
 	initParser();
+	printf("HI");
 	int readNextTokenFlag=1;
+	struct TOKEN_INFO token_info;
 	while(1)
 	{
 		if(readNextTokenFlag==1)
 		{
-			struct TOKEN_INFO token_info=getNextToken();
+			token_info=getNextToken();
 			//printf("TOKEN READ IS %d\n",token_info.token);
 			readNextTokenFlag=0;
 		}
 		struct stackItem topOfStack=peek(stack);
 		enum Terminals readTerminal=token_info.token;
-
+		printf("NEW FRAME : %s",token_info.lexeme);
 		if(topOfStack.s.tag==2)
 		{
+			//printf("Here %d",stack->top);
 			printf("Invalid operation on stack: Exit with error code 1");
 			exit(0);
 		}
@@ -163,7 +180,7 @@ int main()
 			else
 			{
 				//MAPPING TABLE NEEDED???
-				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
+				printf("1:Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
@@ -171,18 +188,20 @@ int main()
 		else if(topOfStack.s.tag==1)// IF top of stack is a non terminal
 		{
 			enum NonTerminals stackTopNonTerminal=topOfStack.s.symbol.NT;
+			printf("\n Trying to access parseTable %d %d \n",stackTopNonTerminal,readTerminal);
 			int parsingTableEntry=parseTable[stackTopNonTerminal][readTerminal];
+			printf("\n ACCESSED %d \n ",parsingTableEntry);
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
+				printf("2:Encountered unexpected token while parsing.\n %d\t%s\t%s ....\n",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
 			else if(parsingTableEntry==-2)
 			{
 				// HANDLE SYN
-				printf("Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,""/*token_info.token*/,token_info.lexeme);
+				printf("3:Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,"",token_info.lexeme);
 				pop(stack);
 				if(currNode->rightSibling==NULL)
 				{
@@ -191,24 +210,28 @@ int main()
 					currNode=currNode->rightSibling;
 				}
 				else
-					currNode=currNode->next;
+					currNode=currNode->rightSibling;
 			}
 			else
 			{
+				printf("WHO IS HERE\n");
 				struct cell Rule=grammarRules[parsingTableEntry];
 				enum NonTerminals LHS=Rule.sym;
-				struct rhsnode *RHS=Rule.rhsnode;
-
+				struct rhsnode *RHS=Rule.head;
 				pop(stack);
+				printf("HE WAS HERE\n");
+				//printf("%d",currNode->);
 				currNode->leftChild = createNodes(stack,currNode,RHS);
+				printf("HE WAS HERE\n");
 				// pushReverse(stack,currNode,RHS);
 				currNode=currNode->leftChild;
+				printf("HE WAS HERE\n");
 				continue;
 			}
 		}
 		else
 		{
-			printf("Stack returned invalid item: Error code 53");
+			printf("4:Stack returned invalid item: Error code 53");
 			exit(0);
 		}
 		// Everything is OK. Proceed with parsing.
