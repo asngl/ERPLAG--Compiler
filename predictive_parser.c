@@ -45,7 +45,6 @@ void initParser()
 	currNode=tree;
 	
 	panicFlag=0;
-	printf("AAAAAA");
 	initLexer("Test1/t2.txt");
 	initGrammar("grammar.txt");
 	stack=createStack(STACK_CAPACITY);
@@ -61,18 +60,16 @@ void initParser()
 
 	push(stack,bottomOfStack);
 	push(stack,startSymbol);
-	printf("AAAAAA");
 }
 
 struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* parentNode,struct rhsnode *head)
 {   
-	struct STACK *stemp=createStack(MAX_RHS_LENGTH);
+	struct STACK *stemp=createStack(100);
 	struct rhsnode *temp=head;
 	while(temp!=NULL)
 	{	
 		struct stackItem item;
 		struct ParseTreeNode *node;
-		node->parent=parentNode;
 		if(temp->tag==terminal)
 		{
 			node=newTNode(temp->s.T);
@@ -87,6 +84,7 @@ struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* par
 			item.s.tag = 1;
 			item.s.symbol.NT = temp->s.NT;
 		}
+		node->parent=parentNode;
 		push(stemp,item);
 		temp=temp->next;
 	}
@@ -101,6 +99,8 @@ struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* par
 		pop(stemp);
 
 	}
+	free(stemp->array);
+	free(stemp);
 	return next.ptn;
 }
 
@@ -214,18 +214,12 @@ int main()
 			}
 			else
 			{
-				printf("WHO IS HERE\n");
 				struct cell Rule=grammarRules[parsingTableEntry];
 				enum NonTerminals LHS=Rule.sym;
 				struct rhsnode *RHS=Rule.head;
 				pop(stack);
-				printf("HE WAS HERE\n");
-				//printf("%d",currNode->);
 				currNode->leftChild = createNodes(stack,currNode,RHS);
-				printf("HE WAS HERE\n");
-				// pushReverse(stack,currNode,RHS);
 				currNode=currNode->leftChild;
-				printf("HE WAS HERE\n");
 				continue;
 			}
 		}

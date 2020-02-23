@@ -10,7 +10,7 @@ struct STACK{
 	int capacity;
 	struct stackItem * array; 
 };
-
+typedef struct STACK STRUCTSTACK;
 extern struct STACK *createStack(int capacity);
 extern int isEmpty(struct STACK *s);
 extern int push(struct STACK *s, struct stackItem item);

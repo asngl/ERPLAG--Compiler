@@ -1,6 +1,7 @@
 #ifndef _STACK
 #define _STACK
 #include <stdlib.h>
+#include <stdio.h>
 #include "stack.h"
 #include "parser.h"
 
@@ -8,11 +9,14 @@ struct stackItem ERR_stackItem;
 
 struct STACK *createStack(int capacity){
 	struct STACK *s;
-	s=(struct STACK *)malloc(sizeof(struct STACK));
+    //printf("IN0\n");
+	s=(STRUCTSTACK *)malloc(sizeof(STRUCTSTACK));
+    //printf("IN1\n");
 	s->top = -1;
 	s->capacity = capacity;
-	s->array = (struct stackItem *)malloc(sizeof(struct stackItem));
-	ERR_stackItem.s.tag=2;
+    //printf("IN2\n");
+	s->array = (struct stackItem *)malloc(sizeof(struct stackItem)*capacity);
+	//ERR_stackItem.s.tag=2;
 	return s;
 }
 
