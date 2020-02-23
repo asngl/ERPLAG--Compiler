@@ -18,25 +18,25 @@ char *grammarFilename="grammar.txt";
 
 struct ParseTreeNode *newTNode(enum Terminals terminal)
 {
-	struct ParseTreeNode *tree;
-	tree=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
-	tree->leftChild=NULL;
-	tree->rightSibling=NULL;
-	tree->parent=NULL;
-	tree->s.tag=0;
-	tree->s.symbol.T=terminal;
-	return tree;
+	struct ParseTreeNode *node;
+	node=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	node->leftChild=NULL;
+	node->rightSibling=NULL;
+	node->parent=NULL;
+	node->s.tag=0;
+	node->s.symbol.T=terminal;
+	return node;
 }
 struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 {
-	struct ParseTreeNode *tree;
-	tree=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
-	tree->leftChild=NULL;
-	tree->rightSibling=NULL;
-	tree->parent=NULL;
-	tree->s.tag=1;
-	tree->s.symbol.NT=nonterminal;
-	return tree;
+	struct ParseTreeNode *node;
+	node=(struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	node->leftChild=NULL;
+	node->rightSibling=NULL;
+	node->parent=NULL;
+	node->s.tag=1;
+	node->s.symbol.NT=nonterminal;
+	return node;
 }
 void initParser()
 {
@@ -121,11 +121,23 @@ void pushReverse(struct STACK *stack,struct rhsnode *head)
 	}
 	push(stack,item);
 }
+void printStack(struct STACK *s)
+{
+    printf("Stack State:");
+    for(int i=0;i<=s->top;i++)
+    {
+    	if(s->array[i].s.tag==1)
+        	printf(" %s,",mapping[s->array[i].s.symbol.NT+63].str);
+        else
+        	printf(" %s,",mapping[s->array[i].s.symbol.NT].str);
+    }
+    printf("\n");
+}
 int main()
 {
 	//initGrammar(grammarFilename);
 	initParser();
-	printf("HI");
+	//printf("HI");
 	int readNextTokenFlag=1;
 	struct TOKEN_INFO token_info;
 	while(1)
@@ -133,12 +145,27 @@ int main()
 		if(readNextTokenFlag==1)
 		{
 			token_info=getNextToken();
+			while(token_info.token==EPS||token_info.token==COMMENTMARK)
+				token_info=getNextToken();
 			//printf("TOKEN READ IS %d\n",token_info.token);
 			readNextTokenFlag=0;
 		}
+
 		struct stackItem topOfStack=peek(stack);
 		enum Terminals readTerminal=token_info.token;
-		printf("NEW FRAME : %s",token_info.lexeme);
+		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T==EPS)
+		{
+			printf("\nNEW FRAME :%s %s\n  ","EPS",mapping[token_info.token].str);
+			printStack(stack);
+			pop(stack);
+			currNode=currNode->parent;
+			continue;
+		}
+		if(topOfStack.s.tag==1)
+			printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.NT+63].str,mapping[token_info.token].str);
+		else
+			printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.T].str,mapping[token_info.token].str);
+		printStack(stack);
 		if(topOfStack.s.tag==2)
 		{
 			//printf("Here %d",stack->top);
@@ -180,7 +207,7 @@ int main()
 			else
 			{
 				//MAPPING TABLE NEEDED???
-				printf("1:Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,"",token_info.lexeme);
+				printf("1:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
@@ -188,20 +215,20 @@ int main()
 		else if(topOfStack.s.tag==1)// IF top of stack is a non terminal
 		{
 			enum NonTerminals stackTopNonTerminal=topOfStack.s.symbol.NT;
-			printf("\n Trying to access parseTable %d %d \n",stackTopNonTerminal,readTerminal);
 			int parsingTableEntry=parseTable[stackTopNonTerminal][readTerminal];
-			printf("\n ACCESSED %d \n ",parsingTableEntry);
+			printf("    Trying to access parseTable:: %s,%s -> %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
+			//printf("\n ACCESSED %d \n ",parsingTableEntry);
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-				printf("2:Encountered unexpected token while parsing.\n %d\t%s\t%s ....\n",token_info.lineno,"",token_info.lexeme);
+				printf("2:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
 			else if(parsingTableEntry==-2)
 			{
 				// HANDLE SYN
-				printf("3:Encountered unexpected token while parsing.\n %d\t%s\t%s",token_info.lineno,"",token_info.lexeme);
+				printf("3:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				pop(stack);
 				if(currNode->rightSibling==NULL)
 				{

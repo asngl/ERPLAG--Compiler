@@ -50,5 +50,4 @@ struct stackItem peek(struct STACK *s)
     return s->array[s->top]; 
 } 
 
-
 #endif
