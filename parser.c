@@ -254,7 +254,18 @@ int PrintFollowSet_NT(){
 	return 0;
 }
 
-
+int PrintParseTable(){
+	printf("\n Parse Table \n");
+	for(int i=0;mapping[i+63].flag==1;i++){
+		printf("\nNonTerminal=%s,  ",mapping[i+63].str);
+		for(int j=0;j<No_Of_T;j++){
+			if(parseTable[i][j]==-1){
+				continue;
+			}
+			printf("T=%s,Rule no=%d,",mapping[j].str,parseTable[i][j]);
+		}
+	}
+}
 
 int main(){
 	init_mappingtable();
@@ -276,6 +287,7 @@ int main(){
 	ComputeFollowSet();
 	PrintFollowSet_NT();
 	CreateParseTable();
+	PrintParseTable();
 	return 0;
 }
 
