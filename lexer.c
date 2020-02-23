@@ -9,23 +9,34 @@ FILE *context;// Stores the fp of the file we are currently working on
 
 void initLexer(char inputFile[])
 {
+	// Open file and store file pointer for parsing
 	context=fopen(inputFile,"r");
+	
 	curr_lineno = 1;
 	buffer_pointer=0;
-	active_buffer=1;// This ensures that the next buffer read is buffer 0. 
+	nonactivefilled_flag=0;
+	
+	// This ensures that the next buffer read is buffer 0. 
+	active_buffer=1;	
+	
+	//Initialise buffer
 	for(int i=0;i<=MAX_BUFFER_SIZE;i++)
 	{
 		buffer[0][i]='\0';
 		buffer[1][i]='\0';
-	}	
+	}
+	
+	// Fill one buffer initially 
 	context=getStream(context);
 }
 
 FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the non-active buffer
 {
+	
 	buffer_pointer=0;
 	nonactivefilled_flag=0;
-	active_buffer=(active_buffer+1)%2;//Cycle between the two buffers
+	active_buffer=(active_buffer+1)%2; // Toggle the active buffer
+	
 	int i=0;
 	for(i=0;i<MAX_BUFFER_SIZE;i++)
 	{   
@@ -37,6 +48,7 @@ FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the n
 			break;
 		}
 	}
+	
 	buffer[active_buffer][i] = '\0';
 	return fp;
 }
@@ -87,36 +99,35 @@ void removeComments(char *testcaseFile, char *cleanFile)
 			fprintf(writeFile,"%c",'*');
 }
 
-void updateLookBack(char c)// Deprecated
-{
-	return;
-}
 void popChar(char read_char)// Remove a character from the input stream
 {
 	buffer_pointer++;
 	if(buffer_pointer==MAX_BUFFER_SIZE)
 	{
-		if(nonactivefilled_flag==0)
+		if(nonactivefilled_flag==0)// If the non active buffer is not filled
 			context=getStream(context);
-		else
+		else // If the non-active buffer is already filled
 		{
 			active_buffer=(active_buffer+1)%2;
 			buffer_pointer=0;
 		}
 	}
 }
+
 void retractCharacters(int n)// Adds n character in front of the input stream
 {
-	buffer_pointer-=n;
+	buffer_pointer-=n;	//Go back n characters
 	if(buffer_pointer<0)
 	{
 		nonactivefilled_flag=1;
-		buffer_pointer+=MAX_BUFFER_SIZE;
+		buffer_pointer+=MAX_BUFFER_SIZE; // Gets the pointer in the previous buffer
 		active_buffer=(active_buffer+1)%2;
 	}
 }
+
 enum Terminals lookupTable(char *str)
 {
+	// Match str with corresponding terminal
 	//printf("\nTrying to lookup %s\n",str);
 	if(strcmp(str,"integer")==0)
 	{
@@ -258,8 +269,13 @@ enum Terminals lookupTable(char *str)
 		return ID;
 	 
 }
+
+// Reads and returns the next Valid Lexical Token from the Input Stream
+// Lexical errors are printed on the standard output stream
+// REFER TO DFA for STATE TRANSITIONS
 struct TOKEN_INFO getNextToken()
 {
+	// Initialise state as start state
 	int state=1;
 	int final=0;
 	char read_char;
@@ -267,20 +283,23 @@ struct TOKEN_INFO getNextToken()
 	struct TOKEN_INFO token_info;
 	token_info.lineno=curr_lineno;
 	token_info.value.tag=2;
-	//printf("\nCALLED %d\n",state);
-	while(1)
+	while(!final)// Keep going till we encounter a final state
 	{
-		//printf("%d->",state);// Can be used to print state transitions for debugging purposes
+		// Can be used to print state transitions for debugging purposes
+		//printf("%d->",state);
+		
+		//Peeks at the next input character
 		read_char=buffer[active_buffer][buffer_pointer];
-		char c=read_char;
-		//printf("%c",read_char);
-		//printf("Switching %c \n",c);
+		char c=read_char;// Alias variable for read_char
+		
 		switch(state)
 		{
-			case 1:
+			case 1:// Currently at Start State 
+				//Read the character from the stream, add it as a part of the lexeme and increment buffer pointer
 				token_info.lexeme[lexeme_size]=read_char;
 				lexeme_size++;
 				popChar(read_char);
+				
 				switch(read_char)
 				{
 					case '+':
@@ -352,7 +371,8 @@ struct TOKEN_INFO getNextToken()
 						}
 						else
 						{	
-							printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+							// If we encounter a character for which no transitions are defined from the start state, Throw LEXICAL-ERROR
+							printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 							lexeme_size=0;
 							token_info.lexeme[0]='\0';
 							token_info.lineno=curr_lineno;
@@ -515,7 +535,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -537,7 +557,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -559,7 +579,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -613,7 +633,7 @@ struct TOKEN_INFO getNextToken()
 			case 34:
 				if(lexeme_size>20)
 				{
-					printf("Encountered lexeme sequence of too much length.\n %d\t%s %c",curr_lineno,token_info.lexeme,read_char);
+					printf("LEXICAL ERROR:Encountered lexeme sequence of too much length.\n %d\t%s %c",curr_lineno,token_info.lexeme,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -677,7 +697,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -742,7 +762,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -760,7 +780,7 @@ struct TOKEN_INFO getNextToken()
 				}
 				else
 				{
-					printf("Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
+					printf("LEXICAL ERROR:Encountered unexpected character.\n %d\t%c",curr_lineno,read_char);
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -815,17 +835,10 @@ struct TOKEN_INFO getNextToken()
 				final=1;
 				break;
 		}
-		if(final==1)break;
 	}
-	//printf("\n");
+	//MARK THE END OF LEXEME
 	token_info.lexeme[lexeme_size]='\0';
 	return token_info;
 }
 #endif
 
-// struct TOKEN_INFO{
-// 	char lexeme[MAX_LEXEME_SIZE+1];
-// 	enum TOKENS token;
-// 	struct TAGGED_VALUE value;
-// 	unsigned int lineno;
-// };
