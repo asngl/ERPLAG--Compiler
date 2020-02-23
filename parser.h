@@ -12,7 +12,7 @@ union Symb{
 	enum Terminals T;
 	enum NonTerminals NT;
 };
-
+typedef union Symb Symbol;
 // Union for enumeration of terminals and nonterminals
 struct TaggedSymbol
 {
@@ -21,6 +21,34 @@ struct TaggedSymbol
 };
 // Hardcoded enum values for Symbols
 
+enum type_of_symbol{terminal, nonTerminal};
+
+struct MT{
+	Symbol s;
+	char str[Max_Token_Size];
+	enum type_of_symbol tag;
+	int flag; //To determine whether element is present or not, 1 if present
+};
+
+struct rhsnode{
+	Symbol s;
+	enum type_of_symbol tag;
+	struct rhsnode *next;
+};
+
+typedef struct rhsnode RHSNODE;
+struct cell{
+	enum NonTerminals sym;
+	RHSNODE *head;
+};
+
+
+
+typedef struct MT MappingTable[No_Of_Tokens];
+
+
+
+typedef struct cell GRAMMAR[No_Of_Rules];
 //int parseTable[NUM_OF_NON_TERMINALS][NUM_OF_TERMINALS]; // Stores rule number to be applied ,-1 for error ,-2 for syn
 
 #endif

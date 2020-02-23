@@ -17,17 +17,8 @@ int TotalRules=0;
 
 
 
-typedef union Symb Symbol;
 
-enum type_of_symbol{terminal, nonTerminal};
 
-struct MT{
-	Symbol s;
-	char str[Max_Token_Size];
-	enum type_of_symbol tag;
-	int flag; //To determine whether element is present or not, 1 if present
-};
-typedef struct MT MappingTable[No_Of_Tokens];
 //Structure for enum to String mapping
 
 MappingTable mapping;
@@ -37,19 +28,12 @@ MappingTable mappingString;
 //Global variable for hash coded Mapping table
 
 
-struct rhsnode{
-	Symbol s;
-	enum type_of_symbol tag;
-	struct rhsnode *next;
-};
-typedef struct rhsnode RHSNODE;
+
+
 // Structure for individual grammar rule
 
-struct cell{
-	enum NonTerminals sym;
-	RHSNODE *head;
-};
-typedef struct cell GRAMMAR[No_Of_Rules];
+
+
 //Structure for Grammar
 
 GRAMMAR grammarRules;
@@ -288,7 +272,6 @@ int main(){
 	PrintFollowSet_NT();
 	CreateParseTable();
 	PrintParseTable();
-	return 0;
 }
 
 
