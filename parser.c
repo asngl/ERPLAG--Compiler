@@ -13,6 +13,9 @@
 int TotalRules=0;
 
 //Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
+//Change value of mapping[i-63].str in print functions according to the value of first non terminal in mapping table
+
+
 
 typedef union Symb Symbol;
 
@@ -71,6 +74,9 @@ struct FAndF FAndF_Rules[No_Of_Rules];
 void init_mappingtable();
 int ComputeFirstSet();
 int ComputeFollowSet();
+int CreateParseTable();
+
+int parseTable[No_Of_NT][No_Of_T];
 
 struct MT SearchMappingTable(char str[]){
 	int c=0;
@@ -230,8 +236,17 @@ int PrintFirstSet_NT(){
 	return 0;
 }
 
+int PrintFirstSet_Rules(){
+	printf("First Set Ruleswise \n");
+	for(int i=0;i<TotalRules;i++){
+		printf("\n Rule No=%d, First set=",i);
+		getElementSet(FAndF_Rules[i].First);
+	}
+}
+
+
 int PrintFollowSet_NT(){
-	printf("Follow set\n");
+	printf("\nFollow set\n");
 	for(int i=0;mapping[i+63].flag==1;i++){
 		printf("\nString:%s, Follow set=",mapping[i+63].str);
 		getElementSet(FAndF_NT[i].Follow);
@@ -257,9 +272,10 @@ int main(){
 	ParseGrammarFile("grammar.txt");
 	PrintGrammar();
 	ComputeFirstSet();
-	PrintFirstSet_NT();
+	PrintFirstSet_Rules();
 	ComputeFollowSet();
 	PrintFollowSet_NT();
+	CreateParseTable();
 	return 0;
 }
 
@@ -459,6 +475,53 @@ int ComputeFollowSet(){
 		}
 	}
 }
+
+
+
+
+int CreateParseTable(){
+
+	struct MT EPSToken;
+	EPSToken = SearchMappingTable("EPS");
+	int eps_enum = EPSToken.s.T;
+	//Enum for etsting eps bit
+	for(int i=0;i<No_Of_NT;i++){
+		for(int j=0;j<No_Of_T;j++){
+			parseTable[i][j]=-1;
+		}
+	}
+	
+	for(int i=0;i<TotalRules;i++){
+		int nonTerminalIndex;
+		nonTerminalIndex=grammarRules[i].sym;
+		if(FAndF_Rules[i].First[eps_enum/32]&(1<<(eps_enum%32))){
+			for(int j=0;j<96;j++){
+				if(FAndF_NT[nonTerminalIndex].Follow[j/32] & (1<<(j%32))){
+					parseTable[nonTerminalIndex][j]=i;
+				}
+			}
+			continue;
+		}
+		for(int j=0;j<96;j++){
+			if(FAndF_Rules[i].First[j/32] & (1<<(j%32))){
+				parseTable[nonTerminalIndex][j]=i;
+			}
+		}
+	}
+	
+	//For inputting syn in our table, we are using -2
+	for(int i=0;i<No_Of_NT;i++){
+		if(FAndF_NT[i].First[eps_enum/32] & (1<<(eps_enum%32))){
+			continue;
+		}
+		for(int j=0;j<96;j++){
+			if((FAndF_NT[i].Follow[j/32] & (1<<(j%32))) && parseTable[i][j]==-1){
+				parseTable[i][j]=-2;
+			}
+		}
+	}
+}
+
 
 
 
