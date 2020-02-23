@@ -133,6 +133,25 @@ void printStack(struct STACK *s)
     }
     printf("\n");
 }
+void printSpaces(int n)
+{
+	while(n--)printf("--");
+}
+void printParseTree(struct ParseTreeNode *root,int spaces)
+{
+	if(root==NULL)return;
+	struct ParseTreeNode *node=root->leftChild;
+	printSpaces(spaces);
+	if(root->s.tag==0)
+		printf("%s\n",mapping[root->s.symbol.T].str);
+	else
+		printf("%s\n",mapping[root->s.symbol.NT+63].str);
+	while(node!=NULL)
+	{
+		printParseTree(node,spaces+1);
+		node=node->rightSibling;
+	}
+}
 int main()
 {
 	//initGrammar(grammarFilename);
@@ -180,14 +199,14 @@ int main()
 				printf("Finished Parsing Successfully.");
 				break;
 			}
-			else
-			{
-				printf("Encountered end of file while parsing: Exit with error code 2");
-				break;
-				//exit(0);
-			}
 		}
-
+		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
+		{
+			
+			printf("Encountered end of file while parsing: Exit with error code 2");
+			break;
+			//exit(0);
+		}
 		if(topOfStack.s.tag==0)// IF top of stack is a terminal
 		{
 			enum Terminals stackTopTerminal=topOfStack.s.symbol.T;
@@ -258,6 +277,9 @@ int main()
 		}
 		// Everything is OK. Proceed with parsing.
 	}
+	printf("\n\n\n\t\t\t-----PARSE TREE-----\n");
+	printParseTree(tree,0);
+	//
 }
 
 #endif
