@@ -183,7 +183,8 @@ int main()
 			else
 			{
 				printf("Encountered end of file while parsing: Exit with error code 2");
-				exit(0);
+				break;
+				//exit(0);
 			}
 		}
 
