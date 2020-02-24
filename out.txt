@@ -36,7 +36,11 @@
                    ,	    4	             COMMA	    ----	  more_input_plist	     yes	              ----	
                 ----	 ----	  more_input_plist	    ----	       input_plist	      no	  more_input_plist	
                    n	    4	                ID	    ----	  more_input_plist	     yes	              ----	
+<<<<<<< HEAD
                ERROR	    0	             COLON	    ----	  more_input_plist	     yes	              ----	
+=======
+                    	    0	             COLON	    ----	  more_input_plist	     yes	              ----	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
              integer	    4	           INTEGER	    ----	          dataType	     yes	              ----	
                 ----	 ----	          dataType	    ----	  more_input_plist	      no	          dataType	
                 ----	 ----	               EPS	    ----	  more_input_plist	     yes	              ----	
@@ -83,7 +87,11 @@
                 ----	 ----	        statements	    ----	        statements	      no	        statements	
                  sum	    9	                ID	    ----	    assignmentStmt	     yes	              ----	
                 ----	 ----	    assignmentStmt	    ----	        simpleStmt	      no	    assignmentStmt	
+<<<<<<< HEAD
                ERROR	 ----	         whichStmt	    ----	    assignmentStmt	      no	         whichStmt	
+=======
+                ----	 ----	         whichStmt	    ----	    assignmentStmt	      no	         whichStmt	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                 ----	 ----	        simpleStmt	    ----	         statement	      no	        simpleStmt	
                 ----	 ----	         statement	    ----	        statements	      no	         statement	
                 ----	 ----	        statements	    ----	        statements	      no	        statements	
@@ -91,7 +99,11 @@
                 ----	 ----	     iterativeStmt	    ----	         statement	      no	     iterativeStmt	
                    (	   10	                BO	    ----	     iterativeStmt	     yes	              ----	
                index	   10	                ID	    ----	     iterativeStmt	     yes	              ----	
+<<<<<<< HEAD
                ERROR	    0	                IN	    ----	     iterativeStmt	     yes	              ----	
+=======
+                    	    0	                IN	    ----	     iterativeStmt	     yes	              ----	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                    1	   10	               NUM	       1	             range	     yes	              ----	
                 ----	 ----	             range	    ----	     iterativeStmt	      no	             range	
                   ..	   10	           RANGEOP	    ----	             range	     yes	              ----	
@@ -328,8 +340,13 @@
                  use	   33	               USE	    ----	   moduleReuseStmt	     yes	              ----	
               module	   33	            MODULE	    ----	   moduleReuseStmt	     yes	              ----	
              readArr	   33	                ID	    ----	   moduleReuseStmt	     yes	              ----	
+<<<<<<< HEAD
                ERROR	    0	              WITH	    ----	   moduleReuseStmt	     yes	              ----	
                ERROR	    0	        PARAMETERS	    ----	   moduleReuseStmt	     yes	              ----	
+=======
+                    	    0	              WITH	    ----	   moduleReuseStmt	     yes	              ----	
+                    	    0	        PARAMETERS	    ----	   moduleReuseStmt	     yes	              ----	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                    A	   33	                ID	    ----	            idList	     yes	              ----	
                 ----	 ----	            idList	    ----	   moduleReuseStmt	      no	            idList	
                    ,	   33	             COMMA	    ----	           more_id	     yes	              ----	
@@ -414,7 +431,11 @@
                 ----	 ----	           whichId	    ----	               var	      no	           whichId	
                 ----	 ----	              var2	    ----	            ioStmt	      no	              var2	
                    )	   36	                BC	    ----	            ioStmt	     yes	              ----	
+<<<<<<< HEAD
                ERROR	    0	           SEMICOL	    ----	            ioStmt	     yes	              ----	
+=======
+                    	    0	           SEMICOL	    ----	            ioStmt	     yes	              ----	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                 ----	 ----	         statement	    ----	        statements	      no	         statement	
                 ----	 ----	        statements	    ----	        statements	      no	        statements	
                 ----	 ----	               EPS	    ----	        statements	     yes	              ----	
@@ -465,7 +486,11 @@
                 ----	 ----	               EPS	    ----	           more_id	     yes	              ----	
                 ----	 ----	           more_id	    ----	            idList	      no	           more_id	
                    :	   47	             COLON	    ----	       declareStmt	     yes	              ----	
+<<<<<<< HEAD
                ERROR	 ----	          dataType	    ----	       declareStmt	      no	          dataType	
+=======
+                ----	 ----	          dataType	    ----	       declareStmt	      no	          dataType	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                    ;	   47	           SEMICOL	    ----	       declareStmt	     yes	              ----	
                 ----	 ----	         statement	    ----	        statements	      no	         statement	
                 ----	 ----	        statements	    ----	         moduleDef	      no	        statements	
@@ -556,7 +581,11 @@
                 ----	 ----	             Index	    ----	     lvalueARRStmt	      no	             Index	
                    ]	   53	              SQBC	    ----	     lvalueARRStmt	     yes	              ----	
                   :=	   53	          ASSIGNOP	    ----	     lvalueARRStmt	     yes	              ----	
+<<<<<<< HEAD
                ERROR	 ----	        expression	    ----	     lvalueARRStmt	      no	        expression	
+=======
+                ----	 ----	        expression	    ----	     lvalueARRStmt	      no	        expression	
+>>>>>>> 1f377a5b879152de1c0f6db6363cd3e1f916c80c
                    ;	   53	           SEMICOL	    ----	     lvalueARRStmt	     yes	              ----	
                 ----	 ----	         whichStmt	    ----	    assignmentStmt	      no	         whichStmt	
                 ----	 ----	        simpleStmt	    ----	         statement	      no	        simpleStmt	

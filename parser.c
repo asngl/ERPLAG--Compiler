@@ -20,7 +20,12 @@ struct ParseTreeNode{
 	struct TOKEN_INFO token_info;
 	int errorFlag;
 };
+//Structure used for Parse Tree creation
+
+
 struct ParseTreeNode *getParseTree(char *filename);
+//Function name for processing parse tree of given testFile
+
 
 int panicFlag;
 struct ParseTreeNode *tree;
@@ -30,15 +35,11 @@ struct STACK *stack;
 
 char *filename="t6.txt";
 char *grammarFilename="grammar.txt";
+//Default values of filename and grammarFilename in case it is not provided
 
+//Prints a particular node in the inorder travesal
 void printNode(struct ParseTreeNode * root, FILE * fp){
 	
-	//lexeme
-	/*if(root->s.tag == 0)//terminal
-		fprintf(fp,"%s::\n\t\t",mapping[root->s.symbol.T].str);
-	else //non terminal
-		fprintf(fp,"%s::\n\t\t",mapping[root->s.symbol.NT+63].str);*/
-
 	int isLeafNode=1-root->s.tag;
 	int isEPS=(root->s.tag==0)&&(root->s.symbol.T==EPS);
 	if(root->errorFlag==1)
@@ -99,6 +100,8 @@ void printNode(struct ParseTreeNode * root, FILE * fp){
 	fprintf(fp,"\n");
 }
 
+
+//Inorder travesal of the parse tree
 void inorder(struct ParseTreeNode * root, FILE * fp){
 	if(root == NULL) return;
 	inorder(root->leftChild,fp);
@@ -111,7 +114,7 @@ void inorder(struct ParseTreeNode * root, FILE * fp){
 	}
 }
 
-
+//Main function for printing Parse tree in output file
 void printFullParseTree(struct ParseTreeNode * root, char * outfile){
 FILE * fp = fopen(outfile,"w");
 fprintf(fp,"%20s\t","lexeme");

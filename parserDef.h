@@ -12,3 +12,4 @@ struct ParseTreeNode{
 };
 
 #endif
+//Definition of structs used in parser.c

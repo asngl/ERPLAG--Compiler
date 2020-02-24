@@ -15,3 +15,5 @@ struct STACK{
 };
 typedef struct STACK STRUCTSTACK;
 #endif
+
+//Definition of Strcuts used in Stack.c
