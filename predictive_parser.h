@@ -1,6 +1,6 @@
 #ifndef _PPH
 #define _PPH
-#include "parser.h"
+#include "grammar_InitDef.h"
 struct ParseTreeNode{
 	struct TaggedSymbol s;
 	struct ParseTreeNode *leftChild;// Leftmost child

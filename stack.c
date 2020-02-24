@@ -2,15 +2,14 @@
 #define _STACK
 #include <stdlib.h>
 #include <stdio.h>
-#include "stack.h"
-#include "parser.h"
+#include "stackDef.h"
 
 struct stackItem ERR_stackItem;
 
 struct STACK *createStack(int capacity){
 	struct STACK *s;
     //printf("IN0\n");
-	s=(STRUCTSTACK *)malloc(sizeof(STRUCTSTACK));
+	s=(struct STACK *)malloc(sizeof(struct STACK));
     //printf("IN1\n");
 	s->top = -1;
 	s->capacity = capacity;

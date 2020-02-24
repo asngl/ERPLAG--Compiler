@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
 			fclose(fp);
 			break;
 		case 2:
+			char *filename="input.txt";
+			initLexer(filename);
 			while(1)
 			{
 				struct TOKEN_INFO token_info=getNextToken();

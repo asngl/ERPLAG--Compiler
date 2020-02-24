@@ -1,34 +1,11 @@
 #ifndef _LEXER
 #define _LEXER
-#include "lexer.h"
+#include "lexerDef.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 FILE *context;// Stores the fp of the file we are currently working on
-
-void initLexer(char inputFile[])
-{
-	// Open file and store file pointer for parsing
-	context=fopen(inputFile,"r");
-	
-	curr_lineno = 1;
-	buffer_pointer=0;
-	nonactivefilled_flag=0;
-	
-	// This ensures that the next buffer read is buffer 0. 
-	active_buffer=1;	
-	
-	//Initialise buffer
-	for(int i=0;i<=MAX_BUFFER_SIZE;i++)
-	{
-		buffer[0][i]='\0';
-		buffer[1][i]='\0';
-	}
-	
-	// Fill one buffer initially 
-	context=getStream(context);
-}
 
 FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the non-active buffer
 {
@@ -53,6 +30,34 @@ FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the n
 	return fp;
 }
 
+void initLexer(char inputFile[])
+{
+	// Open file and store file pointer for parsing
+	context=fopen(inputFile,"r");
+	if(context==NULL)
+	{
+		printf("FileNotFound: %s\n",inputFile);
+		return;
+	}
+	curr_lineno = 1;
+	buffer_pointer=0;
+	nonactivefilled_flag=0;
+	
+	// This ensures that the next buffer read is buffer 0. 
+	active_buffer=1;	
+	
+	//Initialise buffer
+	for(int i=0;i<=MAX_BUFFER_SIZE;i++)
+	{
+		buffer[0][i]='\0';
+		buffer[1][i]='\0';
+	}
+	
+	// Fill one buffer initially 
+	context=getStream(context);
+}
+
+
 void removeComments(char *testcaseFile, char *cleanFile)
 {
 	FILE *readFile=fopen(testcaseFile,"r");
@@ -74,7 +79,10 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				break;
 			case 1:
 				if(character=='*')
+				{
 					CURR_STATE=2;
+					//fprintf(writeFile," ");
+				}
 				else
 				{
 					CURR_STATE=0;
@@ -83,14 +91,33 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				break;
 			case 2:
 				if(character=='*')
+				{
 					CURR_STATE=3;
+					//fprintf(writeFile," ");
+				}
+				/*else if(character=='\n')
+				{
+					fprintf(writeFile,"\n");
+				}
+				else
+					//fprintf(writeFile," ");
+				*/
 				break;
 			case 3:
 				if(character=='*')
+				{
 					CURR_STATE=0;
+					//fprintf(writeFile," ");
+				}
+				/*else if(character=='\n')
+				{
+					CURR_STATE=2;
+					fprintf(writeFile,"\n");
+				}*/
 				else
 				{
 					CURR_STATE=2;
+					//fprintf(writeFile," ");
 				}
 				break;
 		}		

@@ -1,18 +1,12 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
-#include "parser.h"
+#include "grammar_InitDef.h"
+//MAINTAINANCE NOTES
+//	Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
+//	Change value of mapping[i-63].str in print functions according to the value of first non terminal in mapping table
+
 int TotalRules=0;
-
-//Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
-//Change value of mapping[i-63].str in print functions according to the value of first non terminal in mapping table
-
-
-
-
-
-//Structure for enum to String mapping
-
 MappingTable mapping;
 //Global variable for hard-coded Mapping table
 
@@ -20,14 +14,7 @@ MappingTable mappingString;
 //Global variable for hash coded Mapping table
 
 
-
-
-// Structure for individual grammar rule
-
-
-
 //Structure for Grammar
-
 GRAMMAR grammarRules;
 //Global Variable for Grammar Rules
 
@@ -259,7 +246,7 @@ void initGrammar(char *filename){
 	//struct MT tok;
 	//tok = SearchMappingTable("program");
 	//printf("Value=%s",tok.str);
-	ParseGrammarFile("grammar.txt");
+	ParseGrammarFile(filename);
 	//PrintGrammar();
 	ComputeFirstSet();
 	//PrintFirstSet_NT();

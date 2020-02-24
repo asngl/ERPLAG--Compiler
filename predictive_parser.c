@@ -1,8 +1,10 @@
 #ifndef _PREDICTIVE_PARSER
 #define _PREDICTIVE_PARSER
 #include <stdlib.h>
+#include "lexerDef.h"
 #include "lexer.h"
-#include "parser.h"
+#include "grammar_InitDef.h"
+#include "grammar_Init.h"
 #include "predictive_parser.h"
 #include "stack.h"
 #define STACK_CAPACITY 1000
@@ -13,7 +15,7 @@ struct ParseTreeNode *currNode;
 struct ParseTreeNode *endNode;
 struct STACK *stack;
 
-//char *filename="Test1/t6.txt";
+char *filename="Test1/t2.txt";
 char *grammarFilename="grammar.txt";
 
 struct ParseTreeNode *newTNode(enum Terminals terminal)
@@ -45,8 +47,8 @@ void initParser()
 	currNode=tree;
 	
 	panicFlag=0;
-	initLexer("Test1/t6.txt");
-	initGrammar("grammar.txt");
+	initLexer(filename);
+	initGrammar(grammarFilename);
 	stack=createStack(STACK_CAPACITY);
 	
 	struct stackItem bottomOfStack;
