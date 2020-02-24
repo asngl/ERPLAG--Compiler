@@ -1,3 +1,11 @@
+/* Group Number 2
+Yashdeep Gupta 2017A7PS0114P
+Saksham Gupta  2017A7PS0218P
+Pratik Kakade  2017A7PS0086P
+Bhoomi Sawant  2017A7PS0001P
+Ayush Singhal  2017A7PS0116P
+*/
+
 #ifndef _DRIVER
 #define _DRIVER
 #include "lexerDef.h"
@@ -27,6 +35,9 @@ int main(int argc, char *argv[])
 	printf("Implementation Details:-\n");
 	printf("(a) The First and Follow sets generation is automated\n");
 	printf("(b) Both lexical and syntactical modules are implemented in entirety\n");
+	printf("(c) All testcases parsed correctly.\n");
+	printf("(d) Parse Tree constructed successfully for all testcases.\n");
+	printf("(e) Error Detection and Recovery done successfully.\n");
 	while(flag){
 		printf("Choose option: ");
 		scanf("%d",&input);
