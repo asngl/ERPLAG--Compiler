@@ -1,10 +1,7 @@
-#ifndef _PPH
-#define _PPH
-#include "grammar_InitDef.h"
-struct ParseTreeNode{
-	struct TaggedSymbol s;
-	struct ParseTreeNode *leftChild;// Leftmost child
-	struct ParseTreeNode *rightSibling;
-	struct ParseTreeNode *parent;
-};
+#ifndef _PARSERH
+#define _PARSERH
+#include "parserDef.h"
+
+extern struct ParseTreeNode *getParseTree(char *);
+
 #endif

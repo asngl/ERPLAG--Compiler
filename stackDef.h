@@ -1,6 +1,7 @@
 #ifndef _STACKDEFH
 #define _STACKDEFH
-#include "parser.h"
+#include "grammar_InitDef.h"
+#include "parserDef.h"
 
 struct stackItem{
 	struct TaggedSymbol s;

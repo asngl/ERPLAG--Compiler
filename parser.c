@@ -6,16 +6,27 @@
 #include "grammar_InitDef.h"
 #include "grammar_Init.h"
 #include "parser.h"
+#include "parserDef.h"
 #include "stack.h"
+#include "stackDef.h"
 #define STACK_CAPACITY 1000
 #define MAX_RHS_LENGTH 100
+
+struct ParseTreeNode{
+	struct TaggedSymbol s;
+	struct ParseTreeNode *leftChild;// Leftmost child
+	struct ParseTreeNode *rightSibling;
+	struct ParseTreeNode *parent;
+};
+struct ParseTreeNode *getParseTree(char *filename);
+
 int panicFlag;
 struct ParseTreeNode *tree;
 struct ParseTreeNode *currNode;
 struct ParseTreeNode *endNode;
 struct STACK *stack;
 
-char *filename="Test1/t2.txt";
+char *filename="t6.txt";
 char *grammarFilename="grammar.txt";
 
 struct ParseTreeNode *newTNode(enum Terminals terminal)
@@ -154,9 +165,10 @@ void printParseTree(struct ParseTreeNode *root,int spaces)
 		node=node->rightSibling;
 	}
 }
-int main()
+struct ParseTreeNode *getParseTree(char *testFile)
 {
 	//initGrammar(grammarFilename);
+	filename=testFile;
 	initParser();
 	//printf("HI");
 	int debugMode=0;
@@ -228,7 +240,7 @@ int main()
 		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 		{
 			
-			printf("Encountered end of file while parsing: Exit with error code 2");
+			printf("SYNTAX ERROR:Encountered invalid token at end of file\n");
 			break;
 			//exit(0);
 		}
@@ -261,7 +273,7 @@ int main()
 				}
 				else
 					currNode=currNode->rightSibling;
-				printf("SYNTAX ERROR1:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
+				printf("SYNTAX ERROR1:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				readNextTokenFlag=0;
 				continue;
 			}
@@ -274,7 +286,7 @@ int main()
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-				printf("SYNTAX ERROR2:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
+				printf("SYNTAX ERROR2:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
@@ -283,7 +295,7 @@ int main()
 				// HANDLE SYN
 				if(debugMode)
 					printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
-				printf("SYNTAX ERROR3:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
+				printf("SYNTAX ERROR3:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				pop(stack);
 				if(currNode->rightSibling==NULL)
 				{
@@ -313,9 +325,9 @@ int main()
 		// Everything is OK. Proceed with parsing.
 	}
 	tree->rightSibling=NULL;// Remove FEOF from the parse tree
-	printf("\n\t\t\t-----PARSE TREE-----\n");
-	printParseTree(tree,0);
-	//
+	//printf("\n\t\t\t-----PARSE TREE-----\n");
+	//printParseTree(tree,0);
+	return tree;
 }
 
 #endif
