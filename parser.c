@@ -41,7 +41,9 @@ void printNode(struct ParseTreeNode * root, FILE * fp){
 
 	int isLeafNode=1-root->s.tag;
 	int isEPS=(root->s.tag==0)&&(root->s.symbol.T==EPS);
-	if(isLeafNode && !isEPS ) { //leaf
+	if(root->errorFlag==1)
+		fprintf(fp,"%20s\t","ERROR");
+	else if(isLeafNode && !isEPS ) { //leaf
 		fprintf(fp,"%20s\t",root->token_info.lexeme);
 	}
 	else fprintf(fp,"%20s\t","----");
@@ -330,6 +332,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			else if((topOfStack.s.tag==1 && parseTable[topOfStack.s.symbol.NT][readTerminal]<0)||(topOfStack.s.tag==0))
 			{
 				pop(stack);
+				currNode->errorFlag=1;
 				if(currNode->rightSibling==NULL)
 				{
 					while(currNode->rightSibling==NULL)
@@ -371,6 +374,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			{
 				//MAPPING TABLE NEEDED???
 				pop(stack);
+				currNode->errorFlag=1;
 				if(currNode->rightSibling==NULL)
 				{
 					while(currNode->rightSibling==NULL)
@@ -379,7 +383,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 				}
 				else
 					currNode=currNode->rightSibling;
-				printf("SYNTAX ERROR1:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				readNextTokenFlag=0;
 				continue;
 			}
@@ -392,7 +396,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-				printf("SYNTAX ERROR2:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
 			}
@@ -400,9 +404,10 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			{
 				// HANDLE SYN
 				if(debugMode)
-					printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
-				printf("SYNTAX ERROR3:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+					printf("Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
+				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				pop(stack);
+				currNode->errorFlag=1;
 				if(currNode->rightSibling==NULL)
 				{
 					while(currNode->rightSibling==NULL)
