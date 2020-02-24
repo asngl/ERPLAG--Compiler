@@ -1,6 +1,6 @@
 #ifndef _STACKDEFH
 #define _STACKDEFH
-#include "predictive_parser.h"
+#include "parser.h"
 
 struct stackItem{
 	struct TaggedSymbol s;

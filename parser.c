@@ -5,7 +5,7 @@
 #include "lexer.h"
 #include "grammar_InitDef.h"
 #include "grammar_Init.h"
-#include "predictive_parser.h"
+#include "parser.h"
 #include "stack.h"
 #define STACK_CAPACITY 1000
 #define MAX_RHS_LENGTH 100
