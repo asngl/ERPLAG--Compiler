@@ -157,6 +157,7 @@ int main()
 	//initGrammar(grammarFilename);
 	initParser();
 	//printf("HI");
+	int debugMode=0;
 	int readNextTokenFlag=1;
 	struct TOKEN_INFO token_info;
 	while(1)
@@ -174,19 +175,25 @@ int main()
 		enum Terminals readTerminal=token_info.token;
 		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T==EPS)
 		{
-			printf("\nNEW FRAME :%s %s\n  ","EPS",mapping[token_info.token].str);
-			printStack(stack);
+			if(debugMode)
+			{
+				printf("\nNEW FRAME :%s %s\n  ","EPS",mapping[token_info.token].str);
+				printStack(stack);
+			}
 			pop(stack);
 			while(currNode->rightSibling==NULL)
 				currNode=currNode->parent;
 			currNode=currNode->rightSibling;
 			continue;
 		}
-		if(topOfStack.s.tag==1)
-			printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.NT+63].str,mapping[token_info.token].str);
-		else
-			printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.T].str,mapping[token_info.token].str);
-		printStack(stack);
+		if(debugMode)
+		{
+			if(topOfStack.s.tag==1)
+				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.NT+63].str,mapping[token_info.token].str);
+			else
+				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.T].str,mapping[token_info.token].str);
+			printStack(stack);
+		}
 		if(topOfStack.s.tag==2)
 		{
 			//printf("Here %d",stack->top);
@@ -229,8 +236,17 @@ int main()
 			else
 			{
 				//MAPPING TABLE NEEDED???
+				pop(stack);
+				if(currNode->rightSibling==NULL)
+				{
+					while(currNode->rightSibling==NULL)
+						currNode=currNode->parent;
+					currNode=currNode->rightSibling;
+				}
+				else
+					currNode=currNode->rightSibling;
 				printf("1:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
-				readNextTokenFlag=1;
+				readNextTokenFlag=0;
 				continue;
 			}
 		}
@@ -242,7 +258,6 @@ int main()
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-
 				printf("2:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
@@ -250,7 +265,8 @@ int main()
 			else if(parsingTableEntry==-2)
 			{
 				// HANDLE SYN
-				printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
+				if(debugMode)
+					printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
 				printf("3:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				pop(stack);
 				if(currNode->rightSibling==NULL)
