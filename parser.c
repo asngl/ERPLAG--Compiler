@@ -66,7 +66,7 @@ void printNode(struct ParseTreeNode * root, FILE * fp){
 	if(root->s.tag == 0)//terminal
 		fprintf(fp,"%18s\t",mapping[root->s.symbol.T].str);
 	else //non terminal
-		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+63].str);
+		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str);
 
 
 	//valueIfNumber
@@ -87,7 +87,7 @@ void printNode(struct ParseTreeNode * root, FILE * fp){
 	if(root->parent == NULL) 
 		fprintf(fp,"%18s\t","ROOT");
 	else 
-		fprintf(fp,"%18s\t",mapping[root->parent->s.symbol.NT+63].str);
+		fprintf(fp,"%18s\t",mapping[root->parent->s.symbol.NT+NUM_OF_TERMINALS].str);
 
 
 	//isLeafNode
@@ -101,7 +101,7 @@ void printNode(struct ParseTreeNode * root, FILE * fp){
 	if(isLeafNode) 
 		fprintf(fp,"%18s\t","----");
 	else
-		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+63].str);
+		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str);
 
 
 	fprintf(fp,"\n");
@@ -263,9 +263,9 @@ void printStack(struct STACK *s)
     for(int i=0;i<=s->top;i++)
     {
     	if(s->array[i].s.tag==1)
-        	printf(" %s,",mapping[s->array[i].s.symbol.NT+63].str);
+        	printf(" %s,",mapping[s->array[i].s.symbol.NT+NUM_OF_TERMINALS].str);
         else
-        	printf(" %s,",mapping[s->array[i].s.symbol.NT].str);
+        	printf(" %s,",mapping[s->array[i].s.symbol.T].str);
     }
     printf("\n");
 }
@@ -283,7 +283,7 @@ void printParseTree(struct ParseTreeNode *root,int spaces)
 	if(root->s.tag==0)
 		printf("%s\n",mapping[root->s.symbol.T].str);
 	else
-		printf("%s\n",mapping[root->s.symbol.NT+63].str);
+		printf("%s\n",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str);
 	while(node!=NULL)
 	{
 		printParseTree(node,spaces+1);
@@ -330,7 +330,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 		if(debugMode)
 		{
 			if(topOfStack.s.tag==1)
-				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.NT+63].str,mapping[token_info.token].str);
+				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.NT+NUM_OF_TERMINALS].str,mapping[token_info.token].str);
 			else
 				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.T].str,mapping[token_info.token].str);
 			printStack(stack);
@@ -417,7 +417,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			{
 				// HANDLE SYN
 				if(debugMode)
-					printf("Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
+					printf("Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+NUM_OF_TERMINALS].str,mapping[readTerminal].str,parsingTableEntry+1);
 				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
 				pop(stack);
 				currNode->errorFlag=1;

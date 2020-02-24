@@ -11,7 +11,6 @@ Ayush Singhal  2017A7PS0116P
 #include "grammar_InitDef.h"
 //MAINTENANCE NOTES
 //	Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
-//	Change value of mapping[i-63].str in print functions according to the value of first non terminal in mapping table
 
 int TotalRules=0;
 MappingTable mapping;			//Global variable to store hard-coded Mapping table
@@ -193,7 +192,7 @@ void getElementSet(int A[]){
 int PrintFirstSet_NT(){
 	printf("First set\n");
 	for(int i=0;mapping[i+63].flag==1;i++){
-		printf("\nString:%s, First set=",mapping[i+63].str);
+		printf("\nString:%s, First set=",mapping[i+NUM_OF_TERMINALS].str);
 		getElementSet(FAndF_NT[i].First);
 	}
 	return 0;
@@ -210,8 +209,8 @@ int PrintFirstSet_Rules(){
 
 int PrintFollowSet_NT(){
 	printf("\nFollow set\n");
-	for(int i=0;mapping[i+63].flag==1;i++){
-		printf("\nString:%s, Follow set=",mapping[i+63].str);
+	for(int i=0;mapping[i+NUM_OF_TERMINALS].flag==1;i++){
+		printf("\nString:%s, Follow set=",mapping[i+NUM_OF_TERMINALS].str);
 		getElementSet(FAndF_NT[i].Follow);
 	}
 	return 0;
@@ -219,8 +218,8 @@ int PrintFollowSet_NT(){
 
 int PrintParseTable(){
 	printf("\n Parse Table \n");
-	for(int i=0;mapping[i+63].flag==1;i++){
-		printf("\nNonTerminal=%s,  ",mapping[i+63].str);
+	for(int i=0;mapping[i+NUM_OF_TERMINALS].flag==1;i++){
+		printf("\nNonTerminal=%s,  ",mapping[i+NUM_OF_TERMINALS].str);
 		for(int j=0;j<No_Of_T;j++){
 			if(parseTable[i][j]==-1){
 				continue;
