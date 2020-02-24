@@ -5,3 +5,5 @@
 extern struct ParseTreeNode *getParseTree(char *);
 
 #endif
+
+//Definition of structs used in parser.c

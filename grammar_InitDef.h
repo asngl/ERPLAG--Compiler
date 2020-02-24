@@ -3,7 +3,7 @@
 #define Max_Token_Size 30
 #define No_Of_Tokens 150
 #define mod 150
-//Keep No of tokens and mod same when necessary, Keep them accurate as they are needed for Mapping table
+//Keep No of tokens and mod same when necessary
 #define No_Of_Rules 200
 #define Max_Rule_Size 150
 #define No_Of_NT 70

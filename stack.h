@@ -8,3 +8,4 @@ extern int push(struct STACK *s, struct stackItem item);
 extern struct stackItem pop(struct STACK *s);
 extern struct stackItem peek(struct STACK *s);
 #endif
+//Declaration of functions used in Stack.c

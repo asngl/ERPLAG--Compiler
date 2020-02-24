@@ -34,9 +34,11 @@ int main(int argc, char *argv[])
 		switch(input)
 		{
 			case 0:
+				//Option to exit the program
 				flag=0;
 				break;
 			case 1:
+				//Option to Remove comments from our Input File
 				//printf("Processing Comments...\n");
 				removeComments(argv[1],outfile);
 				//printf("Processed.\n");
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
 				fclose(fp);
 				break;
 			case 2:
+				//Option to Print tokens in our input file according to given specifications and print lexical errors in case there is one
 				initLexer(argv[1]);
 				initGrammar("grammar.txt");
 				while(1)
@@ -61,13 +64,14 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 3:
+				//Option to output parse tree in output file and print errors on the screen
 				root=getParseTree(argv[1]);
 				//printf("PRINT PARSE TREE\n");
 				//printParseTree(root,0);
 				printFullParseTree(root,argv[2]);
 				break;
 			case 4:
-				
+				//Option to check the amount of time taken by compiler to process the parse tree
 			    start_time = clock();
 			    root=getParseTree(argv[1]);
 				end_time = clock();
