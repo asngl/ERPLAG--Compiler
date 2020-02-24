@@ -16,11 +16,22 @@ int parseTable[No_Of_NT][No_Of_T];	//Global variable to store parse Table
 
 
 void init_mappingtable();		//Function to create enum hashed mapping table 
+int HashCodeMappingTable();		//Function to create string hashed mapping table
+void ParseGrammarFile(filename);	//Function to read grammar file
 int ComputeFirstSet();			//Function to compute first sets
 int ComputeFollowSet();			//Function to compute follow sets
+int ComputeFirstAndFollowSets();	//Function to compute first and follow sets together
 int CreateParseTable();			//Function for creation of parse table
 
 
+//Iniialize grammar
+void initGrammar(char *filename){
+	init_mappingtable();		//Generate enum hashed mapping table mapping
+	HashCodeMappingTable(); 	//Generate String hashed mapping table mappingString
+	ParseGrammarFile(filename);	//Read grammar file
+	ComputeFirstAndFollowSets();	//Generate first and follow sets
+	CreateParseTable();		//Generate parse table
+}
 
 //Function for searching returning the mapping of str Token
 struct MT SearchMappingTable(char str[]){
@@ -30,11 +41,13 @@ struct MT SearchMappingTable(char str[]){
 		c+=(int)str[curr];
 		curr++;
 	}
-	c=c%mod;
+	c=c%mod;//Calculating the hash of str
+	//Finding the Element corresponding to str in mapping table
 	while(mappingString[c].flag==1 &&strcmp(str,mappingString[c].str)!=0){
 		c++;
 		c=c%mod;
 	}
+	//If element is not found, mapping is returned with value of flag 0
 	if(mappingString[c].flag!=1){
 		printf("%s Token Not found",str);
 		return mappingString[c];
@@ -208,15 +221,6 @@ int PrintParseTable(){
 			printf("T=%s,Rule no=%d,",mapping[j].str,parseTable[i][j]);
 		}
 	}
-}
-
-//Initialize mapping table, 
-void initGrammar(char *filename){
-	init_mappingtable();		//Generate enum hashed mapping table
-	HashCodeMappingTable(); 	//Generate String hashed mapping table
-	ParseGrammarFile(filename);	//Read grammar file
-	ComputeFirstAndFollowSets();	//Generate first and follow sets
-	CreateParseTable();		//Generate parse table
 }
 
 
