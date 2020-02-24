@@ -2,45 +2,27 @@
 #include<string.h>
 #include<stdlib.h>
 #include "grammar_InitDef.h"
-//MAINTAINANCE NOTES
+//MAINTENANCE NOTES
 //	Remember to keep EPS value in mapping table between 32 to 64 as we are directly removing it in case of first and follow set
 //	Change value of mapping[i-63].str in print functions according to the value of first non terminal in mapping table
 
 int TotalRules=0;
-MappingTable mapping;
-//Global variable for hard-coded Mapping table
-
-MappingTable mappingString;
-//Global variable for hash coded Mapping table
-
-
-//Structure for Grammar
-GRAMMAR grammarRules;
-//Global Variable for Grammar Rules
+MappingTable mapping;			//Global variable to store hard-coded Mapping table
+MappingTable mappingString;		//Global variable to store hash coded Mapping table
+GRAMMAR grammarRules;			//Global Variable to store Grammar Rules
+struct FAndF FAndF_NT[No_Of_NT];	//Global variable to store first and follow sets for Non terminals
+struct FAndF FAndF_Rules[No_Of_Rules];	//Global variable to store first and follow sets for Rules correspondingly
+int parseTable[No_Of_NT][No_Of_T];	//Global variable to store parse Table
 
 
-
-struct FAndF{
-	int First[3];
-	int Follow[3];
-
-};
-
-//Structure for First and Follow sets of our Grammar
-
-struct FAndF FAndF_NT[No_Of_NT];
-struct FAndF FAndF_Rules[No_Of_Rules];
-//Global variable for first and follow sets for Non terminals and Rules correspondingly
+void init_mappingtable();		//Function to create enum hashed mapping table 
+int ComputeFirstSet();			//Function to compute first sets
+int ComputeFollowSet();			//Function to compute follow sets
+int CreateParseTable();			//Function for creation of parse table
 
 
 
-void init_mappingtable();
-int ComputeFirstSet();
-int ComputeFollowSet();
-int CreateParseTable();
-
-int parseTable[No_Of_NT][No_Of_T];
-
+//Function for searching returning the mapping of str Token
 struct MT SearchMappingTable(char str[]){
 	int c=0;
 	int curr=0;
@@ -49,7 +31,6 @@ struct MT SearchMappingTable(char str[]){
 		curr++;
 	}
 	c=c%mod;
-	//printf("c=%d\n",c);
 	while(mappingString[c].flag==1 &&strcmp(str,mappingString[c].str)!=0){
 		c++;
 		c=c%mod;
@@ -61,8 +42,9 @@ struct MT SearchMappingTable(char str[]){
 	return mappingString[c];
 
 }
-//Function for searching returning the mapping of str Token
 
+
+//Function to convert enum hashed Mapping table to string hashed Mapping table
 int HashCodeMappingTable(){
 	for(int i=0;i<No_Of_Tokens;i++){
 		mappingString[i].flag=0;
@@ -76,22 +58,17 @@ int HashCodeMappingTable(){
 			curr++;
 		}
 		c=c%mod;
-		/*printf("\n%d::%s\n",c,mapping[i].str);
-		*/
 		while(mappingString[c].flag==1){
 			c++;
 			c=c%mod;
-			/*if(strcmp(mapping[i].str,"EPS")==0){
-				printf("c=%d \n",c);
-			}*/
 		}
 		mappingString[c]=mapping[i];
 	}
 	return 0;
 }
-//Function to convert enum hashed Mapping table to String hashed Mapping table
 
 
+//Read grammar file
 void ParseGrammarFile(char FileName[]){
 	FILE *fp;
 	fp = fopen(FileName,"r");
@@ -233,44 +210,17 @@ int PrintParseTable(){
 	}
 }
 
+//Initialize mapping table, 
 void initGrammar(char *filename){
-	init_mappingtable();
-	HashCodeMappingTable(); //Calling function to generate String hashed mapping table
-	int noflag=0;
-	/*for(int i=0;i<No_Of_Tokens;i++){
-		printf("i=%d, T=%d , NT=%d , String= %s, Flag=%d, Tag=%d\n",i,mappingString[i].s.T,mappingString[i].s.NT,mappingString[i].str,mappingString[i].flag, mappingString[i].tag);
-		if(mappingString[i].flag==1)
-			noflag++;
-	}
-	*/
-	//struct MT tok;
-	//tok = SearchMappingTable("program");
-	//printf("Value=%s",tok.str);
-	ParseGrammarFile(filename);
-	//PrintGrammar();
-	ComputeFirstSet();
-	//PrintFirstSet_NT();
-	ComputeFollowSet();
-	//ComputeFollowSet();
-	//PrintFollowSet_NT();
-	CreateParseTable();
-	//PrintParseTable();
+	init_mappingtable();		//Generate enum hashed mapping table
+	HashCodeMappingTable(); 	//Generate String hashed mapping table
+	ParseGrammarFile(filename);	//Read grammar file
+	ComputeFirstAndFollowSets();	//Generate first and follow sets
+	CreateParseTable();		//Generate parse table
 }
 
 
-
-
-
-
-
-
-int ComputeFirstSet(){
-	int computeStopFlag=1; //Flag to check whether the computation has to be stopped or not
-	int eps_enum;
-	struct MT EPSToken;
-	EPSToken = SearchMappingTable("EPS");
-	eps_enum = EPSToken.s.T;
-	//Enum for etsting eps bit
+int ComputeFirstAndFollowSets(){
 	for(int i=0;i<No_Of_NT;i++){
 		FAndF_NT[i].First[0]=0;
 		FAndF_NT[i].First[1]=0;
@@ -286,7 +236,21 @@ int ComputeFirstSet(){
 		FAndF_Rules[i].Follow[0]=0;
 		FAndF_Rules[i].Follow[1]=0;
 		FAndF_Rules[i].Follow[2]=0;
-	}
+	}	
+	ComputeFirstSet();		
+	ComputeFollowSet();	
+}
+
+
+
+
+//Function to compute First sets iteratively
+int ComputeFirstSet(){
+	int computeStopFlag=1; 				//Flag to check whether the computation has to be stopped or not
+	int eps_enum;
+	struct MT EPSToken;
+	EPSToken = SearchMappingTable("EPS");		//retrieving epsilon token from mapping table
+	eps_enum = EPSToken.s.T;			//bit number for epsilon in first and follow set
 	int eps_remove=0;
 	eps_remove=1<<(eps_enum%32);
 	eps_remove= ~eps_remove;
@@ -297,31 +261,33 @@ int ComputeFirstSet(){
 			currentRule=grammarRules[i];
 			int LHS=currentRule.sym;
 			RHSNODE *token;
-			token=currentRule.head;
-			if(token->tag==0){ // In case of first being a terminal
+			token=currentRule.head;			//pointer to current token in rule
+			if(token->tag == terminal){ 		// In case of first being a terminal
 				int num= token->s.T;
+				//Add token to first set of LHS and rule if not present
 				if(FAndF_Rules[i].First[num/32] != (FAndF_Rules[i].First[num/32] | 1<<(num%32))){
 					computeStopFlag=1;
 					FAndF_Rules[i].First[num/32] = (FAndF_Rules[i].First[num/32] | 1<<(num%32));
 					FAndF_NT[LHS].First[num/32] = FAndF_NT[LHS].First[num/32] | FAndF_Rules[i].First[num/32];
-					
 				}
 			}
-			else{ //In case it is non terminal
+			
+			else{ 					//In case token is non terminal
 				int num = token->s.NT;
+				//If first[rule] does not contain all tokens present in first[token](excluding epsilon) then add those missing tokens to first[rule] and first[LHS]
 				if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1] & eps_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 					computeStopFlag=1;
 					FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
-					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove));
+					FAndF_Rules[i].First[1] = (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove));		//epsilon excluded if present in first[token]
 					FAndF_Rules[i].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]);
 					FAndF_NT[LHS].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[LHS].First[0]);
 					FAndF_NT[LHS].First[1] = (FAndF_Rules[i].First[1] | FAndF_NT[LHS].First[1]);
 					FAndF_NT[LHS].First[2] = (FAndF_Rules[i].First[2] | FAndF_NT[LHS].First[2]);
 				}
-				// If there is an eps in the first set of non terminal
+				// If there is an epsilon in the first set of token
 				while(FAndF_NT[num].First[eps_enum/32] & (1<<(eps_enum%32))){
 					token=token->next;
-					if(token==NULL){
+					if(token == NULL){		//reached end of rule so add epsilon if absent from first[rule]
 						if(FAndF_Rules[i].First[eps_enum/32] != (FAndF_Rules[i].First[eps_enum/32] | 1<<(eps_enum%32))){
 							computeStopFlag=1;
 							FAndF_Rules[i].First[eps_enum/32] = (FAndF_Rules[i].First[eps_enum/32] | 1<<(eps_enum%32));
@@ -329,8 +295,8 @@ int ComputeFirstSet(){
 						}
 						break;
 					}
-					//write for Terminal and Non Terminal
-					if(token->tag==0){
+					
+					if(token->tag == terminal){	//token is terminal
 						num = token->s.T;
 						if(FAndF_Rules[i].First[num/32] != (FAndF_Rules[i].First[num/32] | 1<<(num%32))){
 							computeStopFlag=1;
@@ -340,8 +306,10 @@ int ComputeFirstSet(){
 						}
 						break;
 					}
-					else{
+					else{				//token is non terminal
+						
 						num=token->s.NT;
+						//If first[rule] does not contain all tokens present in first[token](excluding epsilon) then add those missing tokens to first[rule] and first[LHS]
 						if((FAndF_Rules[i].First[0] != (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0])) || (FAndF_Rules[i].First[1] != (FAndF_Rules[i].First[1] | (FAndF_NT[num].First[1]&eps_remove))) ||(FAndF_Rules[i].First[2] != (FAndF_Rules[i].First[2] | FAndF_NT[num].First[2]))){
 							computeStopFlag=1;
 							FAndF_Rules[i].First[0] = (FAndF_Rules[i].First[0] | FAndF_NT[num].First[0]);
@@ -359,36 +327,35 @@ int ComputeFirstSet(){
 	}
 }
 
-
+//Function to compute Follow sets iteratively
 int ComputeFollowSet(){
-	//initial feof in <program>
-	//EPS in case of NT and remove eps from first set of succeeding NT
-	//Iterative
-	int computeStopFlag=1;
+	int computeStopFlag=1;			//Flag to check whether the computation has to be stopped or not
 	struct MT EPSToken, FEOFToken;
-	EPSToken = SearchMappingTable("EPS");
-	int eps_enum = EPSToken.s.T;
-	//Enum for etsting eps bit
+	EPSToken = SearchMappingTable("EPS");	//retrieving epsilon token from mapping table
+	int eps_enum = EPSToken.s.T;		//bit number for epsilon in first and follow set
 	int eps_remove=1<<(eps_enum%32);
-	eps_remove=~eps_remove;
-	FEOFToken = SearchMappingTable("FEOF");
-	int feof_enum = FEOFToken.s.T;
-	FAndF_NT[0].Follow[feof_enum/32]=1<<feof_enum%32;
-	while(computeStopFlag==1){
-		computeStopFlag=0;
-		for(int i=0;i<TotalRules; i++){
+	eps_remove=~eps_remove;			
+	FEOFToken = SearchMappingTable("FEOF");	//retrieving end of file token from mapping table which represents '$' symbol
+	int feof_enum = FEOFToken.s.T;		//bit number for feof in first and follow set
+	FAndF_NT[0].Follow[feof_enum/32]=1<<feof_enum%32;	//setting follow of program to '$'
+	while(computeStopFlag == 1){		//While loop stops only after follow set converges i.e. no updates are made after parsing through all rules.If updated then computeFlag set to 1
+		computeStopFlag = 0;
+		for(int i=0;i<TotalRules; i++){		
 			struct cell currentRule;
-			currentRule=grammarRules[i];
-			int LHS=currentRule.sym;
-			RHSNODE *token1=currentRule.head;
-			RHSNODE *token2;
-			while(token1 != NULL){
+			currentRule = grammarRules[i];
+			int LHS = currentRule.sym;
+			RHSNODE *token1 = currentRule.head;	//pointer to token whose follow is being computed currently
+			RHSNODE *token2;			//pointer to tokens ahead of token1 in rule
+			while(token1 != NULL){			//Loop till end of rule
 				token2 = token1->next;
-				if(token1->tag == terminal){
+				
+				if(token1->tag == terminal){	//If token1 is terminal then move to next token 
 					token1 = token1->next;
 					continue;				
-				}				
-				if(token2 == NULL){
+				}
+								
+				if(token2 == NULL){		//token1 is last token in the rule
+					//If follow[LHS]!=follow[token1] then synchronize
 					if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 						computeStopFlag = 1;
 						FAndF_NT[token1->s.NT].Follow[0] |= FAndF_NT[LHS].Follow[0];
@@ -397,16 +364,18 @@ int ComputeFollowSet(){
 					}
 					break;
 				}
-				if(token2->tag == terminal){
+				
+				if(token2->tag == terminal){	//Token succeeding token1 is a terminal so add if not present in follow[token1]
 					int num = token2->s.T;
 					if(FAndF_NT[token1->s.NT].Follow[num/32] != (FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32)))){
 						computeStopFlag=1;
 						FAndF_NT[token1->s.NT].Follow[num/32] =FAndF_NT[token1->s.NT].Follow[num/32]|(1<<(num%32));
 					}
 					
-				}
-				else{
+				}	
+				else{			//Token succeeding token1 is a nonterminal
 					int num=token2->s.NT;
+					//If follow[token1] does not match with first[token2](excluding epsilon) then append
 					if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != ((FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2]))){
 						FAndF_NT[token1->s.NT].Follow[0] = FAndF_NT[num].First[0]|FAndF_NT[token1->s.NT].Follow[0];
 						FAndF_NT[token1->s.NT].Follow[1] = (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1];	
@@ -414,7 +383,7 @@ int ComputeFollowSet(){
 						computeStopFlag=1;
 						
 					}
-					while(FAndF_NT[num].First[eps_enum/32]&(1<<(eps_enum%32))){
+					while(FAndF_NT[num].First[eps_enum/32]&(1<<(eps_enum%32))){	//If first[token2] contains epsilon then move token2 ahead and repeat above procedure
 							token2=token2->next;
 							if(token2==NULL){
 								if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2]))){
@@ -456,13 +425,12 @@ int ComputeFollowSet(){
 
 
 
-
+//Function to create Parse Table
 int CreateParseTable(){
 
 	struct MT EPSToken;
-	EPSToken = SearchMappingTable("EPS");
-	int eps_enum = EPSToken.s.T;
-	//Enum for etsting eps bit
+	EPSToken = SearchMappingTable("EPS");	//retrieving epsilon token from mapping table
+	int eps_enum = EPSToken.s.T;		//bit number for epsilon in first and follow set
 	for(int i=0;i<No_Of_NT;i++){
 		for(int j=0;j<No_Of_T;j++){
 			parseTable[i][j]=-1;
@@ -502,11 +470,7 @@ int CreateParseTable(){
 
 
 
-
-
-
-
-
+//Function to create enum hashed mapping table 
 void init_mappingtable(){
 	mapping[0].s.T = INTEGER;
 	strcpy(mapping[0].str, "INTEGER");
