@@ -69,7 +69,7 @@ relExpr2 relOp addExpr
 relExpr2 EPS
 addExpr multExpr addExpr2
 addExpr2 pmOp multExpr addExpr2
-addExpr2 EPS multExpr basicExpr multExpr2
+addExpr2 EPS
 multExpr basicExpr multExpr2
 multExpr2 mdOp basicExpr multExpr2
 multExpr2 EPS

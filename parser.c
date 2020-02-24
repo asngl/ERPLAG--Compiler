@@ -136,7 +136,7 @@ void ParseGrammarFile(char FileName[]){
 		grammarRules[ruleNo].head=NULL;
 		while(1){
 			i=0;
-			while(grammarString[currentPos]!=' ' && grammarString[currentPos]!='\n' && grammarString[currentPos]!='\r'){
+			while(grammarString[currentPos]!=' ' && grammarString[currentPos]!='\n' && grammarString[currentPos]!='\r' && grammarString[currentPos]!=EOF){
 				grammarToken[i]=grammarString[currentPos];
 				currentPos++;
 				i++;
@@ -160,7 +160,7 @@ void ParseGrammarFile(char FileName[]){
 					ptr=ptr->next;
 				ptr->next=newElement;
 			}
-			if(grammarString[currentPos]=='\n' || grammarString[currentPos]=='\r')
+			if(grammarString[currentPos]=='\n' || grammarString[currentPos]=='\r' || grammarString[currentPos]==EOF)
 				break;
 			currentPos++;
 		}
@@ -195,11 +195,14 @@ int PrintGrammar(){
 }
 
 void getElementSet(int A[]){
+	int count=0;
 	for(int i=0;i<96;i++){
 		if(A[i/32] & (1<<(i%32))){
+			count++;
 			printf("%s,", mapping[i].str);
 		}
 	}
+	printf("Count=%d",count);
 
 }
 
@@ -259,8 +262,9 @@ void initGrammar(char *filename){
 	ParseGrammarFile("grammar.txt");
 	//PrintGrammar();
 	ComputeFirstSet();
-	//PrintFirstSet_Rules();
+	//PrintFirstSet_NT();
 	ComputeFollowSet();
+	//ComputeFollowSet();
 	//PrintFollowSet_NT();
 	CreateParseTable();
 	//PrintParseTable();
@@ -421,7 +425,9 @@ int ComputeFollowSet(){
 						FAndF_NT[token1->s.NT].Follow[1] = (FAndF_NT[num].First[1] & eps_remove)|FAndF_NT[token1->s.NT].Follow[1];	
 						FAndF_NT[token1->s.NT].Follow[2] = FAndF_NT[num].First[2]|FAndF_NT[token1->s.NT].Follow[2];
 						computeStopFlag=1;
-						while(FAndF_NT[num].First[eps_enum/32]&(1<<(eps_enum%32))){
+						
+					}
+					while(FAndF_NT[num].First[eps_enum/32]&(1<<(eps_enum%32))){
 							token2=token2->next;
 							if(token2==NULL){
 								if((FAndF_NT[token1->s.NT].Follow[0] != (FAndF_NT[LHS].Follow[0]|FAndF_NT[token1->s.NT].Follow[0]))||(FAndF_NT[token1->s.NT].Follow[1] != (FAndF_NT[LHS].Follow[1]|FAndF_NT[token1->s.NT].Follow[1]))||(FAndF_NT[token1->s.NT].Follow[2] != (FAndF_NT[LHS].Follow[2]|FAndF_NT[token1->s.NT].Follow[2]))){
@@ -450,8 +456,6 @@ int ComputeFollowSet(){
 								}
 							}
 						}
-					}
-					
 				}
 											
 				token1=token1->next;											

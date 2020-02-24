@@ -13,7 +13,7 @@ struct ParseTreeNode *currNode;
 struct ParseTreeNode *endNode;
 struct STACK *stack;
 
-char *filename="Test1/t2.txt";
+char *filename="Test1/t6.txt";
 char *grammarFilename="grammar.txt";
 
 struct ParseTreeNode *newTNode(enum Terminals terminal)
@@ -45,7 +45,7 @@ void initParser()
 	currNode=tree;
 	
 	panicFlag=0;
-	initLexer("Test1/t2.txt");
+	initLexer("Test1/t6.txt");
 	initGrammar("grammar.txt");
 	stack=createStack(STACK_CAPACITY);
 	
@@ -238,11 +238,11 @@ int main()
 		{
 			enum NonTerminals stackTopNonTerminal=topOfStack.s.symbol.NT;
 			int parsingTableEntry=parseTable[stackTopNonTerminal][readTerminal];
-			printf("    Trying to access parseTable:: %s,%s -> %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
-			//printf("\n ACCESSED %d \n ",parsingTableEntry);
+			//printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
+
 				printf("2:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				readNextTokenFlag=1;
 				continue;
@@ -250,6 +250,7 @@ int main()
 			else if(parsingTableEntry==-2)
 			{
 				// HANDLE SYN
+				printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
 				printf("3:Encountered unexpected token while parsing.\n\t%d\t%s\t%s\n",token_info.lineno,"",token_info.lexeme);
 				pop(stack);
 				if(currNode->rightSibling==NULL)
@@ -279,7 +280,8 @@ int main()
 		}
 		// Everything is OK. Proceed with parsing.
 	}
-	printf("\n\n\n\t\t\t-----PARSE TREE-----\n");
+	tree->rightSibling=NULL;// Remove FEOF from the parse tree
+	printf("\n\t\t\t-----PARSE TREE-----\n");
 	printParseTree(tree,0);
 	//
 }
