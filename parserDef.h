@@ -7,6 +7,8 @@ struct ParseTreeNode{
 	struct ParseTreeNode *leftChild;// Leftmost child
 	struct ParseTreeNode *rightSibling;
 	struct ParseTreeNode *parent;
+	struct TOKEN_INFO token_info;
+	int errorFlag;
 };
 
 #endif

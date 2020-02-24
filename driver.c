@@ -9,6 +9,8 @@
 #include <time.h>
 
 struct ParseTreeNode *getParseTree(char *);
+void printFullParseTree(struct ParseTreeNode * root, char * outfile);
+void printParseTree(struct ParseTreeNode *root,int spaces);
 
 int main(int argc, char *argv[])
 {	
@@ -60,8 +62,9 @@ int main(int argc, char *argv[])
 				break;
 			case 3:
 				root=getParseTree(argv[1]);
-				printf("PRINT PARSE TREE\n");
-				//printFullParseTree(root,argv[2]);
+				//printf("PRINT PARSE TREE\n");
+				//printParseTree(root,0);
+				printFullParseTree(root,argv[2]);
 				break;
 			case 4:
 				

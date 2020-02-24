@@ -17,6 +17,8 @@ struct ParseTreeNode{
 	struct ParseTreeNode *leftChild;// Leftmost child
 	struct ParseTreeNode *rightSibling;
 	struct ParseTreeNode *parent;
+	struct TOKEN_INFO token_info;
+	int errorFlag;
 };
 struct ParseTreeNode *getParseTree(char *filename);
 
@@ -29,6 +31,103 @@ struct STACK *stack;
 char *filename="t6.txt";
 char *grammarFilename="grammar.txt";
 
+void printNode(struct ParseTreeNode * root, FILE * fp){
+	
+	//lexeme
+	/*if(root->s.tag == 0)//terminal
+		fprintf(fp,"%s::\n\t\t",mapping[root->s.symbol.T].str);
+	else //non terminal
+		fprintf(fp,"%s::\n\t\t",mapping[root->s.symbol.NT+63].str);*/
+
+	int isLeafNode=1-root->s.tag;
+	int isEPS=(root->s.tag==0)&&(root->s.symbol.T==EPS);
+	if(isLeafNode && !isEPS ) { //leaf
+		fprintf(fp,"%20s\t",root->token_info.lexeme);
+	}
+	else fprintf(fp,"%20s\t","----");
+
+
+	//lineno
+	if(isLeafNode && !isEPS )
+		fprintf(fp,"%5d\t",root->token_info.lineno);
+	else fprintf(fp,"%5s\t","----");
+
+	//tokenName
+	if(root->s.tag == 0)//terminal
+		fprintf(fp,"%18s\t",mapping[root->s.symbol.T].str);
+	else //non terminal
+		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+63].str);
+
+
+	//valueIfNumber
+	if(isLeafNode )
+	{
+		if(root->token_info.token == NUM) //num
+			fprintf(fp,"%8d\t",root->token_info.value.value.num);		
+		else if(root->token_info.token == RNUM) //rnum
+			fprintf(fp,"%8f\t",root->token_info.value.value.rnum);
+		else
+			fprintf(fp,"%8s\t","----");
+	}
+	else //undefined
+		fprintf(fp,"%8s\t","----");
+
+
+	//parentNodeSymbol
+	if(root->parent == NULL) 
+		fprintf(fp,"%18s\t","ROOT");
+	else 
+		fprintf(fp,"%18s\t",mapping[root->parent->s.symbol.NT+63].str);
+
+
+	//isLeafNode
+	if(isLeafNode) 
+		fprintf(fp,"%8s\t","yes");
+	else
+		fprintf(fp,"%8s\t","no");
+
+
+	//nodeSymbol
+	if(isLeafNode) 
+		fprintf(fp,"%18s\t","----");
+	else
+		fprintf(fp,"%18s\t",mapping[root->s.symbol.NT+63].str);
+
+
+	fprintf(fp,"\n");
+}
+
+void inorder(struct ParseTreeNode * root, FILE * fp){
+	if(root == NULL) return;
+	inorder(root->leftChild,fp);
+	printNode(root,fp);
+	if(root->leftChild == NULL) return;
+	struct ParseTreeNode * temp = root->leftChild->rightSibling;
+	while(temp != NULL){
+		inorder(temp,fp);
+		temp = temp->rightSibling;
+	}
+}
+
+
+void printFullParseTree(struct ParseTreeNode * root, char * outfile){
+FILE * fp = fopen(outfile,"w");
+fprintf(fp,"%20s\t","lexeme");
+fprintf(fp,"%5s\t","line");
+fprintf(fp,"%18s\t","tokenName");
+fprintf(fp,"%8s\t","value");
+fprintf(fp,"%18s\t","parentSymbol");
+fprintf(fp,"%8s\t","isLeaf");
+fprintf(fp,"%18s\t","NodeSymbol");
+fprintf(fp,"\n\n");
+inorder(root,fp);
+fclose(fp);
+}
+
+
+
+
+
 struct ParseTreeNode *newTNode(enum Terminals terminal)
 {
 	struct ParseTreeNode *node;
@@ -38,6 +137,7 @@ struct ParseTreeNode *newTNode(enum Terminals terminal)
 	node->parent=NULL;
 	node->s.tag=0;
 	node->s.symbol.T=terminal;
+	node->errorFlag=0;
 	return node;
 }
 struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
@@ -49,6 +149,7 @@ struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 	node->parent=NULL;
 	node->s.tag=1;
 	node->s.symbol.NT=nonterminal;
+	node->errorFlag=0;
 	return node;
 }
 void initParser()
@@ -168,6 +269,8 @@ void printParseTree(struct ParseTreeNode *root,int spaces)
 struct ParseTreeNode *getParseTree(char *testFile)
 {
 	//initGrammar(grammarFilename);
+	struct TOKEN_INFO emptyToken;
+	//emptyToken->;
 	filename=testFile;
 	initParser();
 	//printf("HI");
@@ -195,6 +298,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 				printf("\nNEW FRAME :%s %s\n  ","EPS",mapping[token_info.token].str);
 				printStack(stack);
 			}
+			currNode->token_info.lexeme[0]='\0';
 			pop(stack);
 			while(currNode->rightSibling==NULL)
 				currNode=currNode->parent;
@@ -220,7 +324,7 @@ struct ParseTreeNode *getParseTree(char *testFile)
 		{
 			if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 			{
-				printf("Finished Parsing Successfully.");
+				printf("Finished Parsing Successfully.\n");
 				break;
 			}
 			else if((topOfStack.s.tag==1 && parseTable[topOfStack.s.symbol.NT][readTerminal]<0)||(topOfStack.s.tag==0))
@@ -247,8 +351,10 @@ struct ParseTreeNode *getParseTree(char *testFile)
 		if(topOfStack.s.tag==0)// IF top of stack is a terminal
 		{
 			enum Terminals stackTopTerminal=topOfStack.s.symbol.T;
+			//printf("%s %s %s\n",);
 			if(readTerminal==stackTopTerminal)
 			{
+				currNode->token_info=token_info;
 				pop(stack);
 				readNextTokenFlag=1;
 				if(currNode->rightSibling==NULL)
