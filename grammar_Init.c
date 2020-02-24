@@ -17,7 +17,7 @@ int parseTable[No_Of_NT][No_Of_T];	//Global variable to store parse Table
 
 void init_mappingtable();		//Function to create enum hashed mapping table 
 int HashCodeMappingTable();		//Function to create string hashed mapping table
-void ParseGrammarFile(filename);	//Function to read grammar file
+void ParseGrammarFile(char *filename);	//Function to read grammar file
 int ComputeFirstSet();			//Function to compute first sets
 int ComputeFollowSet();			//Function to compute follow sets
 int ComputeFirstAndFollowSets();	//Function to compute first and follow sets together

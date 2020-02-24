@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 			case 4:
 				
 			    start_time = clock();
-			    getParseTree(argv[1]);
+			    root=getParseTree(argv[1]);
 				end_time = clock();
 			    
 			    total_CPU_time  =  (double) (end_time - start_time);
