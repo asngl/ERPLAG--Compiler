@@ -8,14 +8,10 @@ struct stackItem ERR_stackItem;
 
 struct STACK *createStack(int capacity){
 	struct STACK *s;
-    //printf("IN0\n");
 	s=(struct STACK *)malloc(sizeof(struct STACK));
-    //printf("IN1\n");
 	s->top = -1;
 	s->capacity = capacity;
-    //printf("IN2\n");
 	s->array = (struct stackItem *)malloc(sizeof(struct stackItem)*capacity);
-	//ERR_stackItem.s.tag=2;
 	return s;
 }
 
@@ -30,7 +26,6 @@ int push(struct STACK *s, struct stackItem item) //0 for success and 1 for failu
         return 1; 
     s->array[++s->top] = item;
     return 0; 
-    //printf("%d pushed to stack\n", item); 
 } 
   
 // Function to remove an item from stack.  It decreases top by 1 

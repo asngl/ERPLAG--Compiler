@@ -132,7 +132,7 @@ fclose(fp);
 
 
 
-
+//Function to generate new node for given Terminal
 struct ParseTreeNode *newTNode(enum Terminals terminal)
 {
 	struct ParseTreeNode *node;
@@ -145,6 +145,8 @@ struct ParseTreeNode *newTNode(enum Terminals terminal)
 	node->errorFlag=0;
 	return node;
 }
+
+//Function to generate new node for given Non Terminal
 struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 {
 	struct ParseTreeNode *node;
@@ -157,6 +159,8 @@ struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 	node->errorFlag=0;
 	return node;
 }
+
+//Function for initialising parser
 void initParser()
 {
 	tree=newNTNode(program);
@@ -181,6 +185,8 @@ void initParser()
 	push(stack,startSymbol);
 }
 
+
+// Expands a non-terminal using a rule and generates a list of children nodes and returns the head pointer of the list
 struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* parentNode,struct rhsnode *head)
 {   
 	struct STACK *stemp=createStack(100);
@@ -223,6 +229,8 @@ struct ParseTreeNode * createNodes(struct STACK *stack,struct ParseTreeNode* par
 	return next.ptn;
 }
 
+
+//Pushes the given grammar rule in reverse order in the stack
 void pushReverse(struct STACK *stack,struct rhsnode *head)
 {
 	if(head==NULL)return;
@@ -240,6 +248,8 @@ void pushReverse(struct STACK *stack,struct rhsnode *head)
 	}
 	push(stack,item);
 }
+
+//Utility function to print current state of stack
 void printStack(struct STACK *s)
 {
     printf("Stack State:");
@@ -252,6 +262,8 @@ void printStack(struct STACK *s)
     }
     printf("\n");
 }
+
+//Utility Function
 void printSpaces(int n)
 {
 	while(n--)printf("--");
@@ -271,32 +283,30 @@ void printParseTree(struct ParseTreeNode *root,int spaces)
 		node=node->rightSibling;
 	}
 }
+
+//Returns the generated parse tree from given testFile as a structure
 struct ParseTreeNode *getParseTree(char *testFile)
 {
-	//initGrammar(grammarFilename);
 	struct TOKEN_INFO emptyToken;
-	//emptyToken->;
 	filename=testFile;
 	initParser();
-	//printf("HI");
 	int debugMode=0;
 	int readNextTokenFlag=1;
 	struct TOKEN_INFO token_info;
 	int count=0;
 	while(1)
-	{
-		//if(count++==200)break;
+	{	
+		//Reads the next valid token
 		if(readNextTokenFlag==1)
 		{
 			token_info=getNextToken();
 			while(token_info.token==EPS||token_info.token==COMMENTMARK)
 				token_info=getNextToken();
-			//printf("TOKEN READ IS %d\n",token_info.token);
 			readNextTokenFlag=0;
 		}
 		struct stackItem topOfStack=peek(stack);
 		enum Terminals readTerminal=token_info.token;
-		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T==EPS)
+		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T==EPS) //If there is a EPS on top of stack, pop stack
 		{
 			if(debugMode)
 			{
@@ -318,21 +328,16 @@ struct ParseTreeNode *getParseTree(char *testFile)
 				printf("\nNEW FRAME :%s %s\n  ",mapping[topOfStack.s.symbol.T].str,mapping[token_info.token].str);
 			printStack(stack);
 		}
-		if(topOfStack.s.tag==2)
-		{
-			//printf("Here %d",stack->top);
-			printf("Invalid operation on stack: Exit with error code 1");
-			exit(0);
-		}
+		
 
-		if(readTerminal==FEOF)
+		if(readTerminal==FEOF)		//If we encounter End of file in input stream
 		{
 			if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 			{
 				printf("Finished Parsing Successfully.\n");
 				break;
 			}
-			else if((topOfStack.s.tag==1 && parseTable[topOfStack.s.symbol.NT][readTerminal]<0)||(topOfStack.s.tag==0))
+			else if((topOfStack.s.tag==1 && parseTable[topOfStack.s.symbol.NT][readTerminal]<0)||(topOfStack.s.tag==0)) //If top of stack is not Nullable
 			{
 				pop(stack);
 				currNode->errorFlag=1;
@@ -375,7 +380,6 @@ struct ParseTreeNode *getParseTree(char *testFile)
 			}
 			else
 			{
-				//MAPPING TABLE NEEDED???
 				pop(stack);
 				currNode->errorFlag=1;
 				if(currNode->rightSibling==NULL)
@@ -395,7 +399,6 @@ struct ParseTreeNode *getParseTree(char *testFile)
 		{
 			enum NonTerminals stackTopNonTerminal=topOfStack.s.symbol.NT;
 			int parsingTableEntry=parseTable[stackTopNonTerminal][readTerminal];
-			//printf("    Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+63].str,mapping[readTerminal].str,parsingTableEntry+1);
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR

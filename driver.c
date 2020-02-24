@@ -12,6 +12,8 @@ struct ParseTreeNode *getParseTree(char *);
 void printFullParseTree(struct ParseTreeNode * root, char * outfile);
 void printParseTree(struct ParseTreeNode *root,int spaces);
 
+
+//Main Function
 int main(int argc, char *argv[])
 {	
 	initLexer(argv[1]);
@@ -39,9 +41,7 @@ int main(int argc, char *argv[])
 				break;
 			case 1:
 				//Option to Remove comments from our Input File
-				//printf("Processing Comments...\n");
 				removeComments(argv[1],outfile);
-				//printf("Processed.\n");
 				fp=fopen(outfile,"r");
 				c=fgetc(fp);
 				while(c!=EOF){
@@ -66,8 +66,6 @@ int main(int argc, char *argv[])
 			case 3:
 				//Option to output parse tree in output file and print errors on the screen
 				root=getParseTree(argv[1]);
-				//printf("PRINT PARSE TREE\n");
-				//printParseTree(root,0);
 				printFullParseTree(root,argv[2]);
 				break;
 			case 4:
