@@ -16,9 +16,8 @@ Ayush Singhal  2017A7PS0116P
 #include "parser.h"
 #include <time.h>
 
-struct ParseTreeNode *getParseTree(char *);
-void printFullParseTree(struct ParseTreeNode * root, char * outfile);
-void printParseTree(struct ParseTreeNode *root,int spaces);
+struct ParseTreeNode *parseInputSourceCode(char *);
+void printParseTree(struct ParseTreeNode * root, char * outfile);
 
 
 //Main Function
@@ -76,13 +75,13 @@ int main(int argc, char *argv[])
 				break;
 			case 3:
 				//Option to output parse tree in output file and print errors on the screen
-				root=getParseTree(argv[1]);
-				printFullParseTree(root,argv[2]);
+				root=parseInputSourceCode(argv[1]);
+				printParseTree(root,argv[2]);
 				break;
 			case 4:
 				//Option to check the amount of time taken by compiler to process the parse tree
 			    start_time = clock();
-			    root=getParseTree(argv[1]);
+			    root=parseInputSourceCode(argv[1]);
 				end_time = clock();
 			    
 			    total_CPU_time  =  (double) (end_time - start_time);

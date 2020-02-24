@@ -122,7 +122,7 @@ void inorder(struct ParseTreeNode * root, FILE * fp){
 }
 
 //Main function for printing Parse tree in output file
-void printFullParseTree(struct ParseTreeNode * root, char * outfile){
+void printParseTree(struct ParseTreeNode * root, char * outfile){
 FILE * fp = fopen(outfile,"w");
 fprintf(fp,"%20s\t","lexeme");
 fprintf(fp,"%5s\t","line");
@@ -275,7 +275,7 @@ void printSpaces(int n)
 {
 	while(n--)printf("--");
 }
-void printParseTree(struct ParseTreeNode *root,int spaces)
+void printInlineParseTree(struct ParseTreeNode *root,int spaces)
 {
 	if(root==NULL)return;
 	struct ParseTreeNode *node=root->leftChild;
@@ -286,13 +286,13 @@ void printParseTree(struct ParseTreeNode *root,int spaces)
 		printf("%s\n",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str);
 	while(node!=NULL)
 	{
-		printParseTree(node,spaces+1);
+		printInlineParseTree(node,spaces+1);
 		node=node->rightSibling;
 	}
 }
 
 //Returns the generated parse tree from given testFile as a structure
-struct ParseTreeNode *getParseTree(char *testFile)
+struct ParseTreeNode *parseInputSourceCode(char *testFile)
 {
 	struct TOKEN_INFO emptyToken;
 	filename=testFile;
