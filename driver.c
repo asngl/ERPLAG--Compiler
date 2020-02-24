@@ -16,26 +16,30 @@ int main(int argc, char *argv[])
 	int input;
 	int flag=1;
 	char *outfile="Clean_code.txt";
+	FILE *fp;
+	char c;
 	struct ParseTreeNode *root;
 	clock_t start_time, end_time;
-	double total_CPU_time, total_CPU_time_in_seconds;			    
+	double total_CPU_time, total_CPU_time_in_seconds;	
+	struct TOKEN_INFO token_info;		    
 	printf("Implementation Details:-\n");
 	printf("(a) The First and Follow sets generation is automated\n");
 	printf("(b) Both lexical and syntactical modules are implemented in entirety\n");
 	while(flag){
 		printf("Choose option: ");
-		scanf("%d\n",&input);
+		scanf("%d",&input);
+		//printf("\n%d\n",input);
 		switch(input)
 		{
 			case 0:
 				flag=0;
 				break;
 			case 1:
-				printf("Processing Comments\n");
+				//printf("Processing Comments...\n");
 				removeComments(argv[1],outfile);
-				printf("Processed.");
-				FILE *fp=fopen(outfile,"r");
-				char c=fgetc(fp);
+				//printf("Processed.\n");
+				fp=fopen(outfile,"r");
+				c=fgetc(fp);
 				while(c!=EOF){
 					printf("%c",c);
 					c=fgetc(fp);
@@ -45,10 +49,12 @@ int main(int argc, char *argv[])
 				break;
 			case 2:
 				initLexer(argv[1]);
+				initGrammar("grammar.txt");
 				while(1)
-				{
-					struct TOKEN_INFO token_info=getNextToken();
-					printf("\t%d\t%s\t%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
+				{	
+					token_info=getNextToken();
+					if(token_info.token==EPS)continue;
+					printf("\t%d\t%s\t\t%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
 					if(token_info.token==FEOF)break;
 				}
 				break;

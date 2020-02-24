@@ -95,11 +95,11 @@ void removeComments(char *testcaseFile, char *cleanFile)
 					CURR_STATE=3;
 					//fprintf(writeFile," ");
 				}
-				/*else if(character=='\n')
+				else if(character=='\n')
 				{
 					fprintf(writeFile,"\n");
 				}
-				else
+				/*else
 					//fprintf(writeFile," ");
 				*/
 				break;
@@ -117,6 +117,7 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				else
 				{
 					CURR_STATE=2;
+					if(character=='\n')fprintf(writeFile,"\n");
 					//fprintf(writeFile," ");
 				}
 				break;
@@ -124,6 +125,8 @@ void removeComments(char *testcaseFile, char *cleanFile)
 	}
 	if(CURR_STATE==1)
 			fprintf(writeFile,"%c",'*');
+	fclose(readFile);
+	fclose(writeFile);
 }
 
 void popChar(char read_char)// Remove a character from the input stream
@@ -434,6 +437,7 @@ struct TOKEN_INFO getNextToken()
 				break;
 			case 6:
 				popChar(read_char);
+				if(read_char=='\n')curr_lineno=curr_lineno+1;
 				if(read_char=='*')
 				{
 					state=7;
@@ -448,7 +452,10 @@ struct TOKEN_INFO getNextToken()
 					state=8;
 				}
 				else 
+				{
+					if(read_char=='\n')curr_lineno=curr_lineno+1;
 					state=6;
+				}
 				break;
 			case 8:
 				token_info.token=COMMENTMARK;
