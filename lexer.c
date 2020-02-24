@@ -30,6 +30,7 @@ FILE *getStream(FILE *fp)// Reads the next MAX_BUFFER_SIZE characters into the n
 	return fp;
 }
 
+//Initialize lexer
 void initLexer(char inputFile[])
 {
 	// Open file and store file pointer for parsing
@@ -81,7 +82,6 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				if(character=='*')
 				{
 					CURR_STATE=2;
-					//fprintf(writeFile," ");
 				}
 				else
 				{
@@ -93,32 +93,21 @@ void removeComments(char *testcaseFile, char *cleanFile)
 				if(character=='*')
 				{
 					CURR_STATE=3;
-					//fprintf(writeFile," ");
 				}
 				else if(character=='\n')
 				{
 					fprintf(writeFile,"\n");
 				}
-				/*else
-					//fprintf(writeFile," ");
-				*/
 				break;
 			case 3:
 				if(character=='*')
 				{
 					CURR_STATE=0;
-					//fprintf(writeFile," ");
 				}
-				/*else if(character=='\n')
-				{
-					CURR_STATE=2;
-					fprintf(writeFile,"\n");
-				}*/
 				else
 				{
 					CURR_STATE=2;
 					if(character=='\n')fprintf(writeFile,"\n");
-					//fprintf(writeFile," ");
 				}
 				break;
 		}		

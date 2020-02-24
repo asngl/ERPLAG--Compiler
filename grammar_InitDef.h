@@ -64,6 +64,15 @@ struct cell{
 typedef struct MT MappingTable[No_Of_Tokens];
 typedef struct cell GRAMMAR[No_Of_Rules];
 //int parseTable[NUM_OF_NON_TERMINALS][NUM_OF_TERMINALS]; // Stores rule number to be applied ,-1 for error ,-2 for syn
+
+//Structure for First and Follow sets of our Grammar
+struct FAndF{
+	int First[3];
+	int Follow[3];
+
+};
+
+
 extern GRAMMAR grammarRules;
 extern int parseTable[No_Of_NT][No_Of_T];
 extern MappingTable mapping;
