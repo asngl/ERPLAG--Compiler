@@ -1,6 +1,7 @@
 
 #ifndef _NODEDEFH
 #define _NODEDEFH
+#define STRING_MAX_SIZE 25
 
 enum boolean{BOOL_TRUE,BOOL_FALSE};
 enum NodeType{PROGRAM_NODE,MODULE_DECLARE_NODE,ID_NODE,MODULE_NODE,PARA_LIST_NODE,NUM_NODE,RNUM_NODE,BOOL_NODE,INPUT_NODE,OUTPUT_NODE,RANGE_NODE,ASSIGN_NODE,MODULE_REUSE_NODE,ID_LIST_NODE,DECLARE_NODE,CONDITION_NODE,CASE_NODE,FOR_NODE,WHILE_NODE,UNARY_NODE,BINARY_NODE};
@@ -12,22 +13,22 @@ struct ProgramNode{
     struct ASTNode *otherModule2;
 };
 struct ModuleDeclareNode{
-    char *moduleName;
+    char moduleName[STRING_MAX_SIZE];
   struct ASTNode *next;
 };
 struct IdNode{
-    char *varName;
+    char varName[STRING_MAX_SIZE];
   struct ASTNode *index;
 };
 struct ModuleNode{
-    char *moduleName;
+    char moduleName[STRING_MAX_SIZE];
   struct ASTNode *inputList;
   struct ASTNode *next;
   struct ASTNode *ret;
   struct ASTNode *body;
 };
 struct ParaListNode{
-    char *name;
+    char name[STRING_MAX_SIZE];
   struct ASTNode *type;
   struct ASTNode *next;
   struct ASTNode *index;
@@ -42,7 +43,7 @@ struct BoolNode{
     enum boolean value;
 };
 struct InputNode{
-    char *name;
+    char name[STRING_MAX_SIZE];
     struct ASTNode *next;
 };
 struct OutputNode{
@@ -63,22 +64,22 @@ struct AssignNode{
 };
 struct ModuleReuseNode{
   struct ASTNode *optional;
-  char *id;
+  char id[STRING_MAX_SIZE];
   struct ASTNode *idList;
   struct ASTNode *next;
 };
 struct IdListNode{
-  char *varName;
+  char varName[STRING_MAX_SIZE];
   struct ASTNode *next;
 };
 struct DeclareNode{
   struct ASTNode *idList;
-  char *dataType;
+  char dataType[STRING_MAX_SIZE];
   struct ASTNode *Range;
   struct ASTNode *next;
 };
 struct ConditionNode{
-  char *id;
+  char id[STRING_MAX_SIZE];
   struct ASTNode *Case;
   struct ASTNode *Default;
   struct ASTNode *next;
@@ -89,7 +90,7 @@ struct CaseNode{
   struct ASTNode *next;
 };
 struct ForNode{
-  char *id;
+  char id[STRING_MAX_SIZE];
   struct ASTNode *range;
   struct ASTNode *stmt;
   struct ASTNode *next;
@@ -100,11 +101,11 @@ struct WhileNode{
   struct ASTNode *next;
 };
 struct UnaryNode{
-  char *op;
+  char op[STRING_MAX_SIZE];
   struct ASTNode *expr;
 };
 struct BinaryNode{
-  char *op;
+  char op[STRING_MAX_SIZE];
   struct ASTNode *expr1;
   struct ASTNode *expr2;
 };
