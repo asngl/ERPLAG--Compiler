@@ -13,6 +13,7 @@ struct ParseTreeNode *getNthChild(struct ParseTreeNode *parent,int childNumber)
     struct ParseTreeNode *result=parent->leftChild;
     childNumber--;
     while(childNumber--)result=result->rightSibling;
+    return result;
 }
 struct ASTNode *createAST(struct ParseTreeNode *root)
 {
