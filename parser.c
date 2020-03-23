@@ -26,6 +26,7 @@ struct ParseTreeNode{
 	struct ParseTreeNode *parent;
 	struct TOKEN_INFO token_info;
 	int errorFlag;
+	int ruleNumber;
 };
 //Structure used for Parse Tree creation
 
@@ -150,6 +151,7 @@ struct ParseTreeNode *newTNode(enum Terminals terminal)
 	node->s.tag=0;
 	node->s.symbol.T=terminal;
 	node->errorFlag=0;
+	node->ruleNumber = -1;
 	return node;
 }
 
@@ -164,6 +166,7 @@ struct ParseTreeNode *newNTNode(enum NonTerminals nonterminal)
 	node->s.tag=1;
 	node->s.symbol.NT=nonterminal;
 	node->errorFlag=0;
+	node->ruleNumber = -1;
 	return node;
 }
 
@@ -281,9 +284,9 @@ void printInlineParseTree(struct ParseTreeNode *root,int spaces)
 	struct ParseTreeNode *node=root->leftChild;
 	printSpaces(spaces);
 	if(root->s.tag==0)
-		printf("%s\n",mapping[root->s.symbol.T].str);
+		printf("%s, Rule=%d\n",mapping[root->s.symbol.T].str, root->ruleNumber);
 	else
-		printf("%s\n",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str);
+		printf("%s, Rule=%d\n",mapping[root->s.symbol.NT+NUM_OF_TERMINALS].str, root->ruleNumber);
 	while(node!=NULL)
 	{
 		printInlineParseTree(node,spaces+1);
@@ -431,13 +434,15 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 					currNode=currNode->rightSibling;
 			}
 			else
-			{
+			{	
 				struct cell Rule=grammarRules[parsingTableEntry];
 				enum NonTerminals LHS=Rule.sym;
 				struct rhsnode *RHS=Rule.head;
 				pop(stack);
+				currNode->ruleNumber = parsingTableEntry; 	//parsingTableEntry is 0 indexed
 				currNode->leftChild = createNodes(stack,currNode,RHS);
 				currNode=currNode->leftChild;
+
 				continue;
 			}
 		}

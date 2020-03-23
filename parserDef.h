@@ -16,6 +16,7 @@ struct ParseTreeNode{
 	struct ParseTreeNode *parent;
 	struct TOKEN_INFO token_info;
 	int errorFlag;
+	int ruleNumber;
 };
 
 #endif
