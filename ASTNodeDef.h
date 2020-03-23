@@ -10,7 +10,7 @@ struct ProgramNode{
     struct ASTNode *moduleDeclarations;
     struct ASTNode *otherModules1;
     struct ASTNode *driverModule;
-    struct ASTNode *otherModule2;
+    struct ASTNode *otherModules2;
 };
 struct ModuleDeclareNode{
     char moduleName[STRING_MAX_SIZE];
