@@ -69,14 +69,14 @@ struct IdListNode{
 };
 struct DeclareNode{
   struct ASTNode *idList;
-  char *dataType
+  char *dataType;
   struct ASTNode *Range;
   struct ASTNode *next;
 };
 struct ConditionNode{
   char *id;
-  struct ASTNode *case;
-  struct ASTNode *default;
+  struct ASTNode *Case;
+  struct ASTNode *Default;
   struct ASTNode *next;
 };
 struct CaseNode{
@@ -111,7 +111,7 @@ union untaggedASTNode{
     struct ModuleDeclareNode moduleDeclareNode;
     struct IdNode idNode;
     struct ModuleNode moduleNode;
-    struct ParaList paraList;
+    struct ParaListNode paraList;
     struct NumNode numNode;
     struct RNumNode rNumNode;
     struct BoolNode boolNode;
@@ -119,7 +119,7 @@ union untaggedASTNode{
     struct OutputNode outputNode;
     struct RangeNode rangeNode;
     struct AssignNode assignNode;
-    struct IdListNOde idListNode;
+    struct IdListNode idListNode;
     struct DeclareNode declareNode;
     struct ConditionNode conditionNode;
     struct CaseNode caseNode;
