@@ -14,11 +14,12 @@ Ayush Singhal  2017A7PS0116P
 #include "grammar_InitDef.h"
 #include "parserDef.h"
 #include "parser.h"
+#include "ASTNodeDef.h"
 #include <time.h>
 
 struct ParseTreeNode *parseInputSourceCode(char *);
 void printParseTree(struct ParseTreeNode * root, char * outfile);
-
+void printInlineParseTree(struct ParseTreeNode * root, int spaces);
 
 //Main Function
 int main(int argc, char *argv[])
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
 			case 3:
 				//Option to output parse tree in output file and print errors on the screen
 				root=parseInputSourceCode(argv[1]);
-				printParseTree(root,argv[2]);
+				printInlineParseTree(root,0);
 				break;
 			case 4:
 				//Option to check the amount of time taken by compiler to process the parse tree

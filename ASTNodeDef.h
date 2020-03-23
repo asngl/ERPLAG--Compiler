@@ -1,4 +1,8 @@
-enum boolean{TRUE,FALSE};
+
+#ifndef _NODEDEFH
+#define _NODEDEFH
+
+enum boolean{BOOL_TRUE,BOOL_FALSE};
 enum NodeType{PROGRAM_NODE,MODULE_DECLARE_NODE,ID_NODE,MODULE_NODE,PARA_LIST_NODE,NUM_NODE,RNUM_NODE,BOOL_NODE,INPUT_NODE,OUTPUT_NODE,RANGE_NODE,ASSIGN_NODE,MODULE_REUSE_NODE,ID_LIST_NODE,DECLARE_NODE,CONDITION_NODE,CASE_NODE,FOR_NODE,WHILE_NODE,UNARY_NODE,BINARY_NODE};
 
 struct ProgramNode{
@@ -129,6 +133,8 @@ union untaggedASTNode{
     struct BinaryNode binaryNode;
 };
 struct ASTNode{
-    union untaggedASTNode nodeType;
+    union untaggedASTNode node;
     enum  NodeType tag;
 };
+
+#endif
