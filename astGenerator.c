@@ -1,7 +1,10 @@
 #include "ASTNodeDef.h"
+#include "lexerDef.h"
 #include "parserDef.h"
 #include <stdlib.h>
 #include <string.h>
+
+
 struct ASTNode *createASTNode(enum NodeType nodeType)
 {   
     struct ASTNode *node=malloc(sizeof(struct ASTNode));
@@ -46,7 +49,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		result=NULL;
 		break;
 	case 6:
-		result=createAST(getNthChild(root,5);
+		result=createAST(getNthChild(root,5));
 		break;
 	case 7:
 		result=createASTNode(MODULE_NODE);
@@ -56,7 +59,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		result->node.moduleNode.body=createAST(getNthChild(root,12));
 		break;
 	case 8:
-		result=createAST(getNthChild(root,3);
+		result=createAST(getNthChild(root,3));
 		break;
 	case 9:
 		result=NULL;
@@ -73,32 +76,32 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		result=NULL;
 		break;
 	case 16:
-		result=createASTNode(NumNode):///////////////check 16-18
+		result=createASTNode(NUM_NODE);///////////////check 16-18
 		break;
 	case 17:
-		result=createASTNode(RNumNode):
+		result=createASTNode(RNUM_NODE);
 		break;
 	case 18:
-		result=createASTNode(BoolNode):
+		result=createASTNode(BOOL_NODE);
 		break;
         case 59:
         	result=createAST(getNthChild(root,1));
         	break;
         case 60:    	
         	result=createASTNode(UNARY_NODE);
-        	strcpy(result->node.op,getNthChild(root,1)->token_info.lexeme);
-        	result->node.expr=createAST(getNthChild(root,2));
+        	strcpy(result->node.unaryNode.op,getNthChild(root,1)->token_info.lexeme);
+        	result->node.unaryNode.expr=createAST(getNthChild(root,2));
         	break;
         //case 61:
         //	result=createAST(getNthChild(root,2));
         //cases 61-64
         case 65:
         	result=createASTNode(BOOL_NODE);
-        	result->node.value=BOOL_TRUE;
+        	result->node.boolNode.value=BOOL_TRUE;
         	break;
         case 66:
         	result=createASTNode(BOOL_NODE);
-        	result->node.value=BOOL_FALSE;
+        	result->node.boolNode.value=BOOL_FALSE;
         	break;
         
         	
