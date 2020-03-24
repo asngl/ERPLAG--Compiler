@@ -84,6 +84,158 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 18:
 		result=createASTNode(BOOL_NODE);
 		break;
+	//case 30-58
+		    
+	case 30:
+	result=createAST(getNthChild(root,1));
+	//1.next = 0.next
+	break;
+
+	case 31:
+		result=createAST(getNthChild(root,1));
+		//1.next = 0.next
+		break;
+
+	case 32:
+		result=createASTNode(INPUT_NODE);
+		strcpy(result->node.inputNode.name,getNthChild(root,3)->token_info.lexeme);
+		//next=0.next
+		break;
+
+	case 33:
+		result=createASTNode(OUTPUT_NODE);
+		result->node.outputNode->value=createAST(getNthChild(root,3));
+		//next=0.next;
+		break;
+
+	case 34:
+		result=createAST(getNthChild(root,1));
+		break;
+
+	case 35:
+		result=createASTNode(BOOL_NODE);
+		result->node.boolNode.value=TRUE;
+		break;
+
+	case 36:
+		result=createASTNode(BOOL_NODE);
+		result->node.boolNode.value=FALSE;
+		break;
+
+	case 37:
+		result=createAST(getNthChild(root,2));
+		//result->node.
+		break;
+
+	case 38:
+		result=createASTNode(NUM_NODE);
+		//result->node.numNode.num=createAST(getNthChild(root,1))->value;
+		break;
+
+	case 39:
+		result=createASTNode(RNUM_NODE);
+		//result->node.rNumNode.rnum=createAST(getNthChild(root,1))->value;
+		break;
+
+	case 40:
+		result=createASTNode(ID_NODE);
+		//result->node.idNode.
+		result->node.idNode->index=createAST(getNthChild(root,2));
+		break;
+
+	case 41:
+		result=createASTNode(ID_NODE);
+		//result
+		result->node.idNode.index=NULL;
+		break;
+
+	case 42:
+		result=createASTNode(ID_NODE);
+		//strcpy(node.idNode.varName,getNthChild(root,1)->token_info.lexeme);
+		result->node.idNode.index=NULL;
+		break;
+
+	case 43:
+		result=createASTNode(NUM_NODE);
+		//result->node.numNode.num=getNthChild(root,1)->value;
+		break;
+
+	case 44:
+		result=createAST(getNthChild(root,1));
+		//1.next = 0.next
+		break;
+
+	case 45:
+		result=createAST(getNthChild(root,1));
+		//1.next = 0.next
+		break;
+
+	case 46:
+		result=createAST(getNthChild(root,2));
+		//1.next = 0.next
+		//
+		break;
+
+	case 47:
+		result=createAST(getNthChild(root,1));
+		//1.next = 0.next
+		//
+		break;
+
+	case 48:
+		result=createAST(getNthChild(root,1));
+		//1.next = 0.next
+		//
+		break;
+
+	case 49:
+		result=createASTNode(ASSIGN_NODE);
+		//result->node.assignNode->LHS=
+		break;
+
+	case 50:
+		break;
+
+	case 51:
+		result=createASTNode(NUM_NODE);
+		result-node.numNode.num=getNthChild(root,1)->value;
+		break;
+
+	case 52:
+		result=createASTNode(ID_NODE);
+		strcpy(result->node.idNode.varName,getNthChild(root,1)->token_info.lexeme);
+		result-node.idNode.index=NULL;
+		break;
+
+	case 53:
+		//result=createASTNode()
+		break;
+
+	case 54:
+		result=createAST(getNthChild(root,2));
+		break;
+
+	case 55:
+		result=NULL;
+		break;
+
+	case 56:
+		result=createASTNode(ID_LIST_NODE);
+		strcpy(result->node.idListNode.varname,getNthChild(root,1)->token_info.lexeme);
+		result->node.idListNode.next=createAST(getNthChild(root,2));
+		break;
+
+	case 57:
+		result=createASTNode(ID_LIST_NODE);
+		strcpy(result->node.idListNode.varname,getNthChild(root,2)->token_info.lexeme);
+		result->node.idListNode.next=createAST(getNthChild(root,3));
+		break;
+
+	case 58:
+		result=NULL;
+		break;
+
+	//case 30-58
         case 59:
         	result=createAST(getNthChild(root,1));
         	break;
