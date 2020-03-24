@@ -1,10 +1,10 @@
-
 #ifndef _NODEDEFH
 #define _NODEDEFH
 #define STRING_MAX_SIZE 25
 
 enum boolean{BOOL_FALSE,BOOL_TRUE};
 enum NodeType{PROGRAM_NODE,MODULE_DECLARE_NODE,ID_NODE,MODULE_NODE,PARA_LIST_NODE,NUM_NODE,RNUM_NODE,BOOL_NODE,INPUT_NODE,OUTPUT_NODE,RANGE_NODE,ASSIGN_NODE,MODULE_REUSE_NODE,ID_LIST_NODE,DECLARE_NODE,CONDITION_NODE,CASE_NODE,FOR_NODE,WHILE_NODE,UNARY_NODE,BINARY_NODE};
+enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};//DT_ARRAY is not an actual datatype
 
 struct ProgramNode{
 	struct ASTNode *moduleDeclarations;
@@ -29,9 +29,9 @@ struct ModuleNode{
 };
 struct ParaListNode{
 	char name[STRING_MAX_SIZE];
-	struct ASTNode *type;
+	enum Datatype type;
 	struct ASTNode *next;
-	struct ASTNode *index;
+	struct ASTNode *Range;
 };
 struct NumNode{
 	int num;
@@ -74,7 +74,7 @@ struct IdListNode{
 };
 struct DeclareNode{
 	struct ASTNode *idList;
-	struct ASTNode *dataType;
+	enum Datatype dataType;
 	struct ASTNode *Range;
 	struct ASTNode *next;
 };
@@ -139,3 +139,4 @@ struct ASTNode{
 };
 
 #endif
+

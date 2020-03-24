@@ -7,7 +7,7 @@ Ayush Singhal  2017A7PS0116P
 */
 #ifndef _PARSERDEFH
 #define _PARSERDEFH
-#include "grammar_InitDef.h"
+#include "lexerDef.h"
 
 struct ParseTreeNode{
 	struct TaggedSymbol s;
