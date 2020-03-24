@@ -34,7 +34,7 @@ struct ParaListNode{
 	struct ASTNode *index;
 };
 struct NumNode{
-	int num;		
+	int num;
 };
 struct RNumNode{
 	float rnum;
@@ -74,7 +74,7 @@ struct IdListNode{
 };
 struct DeclareNode{
 	struct ASTNode *idList;
-	char dataType[STRING_MAX_SIZE];
+	struct ASTNode *dataType;
 	struct ASTNode *Range;
 	struct ASTNode *next;
 };

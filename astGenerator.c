@@ -6,7 +6,7 @@
 
 
 struct ASTNode *createASTNode(enum NodeType nodeType)
-{   
+{
     struct ASTNode *node=malloc(sizeof(struct ASTNode));
     node->tag=nodeType;
 }
@@ -28,7 +28,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		result->node.programNode.otherModules1=createAST(getNthChild(root,2));
 		result->node.programNode.driverModule=createAST(getNthChild(root,3));
 		result->node.programNode.otherModules2=createAST(getNthChild(root,4));
-		break;   
+		break;
         case 1:
 		result=createAST(getNthChild(root,1));
 		result->node.moduleDeclareNode.next=createAST(getNthChild(root,2));
@@ -87,14 +87,27 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         case 59:
         	result=createAST(getNthChild(root,1));
         	break;
-        case 60:    	
+        case 60:
         	result=createASTNode(UNARY_NODE);
         	strcpy(result->node.unaryNode.op,getNthChild(root,1)->token_info.lexeme);
         	result->node.unaryNode.expr=createAST(getNthChild(root,2));
         	break;
-        //case 61:
-        //	result=createAST(getNthChild(root,2));
-        //cases 61-64
+        case 61:
+            result=createAST(getNthChild(root,2));
+            result->node.binaryNode.expr1=getNthChild(root,1);
+            break;
+        case 62:
+            result=createASTNode(BINARY_NODE);
+            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+        	result->node.binaryNode.expr2=getNthChild(root,3);
+        	break;
+        case 63:
+            result=result->node.binaryNode.expr1;
+            break;
+        case 64:
+            result=createAST(root,2);
+            getNthChild(root,2)->node.binaryNode.expr1=getNthChild(root,1);
+            break;
         case 65:
         	result=createASTNode(BOOL_NODE);
         	result->node.boolNode.value=BOOL_TRUE;
@@ -103,8 +116,54 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	result=createASTNode(BOOL_NODE);
         	result->node.boolNode.value=BOOL_FALSE;
         	break;
-        
-        	
+        case 67:
+            result=createASTNode(BINARY_NODE);
+            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+            result->node.binaryNode.expr2=getNthChild(root,2);
+            break;
+        case 68:
+            result=result->node.binaryNode.expr1;
+            break;
+        case 69:
+            result=createAST(getNthChild(root,2));
+            getNthChild(root,2)->node.addExpr2=createAST(root,1);
+            break;
+        case 70:
+            result=createASTNode(BINARY_NODE);
+            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+            result->node.binaryNode.expr2=getNthChild(root,3);
+            getNthChild(root,3)->node.expr1=getNthChild(root,2);
+            break;
+        case 71:
+            result=result->node.binaryNode.expr1;
+            break;
+        case 72:
+            result=getNthChild(root,2);
+            getNthChild(root,2)->node.binaryNode.expr1=getNthChild(root,1);
+            break;
+        case 73:
+            result=createASTNode(BINARY_NODE);
+            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+            result->node.binaryNode.expr2=getNthChild(root,3);
+            getNthChild(root,3)->node.expr1=getNthChild(root,2);
+            break;
+        case 74:
+            result=result->node.binaryNode.expr1;
+            break;
+        case 75:
+            result=createAST(getNthChild(root,1));
+            break;
+        case 76:
+            result=createAST(getNthChild(root,2));
+            break;
+        //case 77-88 assigned in parent itself
+        //case 89:
+          //  result=createASTNode(DECLARE_NODE);
+           // result->node.declareNode.idList=getNthChild(root,2);
+           // result->node.declareNode.dataType=createAST(getNthChild(root,4))->node.;
+            //result->node.declareNode.Range=createAST(getNthChild(root,4));
+
+
     }
     return result;
 }
