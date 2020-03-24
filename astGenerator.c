@@ -162,8 +162,60 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
            // result->node.declareNode.idList=getNthChild(root,2);
            // result->node.declareNode.dataType=createAST(getNthChild(root,4))->node.;
             //result->node.declareNode.Range=createAST(getNthChild(root,4));
-
-
+        case 90:
+            result=createASTNode(CONDITION_NODE);
+            strcpy(result->node.conditionNode.id,getNthChild(root,3)->token_info.lexeme);
+            result->node.conditionNode.Case=createAST(getNthChild(root,6));
+            result->node.conditionNode.Default=createAST(getNthChild(root,7));
+            break;
+        case 91:
+            result=createASTNode(CASE_NODE);
+            result->node.caseNode.value=createAST(getNthChild(root,2));
+            result->node.caseNode.stmt=createAST(getNthChild(root,4));
+            result->node.caseNode.next=createAST(getNthChild(root,7));
+            break;
+        case 92:
+            result=createASTNode(CASE_NODE);
+            result->node.caseNode.value=createAST(getNthChild(root,2));
+            result->node.caseNode.stmt=createAST(getNthChild(root,4));
+            result->node.caseNode.next=createAST(getNthChild(root,7));
+            break;
+        case 93:
+            result=NULL;
+        case 94:
+            result=createASTNode(NUM_NODE);
+            result->node.numNode.num=atoi(root->token_info.lexeme);
+        case 95:
+            result=createASTNode(BOOL_NODE);
+            result->node.boolNode.value=BOOL_TRUE;
+            break;
+        case 96:
+            result=createASTNode(BOOL_NODE);
+            result->node.boolNode.value=BOOL_FALSE;
+            break;
+        case 97:
+            result=createAST(getNthChild(root,3));
+            break;
+        case 98:
+            result=NULL;
+        case 99:
+            result=createASTNode(FOR_NODE);
+            strcpy(result->node.forNode.id,getNthChild(root,3)->token_info.lexeme);
+            result->node.forNode.range=createAST(getNthChild(root,5));
+            result->node.forNode.stmt=createAST(getNthChild(root,8));
+            break;
+        case 100:
+            result=createASTNode(WHILE_NODE);
+            result->node.whileNode.expr=createAST(getNthChild(root,3));
+            result->node.whileNode.stmt=createAST(getNthChild(root,6));
+            break;
+        case 101:
+            result=createASTNode(RANGE_NODE);
+            result->node.rangeNode.Range1=createASTNode(NUM_NODE);
+            result->node.rangeNode.Range1.num=atoi(getNthChild(root,1)->token_info.lexeme);
+            result->node.rangeNode.Range2=createASTNode(NUM_NODE);
+            result->node.rangeNode.Range2.num=atoi(getNthChild(root,3)->token_info.lexeme);
+            break;
     }
     return result;
 }
