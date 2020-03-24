@@ -1,5 +1,4 @@
 #include "ASTNodeDef.h"
-#include "lexerDef.h"
 #include "parserDef.h"
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +8,7 @@ struct ASTNode *createASTNode(enum NodeType nodeType)
 {
     struct ASTNode *node=malloc(sizeof(struct ASTNode));
     node->tag=nodeType;
+    return node;
 }
 struct ParseTreeNode *getNthChild(struct ParseTreeNode *parent,int childNumber)
 {
@@ -16,6 +16,32 @@ struct ParseTreeNode *getNthChild(struct ParseTreeNode *parent,int childNumber)
     childNumber--;
     while(childNumber--)result=result->rightSibling;
     return result;
+}
+struct ASTNode *getType(struct ParseTreeNode *current)		
+{
+	int type=current->token_info.token;
+	struct ASTNode *result;
+	if(type==INTEGER)
+	{
+		result=createASTNode(NUM_NODE);
+		result->node.numNode.num=current->token_info.value.value;
+	}
+	else if(type==REAL)
+	{
+		result=createASTNode(RNUM_NODE);
+		result->node.rNumNode.rnum=current->token_info.value.value;
+	}
+	else if(type==TRUE)
+	{
+		result=createASTNode(BOOL_NODE);
+		result->node.boolNode.value=BOOL_TRUE;
+	}
+	else if(type==FALSE)
+	{
+		result=createASTNode(BOOL_NODE);
+		result->node.boolNode.value=BOOL_FALSE;
+	}
+	return result;	
 }
 struct ASTNode *createAST(struct ParseTreeNode *root)
 {
@@ -64,13 +90,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 9:
 		result=NULL;
 		break;
-//	case 10:
-//		result=createASTNode(PARA_LIST_NODE);
-//		strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
-//		result->node.paraListNode.type=getNthChild(root,3);
-//		result->node.paraListNode.next=getNthChild(root,4);
-//		result->node.paraListNode.index=getNthChild(root,);
-//		break;
+	case 10:
+		result=createASTNode(PARA_LIST_NODE);
+		strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
+		result->node.paraListNode.type=getNthChild(root,3);
+		result->node.paraListNode.next=createAST(getNthChild(root,4));
+		result->node.paraListNode.index=createAST(getNthChild(root,3));
+		break;
 //	cases 10-14
 	case 15:
 		result=NULL;
@@ -245,21 +271,21 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	result->node.unaryNode.expr=createAST(getNthChild(root,2));
         	break;
         case 61:
-            result=createAST(getNthChild(root,2));
-            result->node.binaryNode.expr1=getNthChild(root,1);
-            break;
+		result=createAST(getNthChild(root,2));
+		result->node.binaryNode.expr1=getNthChild(root,1);
+		break;
         case 62:
-            result=createASTNode(BINARY_NODE);
-            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+		result=createASTNode(BINARY_NODE);
+		strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
         	result->node.binaryNode.expr2=getNthChild(root,3);
         	break;
         case 63:
-            result=result->node.binaryNode.expr1;
-            break;
+		result=result->node.binaryNode.expr1;
+		break;
         case 64:
-            result=createAST(root,2);
-            getNthChild(root,2)->node.binaryNode.expr1=getNthChild(root,1);
-            break;
+		result=createAST(getNthChild(root,2));
+		result->node.binaryNode.expr1=createAST(getNthChild(root,1));
+		break;
         case 65:
         	result=createASTNode(BOOL_NODE);
         	result->node.boolNode.value=BOOL_TRUE;
@@ -269,35 +295,35 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	result->node.boolNode.value=BOOL_FALSE;
         	break;
         case 67:
-            result=createASTNode(BINARY_NODE);
-            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
-            result->node.binaryNode.expr2=getNthChild(root,2);
-            break;
+		result=createASTNode(BINARY_NODE);
+		strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
+		break;
         case 68:
-            result=result->node.binaryNode.expr1;
-            break;
+		result=result->node.binaryNode.expr1;
+		break;
         case 69:
             result=createAST(getNthChild(root,2));
-            getNthChild(root,2)->node.addExpr2=createAST(root,1);
+            result->node.binaryNode.expr1=createAST(getNthChild(root,1));
             break;
         case 70:
             result=createASTNode(BINARY_NODE);
             strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
-            result->node.binaryNode.expr2=getNthChild(root,3);
-            getNthChild(root,3)->node.expr1=getNthChild(root,2);
+            result->node.binaryNode.expr2=createAST(getNthChild(root,3));
+            result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
             break;
         case 71:
             result=result->node.binaryNode.expr1;
             break;
         case 72:
-            result=getNthChild(root,2);
-            getNthChild(root,2)->node.binaryNode.expr1=getNthChild(root,1);
+            result=createAST(getNthChild(root,2));
+            result->node.binaryNode.expr1=createAST(getNthChild(root,1));
             break;
         case 73:
             result=createASTNode(BINARY_NODE);
             strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
-            result->node.binaryNode.expr2=getNthChild(root,3);
-            getNthChild(root,3)->node.expr1=getNthChild(root,2);
+            result->node.binaryNode.expr2=createAST(getNthChild(root,3));
+            result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
             break;
         case 74:
             result=result->node.binaryNode.expr1;
@@ -363,10 +389,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 101:
             result=createASTNode(RANGE_NODE);
-            result->node.rangeNode.Range1=createASTNode(NUM_NODE);
-            result->node.rangeNode.Range1.num=atoi(getNthChild(root,1)->token_info.lexeme);
-            result->node.rangeNode.Range2=createASTNode(NUM_NODE);
-            result->node.rangeNode.Range2.num=atoi(getNthChild(root,3)->token_info.lexeme);
+            result->node.rangeNode.Range1=getType(getNthChild(root,1));
+            result->node.rangeNode.Range2=getType(getNthChild(root,3));
             break;
     }
     return result;
