@@ -8,7 +8,7 @@
 
 enum Operator getOperator(struct ParseTreeNode *root)
 {
-	switch(root->token_info.token)
+	switch(root->leftChild->token_info.token)
 	{
 		case PLUS:
 			return OP_PLUS;
