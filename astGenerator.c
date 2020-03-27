@@ -493,9 +493,11 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 93:
             result=NULL;
+            break;
         case 94:
             result=createASTNode(NUM_NODE);
             result->node.numNode.num=atoi(root->token_info.lexeme);
+            break;
         case 95:
             result=createASTNode(BOOL_NODE);
             result->node.boolNode.value=BOOL_TRUE;
@@ -509,6 +511,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 98:
             result=NULL;
+            break;
         case 99:
             result=createASTNode(FOR_NODE);
             strcpy(result->node.forNode.id,getNthChild(root,3)->token_info.lexeme);
