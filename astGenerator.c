@@ -261,7 +261,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 46:
 		result=createAST(getNthChild(root,2));
 		//1.next = 0.next
-		//
+		strcpy(result->node.assignNode.varName,getNthChild(root,1)->token_info.lexeme);
 		break;
 
 	case 47:
@@ -278,25 +278,38 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 
 	case 49:
 		result=createASTNode(ASSIGN_NODE);
-		//result->node.assignNode->LHS=
+		struct ASTNode *temp=createAST(getNthChild(root,2));
+		if(temp->nodeType==UNARY_NODE)
+			result->node.unaryNode=temp;
+		else if(temp->nodeType==BINARY_NODE)
+			result->node.binaryNode=temp;
 		break;
 
 	case 50:
+		result=createASTNode(ASSIGN_NODE);
+		struct ASTNode *temp=createAST(getNthChild(root,5));
+		if(temp->nodeType==UNARY_NODE)
+			result->node.unaryNode=temp;
+		else if(temp->nodeType==BINARY_NODE)
+			result->node.binaryNode=temp;
 		break;
 
 	case 51:
 		result=createASTNode(NUM_NODE);
-		result-node.numNode.num=getNthChild(root,1)->value;
+		result->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
 		break;
 
 	case 52:
 		result=createASTNode(ID_NODE);
 		strcpy(result->node.idNode.varName,getNthChild(root,1)->token_info.lexeme);
-		result-node.idNode.index=NULL;
+		result->node.idNode.index=NULL;
 		break;
 
 	case 53:
-		//result=createASTNode()
+		result=createASTNode(MODULE_REUSE_NODE);
+		result->node.moduleReuseNode.optional=createAST(getNthChild(root,1));
+		result->node.moduleReuseNode.idList=createAST(getNthChild(root,7));
+		strcpy(result->node.moduleReuseNode.id,getNthChild(root,4)->token_info.lexeme);
 		break;
 
 	case 54:
@@ -323,7 +336,6 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		result=NULL;
 		break;
 
-	//case 30-58
         case 59:
         	result=createAST(getNthChild(root,1));
         	break;
