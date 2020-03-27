@@ -479,6 +479,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	result->node.declareNode.idList=createAST(getNthChild(root,2));
 	       	result->node.declareNode.dataType=getDatatype(getNthChild(root,4));
 	        result->node.declareNode.Range=createAST(getNthChild(root,4));
+	        break;
 	    case 90:
 	        result=createASTNode(CONDITION_NODE);
 	        strcpy(result->node.conditionNode.id,getNthChild(root,3)->token_info.lexeme);
