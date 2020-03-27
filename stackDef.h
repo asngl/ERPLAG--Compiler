@@ -7,6 +7,7 @@ Ayush Singhal  2017A7PS0116P
 */
 #ifndef _STACKDEFH
 #define _STACKDEFH
+#include "lexerDef.h"
 #include "grammar_InitDef.h"
 #include "parserDef.h"
 
