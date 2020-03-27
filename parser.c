@@ -19,15 +19,7 @@ Ayush Singhal  2017A7PS0116P
 #define STACK_CAPACITY 1000
 #define MAX_RHS_LENGTH 100
 
-struct ParseTreeNode{
-	struct TaggedSymbol s;
-	struct ParseTreeNode *leftChild;// Leftmost child
-	struct ParseTreeNode *rightSibling;
-	struct ParseTreeNode *parent;
-	struct TOKEN_INFO token_info;
-	int errorFlag;
-	int ruleNumber;
-};
+
 //Structure used for Parse Tree creation
 
 

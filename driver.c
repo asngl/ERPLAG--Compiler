@@ -20,7 +20,7 @@ Ayush Singhal  2017A7PS0116P
 struct ParseTreeNode *parseInputSourceCode(char *);
 void printParseTree(struct ParseTreeNode * root, char * outfile);
 void printInlineParseTree(struct ParseTreeNode * root, int spaces);
-
+struct ASTNode *createAST(struct ParseTreeNode *root);
 //Main Function
 int main(int argc, char *argv[])
 {	
@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 	FILE *fp;
 	char c;
 	struct ParseTreeNode *root;
+	struct ASTNode *ASTroot;
 	clock_t start_time, end_time;
 	double total_CPU_time, total_CPU_time_in_seconds;	
 	struct TOKEN_INFO token_info;		    
@@ -78,6 +79,8 @@ int main(int argc, char *argv[])
 				//Option to output parse tree in output file and print errors on the screen
 				root=parseInputSourceCode(argv[1]);
 				printInlineParseTree(root,0);
+				printf("\n Printing AST: \n");
+				ASTroot=createAST(root);
 				break;
 			case 4:
 				//Option to check the amount of time taken by compiler to process the parse tree
