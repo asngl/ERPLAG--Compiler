@@ -5,8 +5,8 @@ Pratik Kakade  2017A7PS0086P
 Bhoomi Sawant  2017A7PS0001P
 Ayush Singhal  2017A7PS0116P
 */
-#ifndef _PARSERDEFH
-#define _PARSERDEFH
+#ifndef _GRAMMARINITDEFH
+#define _GRAMMARINITDEFH
 #define Max_Token_Size 30
 #define No_Of_Tokens 150
 #define mod 150

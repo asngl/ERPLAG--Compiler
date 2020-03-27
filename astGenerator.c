@@ -1,5 +1,8 @@
 #include "ASTNodeDef.h"
+#include "lexerDef.h"
+#include "grammar_InitDef.h"
 #include "parserDef.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -74,9 +77,38 @@ enum Datatype getType(struct ParseTreeNode* pt)//Only works if the nonterminal e
 		return DT_INTEGER;
 	}
 }
+void assignNext(struct ASTNode *left, struct ASTNode *right)//Utility fucntion to assign the next field of any of the statements node
+{
+	switch(left->tag)
+	{
+		case INPUT_NODE:left->node.inputNode.next=right;
+			return;
+		case OUTPUT_NODE:left->node.outputNode.next=right;
+			return;
+		case MODULE_DECLARE_NODE:left->node.moduleDeclareNode.next=right;
+			return;
+		case MODULE_NODE:left->node.moduleNode.next=right;
+			return;
+		case ASSIGN_NODE:left->node.assignNode.next=right;
+			return;
+		case MODULE_REUSE_NODE:left->node.moduleReuseNode.next=right;
+			return;
+		case CONDITION_NODE:left->node.conditionNode.next=right;
+			return;
+		case CASE_NODE:left->node.caseNode.next=right;
+			return;
+		case FOR_NODE:left->node.forNode.next=right;
+			return;
+		case WHILE_NODE:left->node.whileNode.next=right;
+			return;
+	}
+}
 struct ASTNode *createAST(struct ParseTreeNode *root)
 {
     struct ASTNode *result;
+    struct ASTNode *tempAST;
+    struct ParseTreeNode *typeNode;
+    enum Datatype dt;
     switch(root->ruleNumber)
     {
         case 0:
@@ -124,8 +156,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 10:
 		result=createASTNode(PARA_LIST_NODE);
 		strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
-		struct ParseTreeNode *typeNode=getNthChild(root,3);
-		enum Datatype dt=getDatatype(typeNode);
+		typeNode=getNthChild(root,3);
+		dt=getDatatype(typeNode);
 		if(dt==DT_ARRAY)
 		{
 			result->node.paraListNode.type=getType(getNthChild(typeNode,6));
@@ -141,13 +173,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 11:
 		result=createASTNode(PARA_LIST_NODE);
 		strcpy(result->node.paraListNode.name, getNthChild(root,2)->token_info.lexeme);
-		struct ParseTreeNode *typeNode=getNthChild(root,4);
-		enum Datatype dt=getDatatype(typeNode);
+		typeNode=getNthChild(root,4);
+		dt=getDatatype(typeNode);
 		if(dt==DT_ARRAY)
 		{
 			result->node.paraListNode.type=getType(getNthChild(typeNode,6));
 			result->node.paraListNode.Range=createAST(getNthChild(typeNode,3));
-		}typeNode
+		}
 		else
 		{
 			result->node.paraListNode.type=dt;
@@ -161,7 +193,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 13:
 		result=createASTNode(PARA_LIST_NODE);
 		strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
-		struct ParseTreeNode *typeNode=getNthChild(root,3);
+		typeNode=getNthChild(root,3);
 		result->node.paraListNode.type=getType(typeNode);
 		result->node.paraListNode.Range=NULL;	
 		result->node.paraListNode.next=createAST(getNthChild(root,4));
@@ -169,7 +201,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 14:
 		result=createASTNode(PARA_LIST_NODE);
 		strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
-		struct ParseTreeNode *typeNode=getNthChild(root,4);
+		typeNode=getNthChild(root,4);
 		result->node.paraListNode.type=getType(typeNode);
 		result->node.paraListNode.Range=NULL;	
 		result->node.paraListNode.next=createAST(getNthChild(root,4));
@@ -196,7 +228,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		break;
 	case 25:
 		result=createAST(getNthChild(root,1));
-		result->next=createAST(getNthChild(root,2));
+		tempAST=createAST(getNthChild(root,2));
+		assignNext(result,tempAST);
 		break;
 
 	case 26:
@@ -295,7 +328,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	case 46:
 		result=createAST(getNthChild(root,2));
 		//1.next = 0.next
-		strcpy(result->node.assignNode.varName,getNthChild(root,1)->token_info.lexeme);
+		strcpy(result->node.assignNode.LHS,getNthChild(root,1)->token_info.lexeme);
 		break;
 
 	case 47:
@@ -312,20 +345,12 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 
 	case 49:
 		result=createASTNode(ASSIGN_NODE);
-		struct ASTNode *temp=createAST(getNthChild(root,2));
-		if(temp->nodeType==UNARY_NODE)
-			result->node.unaryNode=temp;
-		else if(temp->nodeType==BINARY_NODE)
-			result->node.binaryNode=temp;
+		result->node.assignNode.expr=createAST(getNthChild(root,2));
 		break;
 
 	case 50:
 		result=createASTNode(ASSIGN_NODE);
-		struct ASTNode *temp=createAST(getNthChild(root,5));
-		if(temp->nodeType==UNARY_NODE)
-			result->node.unaryNode=temp;
-		else if(temp->nodeType==BINARY_NODE)
-			result->node.binaryNode=temp;
+		result->node.assignNode.expr=createAST(getNthChild(root,5));
 		break;
 
 	case 51:
@@ -356,13 +381,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 
 	case 56:
 		result=createASTNode(ID_LIST_NODE);
-		strcpy(result->node.idListNode.varname,getNthChild(root,1)->token_info.lexeme);
+		strcpy(result->node.idListNode.varName,getNthChild(root,1)->token_info.lexeme);
 		result->node.idListNode.next=createAST(getNthChild(root,2));
 		break;
 
 	case 57:
 		result=createASTNode(ID_LIST_NODE);
-		strcpy(result->node.idListNode.varname,getNthChild(root,2)->token_info.lexeme);
+		strcpy(result->node.idListNode.varName,getNthChild(root,2)->token_info.lexeme);
 		result->node.idListNode.next=createAST(getNthChild(root,3));
 		break;
 
@@ -380,12 +405,12 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	break;
         case 61:
 		result=createAST(getNthChild(root,2));
-		result->node.binaryNode.expr1=getNthChild(root,1);
+		result->node.binaryNode.expr1=createAST(getNthChild(root,1));
 		break;
         case 62:
 		result=createASTNode(BINARY_NODE);
 		result->node.binaryNode.op=getOperator(getNthChild(root,1));
-        	result->node.binaryNode.expr2=getNthChild(root,3);
+        	result->node.binaryNode.expr2=createAST(getNthChild(root,3));
         	break;
         case 63:
 		result=result->node.binaryNode.expr1;
@@ -480,7 +505,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             result->node.boolNode.value=BOOL_FALSE;
             break;
         case 97:
-            result=createAST(getNthChild(root,3))
+            result=createAST(getNthChild(root,3));
             break;
         case 98:
             result=NULL;
@@ -497,8 +522,11 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 101:
             result=createASTNode(RANGE_NODE);
-            result->node.rangeNode.Range1=getType(getNthChild(root,1));
-            result->node.rangeNode.Range2=getType(getNthChild(root,3));
+            result->node.rangeNode.Range1=createASTNode(NUM_NODE);
+            result->node.rangeNode.Range1->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
+
+            result->node.rangeNode.Range2=createASTNode(NUM_NODE);
+            result->node.rangeNode.Range2->node.numNode.num=getNthChild(root,2)->token_info.value.value.num;
             break;
     }
     return result;

@@ -58,7 +58,7 @@ struct RangeNode{
 };
 
 struct AssignNode{
-	struct ASTNode *LHS;
+	char LHS[STRING_MAX_SIZE];
 	struct ASTNode *index;
 	struct ASTNode *expr;
 	struct ASTNode *next;
@@ -117,7 +117,7 @@ union untaggedASTNode{
 	struct ModuleDeclareNode moduleDeclareNode;
 	struct IdNode idNode;
 	struct ModuleNode moduleNode;
-	struct ParaListNode paraList;
+	struct ParaListNode paraListNode;
 	struct NumNode numNode;
 	struct RNumNode rNumNode;
 	struct BoolNode boolNode;
@@ -125,6 +125,7 @@ union untaggedASTNode{
 	struct OutputNode outputNode;
 	struct RangeNode rangeNode;
 	struct AssignNode assignNode;
+  struct ModuleReuseNode moduleReuseNode;
 	struct IdListNode idListNode;
 	struct DeclareNode declareNode;
 	struct ConditionNode conditionNode;
