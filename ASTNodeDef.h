@@ -5,6 +5,7 @@
 enum boolean{BOOL_FALSE,BOOL_TRUE};
 enum NodeType{PROGRAM_NODE,MODULE_DECLARE_NODE,ID_NODE,MODULE_NODE,PARA_LIST_NODE,NUM_NODE,RNUM_NODE,BOOL_NODE,INPUT_NODE,OUTPUT_NODE,RANGE_NODE,ASSIGN_NODE,MODULE_REUSE_NODE,ID_LIST_NODE,DECLARE_NODE,CONDITION_NODE,CASE_NODE,FOR_NODE,WHILE_NODE,UNARY_NODE,BINARY_NODE};
 enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};//DT_ARRAY is not an actual datatype
+enum Operator{OP_PLUS, OP_MINUS, OP_MUL, OP_DIV,   OP_AND, OP_OR   , OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
 
 struct ProgramNode{
 	struct ASTNode *moduleDeclarations;
@@ -101,11 +102,11 @@ struct WhileNode{
 	struct ASTNode *next;
 };
 struct UnaryNode{
-	char op[STRING_MAX_SIZE];
+	enum Operator op;
 	struct ASTNode *expr;
 };
 struct BinaryNode{
-	char op[STRING_MAX_SIZE];
+	enum Operator op;
 	struct ASTNode *expr1;
 	struct ASTNode *expr2;
 };

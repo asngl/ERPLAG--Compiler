@@ -3,6 +3,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+enum Operator getOperator(struct ParseTreeNode *root)
+{
+	switch(root->token_info.token)
+	{
+		case PLUS:
+			return OP_PLUS;
+		case MINUS:
+			return OP_MINUS;
+		case MUL:
+			return OP_MUL;
+		case DIV:
+			return OP_DIV;
+		case AND:
+			return OP_AND;
+		case OR:
+			return OP_OR;
+		case LT:
+			return OP_LT;
+		case LE:
+			return OP_LE;
+		case GE:
+			return OP_GE;
+		case GT:
+			return OP_GT;
+		case EQ:
+			return OP_EQ;
+		case NE:
+			return OP_NE;
+		default:
+			printf("getOperator ERROR");
+			break;
+	}
+	return OP_PLUS;
+}
 
 struct ASTNode *createASTNode(enum NodeType nodeType)
 {
@@ -341,7 +375,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	break;
         case 60:
         	result=createASTNode(UNARY_NODE);
-        	strcpy(result->node.unaryNode.op,getNthChild(root,1)->token_info.lexeme);
+        	result->node.unaryNode.op=getOperator(getNthChild(root,1));
         	result->node.unaryNode.expr=createAST(getNthChild(root,2));
         	break;
         case 61:
@@ -350,7 +384,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		break;
         case 62:
 		result=createASTNode(BINARY_NODE);
-		strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+		result->node.binaryNode.op=getOperator(getNthChild(root,1));
         	result->node.binaryNode.expr2=getNthChild(root,3);
         	break;
         case 63:
@@ -370,7 +404,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
         	break;
         case 67:
 		result=createASTNode(BINARY_NODE);
-		strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+		result->node.binaryNode.op=getOperator(getNthChild(root,1));
 		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
 		break;
         case 68:
@@ -382,7 +416,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 70:
             result=createASTNode(BINARY_NODE);
-            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+            result->node.binaryNode.op=getOperator(getNthChild(root,1));
             result->node.binaryNode.expr2=createAST(getNthChild(root,3));
             result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
             break;
@@ -395,7 +429,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             break;
         case 73:
             result=createASTNode(BINARY_NODE);
-            strcpy(result->node.binaryNode.op,getNthChild(root,1)->token_info.lexeme);
+            result->node.binaryNode.op=getOperator(getNthChild(root,1));
             result->node.binaryNode.expr2=createAST(getNthChild(root,3));
             result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
             break;
