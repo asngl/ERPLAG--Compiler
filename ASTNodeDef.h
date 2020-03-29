@@ -27,6 +27,8 @@ struct ModuleNode{
 	struct ASTNode *next;
 	struct ASTNode *ret;
 	struct ASTNode *body;
+	int startLine;
+	int endLine;
 };
 struct ParaListNode{
 	char name[STRING_MAX_SIZE];
@@ -84,6 +86,9 @@ struct ConditionNode{
 	struct ASTNode *Case;
 	struct ASTNode *Default;
 	struct ASTNode *next;
+	int startLine;
+	int endLine;
+	int presentDefault;
 };
 struct CaseNode{
 	struct ASTNode *value;
@@ -95,11 +100,15 @@ struct ForNode{
 	struct ASTNode *range;
 	struct ASTNode *stmt;
 	struct ASTNode *next;
+	int startLine;
+	int endLine;
 };
 struct WhileNode{
 	struct ASTNode *expr;
 	struct ASTNode *stmt;
 	struct ASTNode *next;
+	int startLine;
+	int endLine;
 };
 struct UnaryNode{
 	enum Operator op;
