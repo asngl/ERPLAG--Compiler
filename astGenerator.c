@@ -111,6 +111,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
     struct ASTNode *tempAST;
     struct ParseTreeNode *typeNode;
     enum Datatype dt;
+    int tmp;
     switch(root->ruleNumber)
     {
         case 0:
@@ -148,6 +149,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result->node.moduleNode.inputList=createAST(getNthChild(root,8));
 			result->node.moduleNode.ret=createAST(getNthChild(root,11));
 			result->node.moduleNode.body=createAST(getNthChild(root,12));
+			result->node.moduleNode.startLine=getNthChild(getNthChild(root,12),1)->token_info.lineno;
+			result->node.moduleNode.endLine=getNthChild(getNthChild(root,12),3)->token_info.lineno;
 			break;
 		case 8:
 			result=createAST(getNthChild(root,3));
@@ -489,6 +492,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        strcpy(result->node.conditionNode.id,getNthChild(root,3)->token_info.lexeme);
 	        result->node.conditionNode.Case=createAST(getNthChild(root,6));
 	        result->node.conditionNode.Default=createAST(getNthChild(root,7));
+	        result->node.conditionNode.startLine=getNthChild(root,5)->token_info.lineno;
+	        result->node.conditionNode.endLine=getNthChild(root,8)->token_info.lineno;
+	        tmp=(getNthChild(root,7)->ruleNumber);
+	        if(tmp==98)
+	        	result->node.conditionNode.presentDefault=0;
+	        else
+	        	result->node.conditionNode.presentDefault=1;
 	        break;
 	    case 91:
 	        result=createASTNode(CASE_NODE);
@@ -528,11 +538,15 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        strcpy(result->node.forNode.id,getNthChild(root,3)->token_info.lexeme);
 	        result->node.forNode.range=createAST(getNthChild(root,5));
 	        result->node.forNode.stmt=createAST(getNthChild(root,8));
+	        result->node.forNode.startLine=getNthChild(root,7)->token_info.lineno;
+	        result->node.forNode.endLine=getNthChild(root,9)->token_info.lineno;
 	        break;
 	    case 100:
 	        result=createASTNode(WHILE_NODE);
 	        result->node.whileNode.expr=createAST(getNthChild(root,3));
 	        result->node.whileNode.stmt=createAST(getNthChild(root,6));
+	        result->node.whileNode.startLine=getNthChild(root,5)->token_info.lineno;
+	        result->node.whileNode.endLine=getNthChild(root,7)->token_info.lineno;
 	        break;
 	    case 101:
 	        result=createASTNode(RANGE_NODE);

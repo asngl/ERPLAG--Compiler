@@ -88,7 +88,7 @@ struct ConditionNode{
 	struct ASTNode *next;
 	int startLine;
 	int endLine;
-	int presentDefault;
+	int presentDefault; //1 if present, else 0
 };
 struct CaseNode{
 	struct ASTNode *value;
