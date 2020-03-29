@@ -134,7 +134,7 @@ union untaggedASTNode{
 	struct OutputNode outputNode;
 	struct RangeNode rangeNode;
 	struct AssignNode assignNode;
-  	struct ModuleReuseNode moduleReuseNode;
+  struct ModuleReuseNode moduleReuseNode;
 	struct IdListNode idListNode;
 	struct DeclareNode declareNode;
 	struct ConditionNode conditionNode;
@@ -147,6 +147,7 @@ union untaggedASTNode{
 struct ASTNode{
 	union untaggedASTNode node;
 	enum  NodeType tag;
+  int lineNumber;
 };
 
 #endif
