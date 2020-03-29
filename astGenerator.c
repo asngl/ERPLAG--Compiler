@@ -196,7 +196,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			typeNode=getNthChild(root,4);
 			result->node.paraListNode.type=getType(typeNode);
 			result->node.paraListNode.Range=NULL;	
-			result->node.paraListNode.next=createAST(getNthChild(root,4));
+			result->node.paraListNode.next=createAST(getNthChild(root,5));
 			break;
 		case 15:
 			result=NULL;
