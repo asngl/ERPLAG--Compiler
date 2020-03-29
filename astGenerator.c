@@ -344,11 +344,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		case 49:
 			result=createASTNode(ASSIGN_NODE);
 			result->node.assignNode.expr=createAST(getNthChild(root,2));
+			result->node.assignNode.index=NULL;
 			break;
 
 		case 50:
 			result=createASTNode(ASSIGN_NODE);
 			result->node.assignNode.expr=createAST(getNthChild(root,5));
+			result->node.assignNode.index=createAST(getNthChild(root,2));
 			break;
 
 		case 51:
