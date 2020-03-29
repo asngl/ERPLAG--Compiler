@@ -542,3 +542,120 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
     return result;
 }
 
+//Utility function for printing AST tree
+
+void printInlineAstTree(struct ASTNode *root, int spaces){
+
+	if(root == NULL)return;
+	printSpaces(spaces);
+	switch(root->tag){
+		case PROGRAM_NODE:
+			printf("Program Node\n");
+			printInlineAstTree(root->node.programNode.moduleDeclarations,spaces+1);
+			printInlineAstTree(root->node.programNode.otherModules1,spaces+1);
+			printInlineAstTree(root->node.programNode.driverModule,spaces+1);
+			printInlineAstTree(root->node.programNode.otherModules2,spaces+1);
+			break;
+		case MODULE_DECLARE_NODE:
+			printf("ModuleDeclareNode, Name- %s\n",root->node.moduleDeclareNode.moduleName);
+			printInlineAstTree(root->node.moduleDeclareNode.next,spaces);
+			break;
+		case ID_NODE:
+			printf("ID Node, Name - %s\n",root->node.idNode.varName);
+			printInlineAstTree(root->node.idNode.index, spaces+1);
+			break;
+		case MODULE_NODE:
+			printf("Module_Node, Name - %s\n",root->node.moduleNode.moduleName);
+			printInlineAstTree(root->node.moduleNode.inputList,spaces+1);
+			printInlineAstTree(root->node.moduleNode.ret,spaces+1);
+			printInlineAstTree(root->node.moduleNode.body,spaces+1);
+			printInlineAstTree(root->node.moduleNode.next,spaces);
+			break;
+		case PARA_LIST_NODE:
+			printf("ParaListNode, Name- %s\n", root->node.paraListNode.name);
+			printInlineAstTree(root->node.paraListNode.Range,spaces+1);
+			printInlineAstTree(root->node.paraListNode.next,spaces);
+			break;
+		case NUM_NODE:
+			printf("NumNode, Num-%d\n",root->node.numNode.num );
+			break;
+		case RNUM_NODE:
+			printf("Rnumnode, Rnum-%f\n",root->node.rNumNode.rnum);
+			break;
+		case BOOL_NODE:
+			printf("BoolNode, Value- %d\n",root->node.boolNode.value );
+			break;
+		case INPUT_NODE:
+			printf("Input Node, Name- %s\n",root->node.inputNode.name );
+			printInlineAstTree(root->node.inputNode.next,spaces);
+			break;
+		case OUTPUT_NODE:
+			printf("Output Node\n" );
+			printInlineAstTree(root->node.outputNode.value,spaces+1);
+			printInlineAstTree(root->node.outputNode.next,spaces);
+			break;
+		case RANGE_NODE:
+			printf("Range Node\n");
+			printInlineAstTree(root->node.rangeNode.Range1,spaces+1);
+			printInlineAstTree(root->node.rangeNode.Range1,spaces+1);
+			break;
+		case ASSIGN_NODE:
+			printf("Assign Node, LHS- %s\n",root->node.assignNode.LHS );
+			printInlineAstTree(root->node.assignNode.index,spaces+1);
+			printInlineAstTree(root->node.assignNode.expr,spaces+1);
+			printInlineAstTree(root->node.assignNode.next,spaces);
+			break;
+		case MODULE_REUSE_NODE:
+			printf("ModuleReuseNode, ID-%s\n",root->node.moduleReuseNode.id );
+			printInlineAstTree(root->node.moduleReuseNode.optional,spaces+1);
+			printInlineAstTree(root->node.moduleReuseNode.idList,spaces+1);
+			printInlineAstTree(root->node.moduleReuseNode.next,spaces);
+			break;
+		case ID_LIST_NODE:
+			printf("IDListNode, Name- %s\n",root->node.idListNode.varName );
+			printInlineAstTree(root->node.idListNode.next,spaces);
+			break;
+		case DECLARE_NODE:
+			printf("DeclareNode, type-%d\n",root->node.declareNode.dataType );
+			printInlineAstTree(root->node.declareNode.idList,spaces+1);
+			printInlineAstTree(root->node.declareNode.Range,spaces+1);
+			printInlineAstTree(root->node.declareNode.next,spaces);
+			break;
+		case CONDITION_NODE:
+			printf("Condition Node, ID-%s\n",root->node.conditionNode.id );
+			printInlineAstTree(root->node.conditionNode.Case,spaces+1);
+			printInlineAstTree(root->node.conditionNode.Default,spaces+1);
+			printInlineAstTree(root->node.conditionNode.next,spaces);
+			break;
+		case CASE_NODE:
+			printf("Case Node\n");
+			printInlineAstTree(root->node.caseNode.value,spaces+1);
+			printInlineAstTree(root->node.caseNode.stmt,spaces+1);
+			printInlineAstTree(root->node.caseNode.next,spaces);
+			break;
+		case FOR_NODE:
+			printf("For Node, ID-%s\n",root->node.forNode.id );
+			printInlineAstTree(root->node.forNode.range,spaces+1);
+			printInlineAstTree(root->node.forNode.stmt,spaces+1);
+			printInlineAstTree(root->node.forNode.next,spaces);
+			break;
+		case WHILE_NODE:
+			printf("While Node\n");
+			printInlineAstTree(root->node.whileNode.expr,spaces+1);
+			printInlineAstTree(root->node.whileNode.stmt,spaces+1);
+			printInlineAstTree(root->node.whileNode.next,spaces);
+			break;
+		case UNARY_NODE:
+			printf("Unary Node, Op- %d\n",root->node.unaryNode.op);
+			printInlineAstTree(root->node.unaryNode.expr,spaces+1);
+			break;
+		case BINARY_NODE:
+			printf("Binary Node, Op-%d\n", root->node.binaryNode.op);
+			printInlineAstTree(root->node.binaryNode.expr1,spaces+1);
+			printInlineAstTree(root->node.binaryNode.expr2,spaces+1);
+			break;
+		default:
+			printf("No Node Found\n");
+
+	}
+}

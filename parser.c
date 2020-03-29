@@ -132,6 +132,8 @@ fclose(fp);
 
 
 
+
+
 //Function to generate new node for given Terminal
 struct ParseTreeNode *newTNode(enum Terminals terminal)
 {
@@ -285,6 +287,8 @@ void printInlineParseTree(struct ParseTreeNode *root,int spaces)
 		node=node->rightSibling;
 	}
 }
+
+
 
 //Returns the generated parse tree from given testFile as a structure
 struct ParseTreeNode *parseInputSourceCode(char *testFile)
