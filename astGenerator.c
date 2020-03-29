@@ -543,11 +543,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 }
 
 //Utility function for printing AST tree
-
+void printSpaces2(int n)
+{
+	while(n--)printf("--");
+}
 void printInlineAstTree(struct ASTNode *root, int spaces){
 
 	if(root == NULL)return;
-	printSpaces(spaces);
+	printSpaces2(spaces);
 	switch(root->tag){
 		case PROGRAM_NODE:
 			printf("Program Node\n");

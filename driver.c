@@ -21,6 +21,7 @@ struct ParseTreeNode *parseInputSourceCode(char *);
 void printParseTree(struct ParseTreeNode * root, char * outfile);
 void printInlineParseTree(struct ParseTreeNode * root, int spaces);
 struct ASTNode *createAST(struct ParseTreeNode *root);
+void printInlineAstTree(struct ASTNode *root, int spaces);
 //Main Function
 int main(int argc, char *argv[])
 {	
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
 				printInlineParseTree(root,0);
 				printf("\n Printing AST: \n");
 				ASTroot=createAST(root);
+				printInlineAstTree(ASTroot,0);
 				break;
 			case 4:
 				//Option to check the amount of time taken by compiler to process the parse tree
