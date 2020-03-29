@@ -192,7 +192,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			break;
 		case 14:
 			result=createASTNode(PARA_LIST_NODE);
-			strcpy(result->node.paraListNode.name, getNthChild(root,1)->token_info.lexeme);
+			strcpy(result->node.paraListNode.name, getNthChild(root,2)->token_info.lexeme);
 			typeNode=getNthChild(root,4);
 			result->node.paraListNode.type=getType(typeNode);
 			result->node.paraListNode.Range=NULL;	
