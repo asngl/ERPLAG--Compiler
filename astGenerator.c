@@ -101,6 +101,8 @@ void assignNext(struct ASTNode *left, struct ASTNode *right)//Utility fucntion t
 			return;
 		case WHILE_NODE:left->node.whileNode.next=right;
 			return;
+		case DECLARE_NODE:left->node.declareNode.next=right;
+			return;
 	}
 }
 struct ASTNode *createAST(struct ParseTreeNode *root)
@@ -600,7 +602,7 @@ void printInlineAstTree(struct ASTNode *root, int spaces){
 		case RANGE_NODE:
 			printf("Range Node\n");
 			printInlineAstTree(root->node.rangeNode.Range1,spaces+1);
-			printInlineAstTree(root->node.rangeNode.Range1,spaces+1);
+			printInlineAstTree(root->node.rangeNode.Range2,spaces+1);
 			break;
 		case ASSIGN_NODE:
 			printf("Assign Node, LHS- %s\n",root->node.assignNode.LHS );
