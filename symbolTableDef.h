@@ -4,9 +4,10 @@ typedef struct VariableEntry
 {
 	char varName[25];
 	char type[25];
-	//Line number?
 	//Offset?
-	struct VariableEntry *next; 
+	int offset; //Offset to be calculated for code generation
+	int width;  //Length in bytes
+	struct VariableEntry *next;// For collisions
 }VariableEntry;
 
 typedef VariableEntry[43] VariableEntryTable;
@@ -19,12 +20,18 @@ typedef struct ParameterList
 	struct ParameterList *next;
 }ParameterList;
 
+typedef struct Scope{
+	int startLine;
+	int endLine;
+}Scope;
 typedef struct LocalTable
 {
 	struct LocalTable *parent;
 	struct LocalTable *leftChild;
 	struct LocalTable *rightSibling;
-	VariableEntryTable variableTable;	//Pointer or static?
+	struct LocalTable *lastSibling;
+	Scope scope;
+	VariableEntryTable variableTable;	//Pointer or static??
 }LocalTable;
 
 typedef struct FunctionTable{
@@ -33,12 +40,11 @@ typedef struct FunctionTable{
 	ParameterList *inputParaList;
 	ParameterList *outputParaList;
 	LocalTable *localTable;
-	struct FunctionTable *next;
+	struct FunctionTable *next; // For Collisions
 }FunctionTable;
 
 
 typedef struct SymbolTableEntry{
-	char funcName[25];
 	FunctionTable *pointer;
 }SymbolTableEntry;
 
