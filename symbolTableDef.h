@@ -1,21 +1,39 @@
-#include<stdio.h>
+#include "ASTNodeDef.h"
+#define MOD 127
+//enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};
+
+typedef union ArrayBound{
+	int bound;
+	char lexeme[25];
+}ArrayBound;
+
+typedef struct Type
+{
+	enum Datatype type;
+	ArrayBound low;	//Lower bound for Array type
+	int tagLow;	
+	ArrayBound high;
+	int tagHigh;
+}Type;
 
 typedef struct VariableEntry
 {
 	char varName[25];
-	char type[25];
-	//Offset?
+	Type type;
+	int lineNumber;
+	int isStatic;	//1 for Static, 0 for Dynamic
 	int offset; //Offset to be calculated for code generation
 	int width;  //Length in bytes
 	struct VariableEntry *next;// For collisions
 }VariableEntry;
 
-typedef VariableEntry[43] VariableEntryTable;
+typedef VariableEntry[MOD] VariableEntryTable;
 
 typedef struct ParameterList
 {
 	char varName[25];
-	char type[25];
+	Type type;
+	int initFlag;
 	//Line number
 	struct ParameterList *next;
 }ParameterList;
@@ -29,23 +47,34 @@ typedef struct LocalTable
 	struct LocalTable *parent;
 	struct LocalTable *leftChild;
 	struct LocalTable *rightSibling;
-	struct LocalTable *lastSibling;
+	struct LocalTable *lastChild;
 	Scope scope;
-	VariableEntryTable variableTable;	//Pointer or static??
+	VariableEntryTable variableTable;
 }LocalTable;
 
 typedef struct FunctionTable{
 	char funcName[25];
+	int declareFlag;
+	int defineFlag;
+	int useFlag;
 	int fsize;
+	int lineNumber;			//Line number for function Declaration
+	int lineNumberDef;		//Line number for function Defintion
 	ParameterList *inputParaList;
 	ParameterList *outputParaList;
 	LocalTable *localTable;
 	struct FunctionTable *next; // For Collisions
 }FunctionTable;
-
-
+/*
+struct ParaListNode{
+	char name[STRING_MAX_SIZE];
+	enum Datatype type;
+	struct ASTNode *next;
+	struct ASTNode *Range;
+};
+*/
 typedef struct SymbolTableEntry{
 	FunctionTable *pointer;
 }SymbolTableEntry;
 
-typedef SymbolTableEntry[127] SymbolTable;
+typedef SymbolTableEntry[MOD] SymbolTable;

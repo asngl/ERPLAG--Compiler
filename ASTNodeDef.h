@@ -147,7 +147,7 @@ union untaggedASTNode{
 struct ASTNode{
 	union untaggedASTNode node;
 	enum  NodeType tag;
-  int lineNumber;
+  	int lineNumber;
 };
 
 #endif
