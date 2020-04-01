@@ -3,6 +3,12 @@
 #include "ASTNodeDef.h"
 #include <string.h>
 
+#define arrayWidth 10
+#define intWidth 4
+#define realWidth 8
+#define boolWidth 1
+
+
 int computeHashFromString(char *str){
 	int sum=0,i=0;
 	while(str[i]!='\0'){
@@ -53,9 +59,64 @@ FunctionTable *newFunctionNode(char *funcName){
 	return newNode;
 }
 
+int getWidth(Type type){
+	if(type.arrayFlag ==1){
+		return arrayWidth;
+	}
+	switch(type.type){
+		case DT_INTEGER:
+			return intWidth;
+		case DT_REAL:
+			return realWidth;
+		case DT_BOOLEAN:
+			return boolWidth;
+	}
+	return 0;
+}
 
-ParameterList *populateParaList(struct ASTNode *node){
+
+
+ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
 	
+	if (root==NULL)
+	{
+		return NULL;
+	}
+	ParameterList *initNode;
+	initNode=(ParameterList *)malloc(sizeof(ParameterList));
+	strcpy(initNode->varName,root->node.paraListNode.name);
+	initNode->type.type=root->node.paraListNode.type;
+	if(root->node.paraListNode.Range==NULL){
+		initNode->type.arrayFlag=0;
+	}
+	else{
+		initNode->type.arrayFlag=1;
+		if(root->node.paraListNode.Range->node.rangeNode.Range1->tag == ID_NODE){
+			initNode->type.tagLow=1;
+			strcpy(initNode->type.low.lexeme,root->node.paraListNode.Range->node.rangeNode.Range1->node.idNode.varName);
+		}else{
+			initNode->type.tagLow=0;
+			initNode->type.low.bound=root->node.paraListNode.Range->node.rangeNode.Range1->node.numNode.num;
+		}
+		if(root->node.paraListNode.Range->node.rangeNode.Range2->tag == ID_NODE){
+			initNode->type.tagHigh=1;
+			strcpy(initNode->type.high.lexeme,root->node.paraListNode.Range->node.rangeNode.Range2->node.idNode.varName);
+		}else{
+			initNode->type.tagHigh=0;
+			initNode->type.high.bound=root->node.paraListNode.Range->node.rangeNode.Range2->node.numNode.num;
+		}
+		if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
+			initNode->type.isStatic =1;
+		}else{
+			initNode->type.isStatic =0;
+		}
+	}
+	initNode->initFlag=0;
+	initNode->lineNumber=root->lineNumber;
+	initNode->offset=baseOffset;
+	initNode->width = getWidth(initNode->type);
+	initNode->next=populateParaList(root->node.paraListNode.next,baseOffset+initNode->width);
+	return initNode;
 }
 
 VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
@@ -114,9 +175,28 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		}
 		ptr->defineFlag=1;
 		ptr->lineNumberDef=root->lineNumber;
-		ptr->inputParaList = populateParaList(root->node.moduleNode.inputList);
-		ptr->outputParaList = populateParaList(root->node.moduleNode.ret);
-		ptr->localTable = populateLocalTable(root->node.moduleNode.body);
+		ptr->inputParaList = populateParaList(root->node.moduleNode.inputList,0);
+		int offset=0;
+		if(ptr->inputParaList==NULL){
+			offset=0;
+		}
+		else{
+			ParameterList *tmp;
+			tmp=ptr->inputParaList;
+			while(tmp->next!=NULL)
+				tmp=tmp->next;
+			offset=tmp->offset+tmp->width;
+		}
+		ptr->outputParaList = populateParaList(root->node.moduleNode.ret,offset);//Offset change
+		if(ptr->outputParaList==NULL){}
+		else{
+			ParameterList *tmp;
+			tmp=ptr->outputParaList;
+			while(tmp->next!=NULL)
+				tmp=tmp->next;
+			offset=tmp->offset+tmp->width;
+		}
+		ptr->localTable = populateLocalTable(root->node.moduleNode.body,offset);
 		return ptr;
 	}
 	else{

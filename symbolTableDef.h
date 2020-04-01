@@ -10,10 +10,13 @@ typedef union ArrayBound{
 typedef struct Type
 {
 	enum Datatype type;
+	int arrayFlag;		//1 if variable is an array
 	ArrayBound low;	//Lower bound for Array type
-	int tagLow;	
+	int tagLow;		//0 for num, 1 for ID
 	ArrayBound high;
 	int tagHigh;
+	int isStatic;	//1 for Static, 0 for Dynamic
+
 }Type;
 
 typedef struct VariableEntry
@@ -21,7 +24,6 @@ typedef struct VariableEntry
 	char varName[25];
 	Type type;
 	int lineNumber;
-	int isStatic;	//1 for Static, 0 for Dynamic
 	int offset; //Offset to be calculated for code generation
 	int width;  //Length in bytes
 	struct VariableEntry *next;// For collisions
@@ -34,6 +36,9 @@ typedef struct ParameterList
 	char varName[25];
 	Type type;
 	int initFlag;
+	int lineNumber;
+	int offset;
+	int width;
 	//Line number
 	struct ParameterList *next;
 }ParameterList;
