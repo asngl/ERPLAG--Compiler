@@ -36,6 +36,7 @@ FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string){
 LocalTable *newLocalTable(){
 	LocalTable *node;
 	node=(LocalTable *)malloc(sizeof(LocalTable));
+	node->size=0;
 	node->parent=NULL;
 	node->leftChild=NULL;
 	node->rightSibling=NULL;
@@ -220,76 +221,157 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 }
 
 
-/*
-LocalTable *populateLocalTable(struct ASTNode *node)
+//void addChild(LocalTable *parent, LocalTable *child);
+
+
+LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
 {
-	switch(node->tag)
-	{
-		case INPUT_NODE:
-			//EMPTY
-			break;
-		case OUTPUT_NODE:
-			//EMPTY
-			break;
-		case ASSIGN_NODE:
-			break;
-		case MODULE_REUSE_NODE:
-			break;
-		case CONDITION_NODE:
-			break;
-		case CASE_NODE:
-			break;
-		case FOR_NODE:
-			break;
-		case WHILE_NODE:
-			break;
-		case DECLARE_NODE:
-			break;
-	}
+    LocalTable *parent=newLocalTable();
+    LocalTable *child;
+    int newOffset;
+    int defaultDone=0;
+    struct ASTNode *ptr;
+    struct ASTNode *cases;
+    struct ASTNode *root;
+    cases=head->node.conditionNode.Case;
+    while(true)
+    {
+        if(defaultDone==0)
+            root=cases->node.caseNode.stmt;
+        while(root!=NULL)
+        {
+            switch(root->tag)
+            {
+                case INPUT_NODE:root=root->node.inputNode.next;
+                    //EMPTY
+                    break;
+                case OUTPUT_NODE:root=root->node.outputNode.next;
+                    //EMPTY
+                    break;
+                case ASSIGN_NODE:root=root->node.assignNode.next;
+                    //EMPTY
+                    break;
+                case MODULE_REUSE_NODE:root=root->node.moduleReuseNode.next;
+                    //EMPTY
+                    break;
+                case CONDITION_NODE:
+                    child=populateConditionNodeLocalTable(root,baseOffset);
+                    child->scope.startLine=root->node.conditionNode.startLine;
+                    child->scope.endLine=root->node.conditionNode.endLine;        
+                    baseOffset+=child->size;
+                    addChild(parent,child);
+                    parent->size+=child->size;
+                    root=root->node.conditionNode.next;
+                    /*ptr = root->node.conditionNode.Case;
+                    child = populateLocalTable(ptr->node.caseNode.stmt,baseOffset);
+                    baseOffset+=child->size;
+                    ptr=ptr->node.caseNode.next;
+                    while(ptr!=NULL){
+                        newOffset=insertLocalTable(child,ptr->node.caseNode)
+                    }*/
+                    break;
+                case FOR_NODE:
+                    child=populateLocalTable(root->node.forNode.stmt,baseOffset);
+                    child->scope.startLine=root->node.forNode.startLine;
+                    child->scope.endLine=root->node.forNode.endLine;        
+                    baseOffset+=child->size;
+                    addChild(parent,child);
+                    parent->size+=child->size;
+                    root=root->node.forNode.next;
+                    break;
+                case WHILE_NODE:
+                    child=populateLocalTable(root->node.whileNode.stmt,baseOffset);
+                    child->scope.startLine=root->node.whileNode.startLine;
+                    child->scope.endLine=root->node.whileNode.endLine;              
+                    baseOffset+=child->size;
+                    addChild(parent,child);
+                    parent->size+=child->size;
+                    root=root->node.whileNode.next;
+                    break;
+                case DECLARE_NODE:
+                    newOffset=insertLocalTable(parent,root,baseOffset);
+                    parent->size+=newOffset-baseOffset;
+                    baseOffset=newOffset;
+                    root=root->node.declareNode.next;
+                    break;
+            }
+        }
+        if(cases!=NULL)
+            cases=cases->node.caseNode.next;
+        if(defaultDone==0&&cases==NULL){
+            root=head->node.conditionNode.Default;
+            defaultDone=1;
+        }
+        else if(cases==NULL)break;
+    }
+    return parent;
 }
-*/
 LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
 {
-	LocalTable *parent=(LocalTable *)malloc(sizeof(LocalTable));
-	while(root!=null)
-	{
-		switch(root->tag)
-		{
-			case INPUT_NODE:root=root->node.inputNode.next;
-				//EMPTY
-				break;
-			case OUTPUT_NODE:root=root->node.outputNode.next;
-				//EMPTY
-				break;
-			case ASSIGN_NODE:root=root->node.assignNode.next;
-				//EMPTY
-				break;
-			case MODULE_REUSE_NODE:
-				//EMPTY
-				break;
-			case CONDITION_NODE:
-
-				break;
-			// case CASE_NODE:
-			// 	break;
-			case FOR_NODE:
-				LocalTable *child;
-				child==(LocalTable *)malloc(sizeof(LocalTable));
-				break;
-			case WHILE_NODE:
-				break;
-			case DECLARE_NODE:
-				break;
-		}
-	}
+    LocalTable *parent=newLocalTable();
+    LocalTable *child;
+    int newOffset;
+    struct ASTNode *ptr;
+    while(root!=NULL)
+    {
+        switch(root->tag)
+        {
+            case INPUT_NODE:root=root->node.inputNode.next;
+                //EMPTY
+                break;
+            case OUTPUT_NODE:root=root->node.outputNode.next;
+                //EMPTY
+                break;
+            case ASSIGN_NODE:root=root->node.assignNode.next;
+                //EMPTY
+                break;
+            case MODULE_REUSE_NODE:root=root->node.moduleReuseNode.next;
+                //EMPTY
+                break;
+            case CONDITION_NODE:
+                child=populateConditionNodeLocalTable(root,baseOffset);
+                child->scope.startLine=root->node.conditionNode.startLine;
+                child->scope.endLine=root->node.conditionNode.endLine;        
+                baseOffset+=child->size;
+                addChild(parent,child);
+                parent->size+=child->size;
+                root=root->node.conditionNode.next;
+                /*ptr = root->node.conditionNode.Case;
+                child = populateLocalTable(ptr->node.caseNode.stmt,baseOffset);
+                baseOffset+=child->size;
+                ptr=ptr->node.caseNode.next;
+                while(ptr!=NULL){
+                    newOffset=insertLocalTable(child,ptr->node.caseNode)
+                }*/
+                break;
+            case FOR_NODE:
+                child=populateLocalTable(root->node.forNode.stmt,baseOffset);
+                child->scope.startLine=root->node.forNode.startLine;
+                child->scope.endLine=root->node.forNode.endLine;        
+                baseOffset+=child->size;
+                addChild(parent,child);
+                parent->size+=child->size;
+                root=root->node.forNode.next;
+                break;
+            case WHILE_NODE:
+                child=populateLocalTable(root->node.whileNode.stmt,baseOffset);
+                child->scope.startLine=root->node.whileNode.startLine;
+                child->scope.endLine=root->node.whileNode.endLine;              
+                baseOffset+=child->size;
+                addChild(parent,child);
+                parent->size+=child->size;
+                root=root->node.whileNode.next;
+                break;
+            case DECLARE_NODE:
+                newOffset=insertLocalTable(parent,root,baseOffset);
+                parent->size+=newOffset-baseOffset;
+                baseOffset=newOffset;
+                root=root->node.declareNode.next;
+                break;
+        }
+    }
+    return parent;
 }
-
-
-//void addChild(LocalTable *localTable, LocalTable *siblingTable);
-
-
-
-
 
 FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 	if(root->tag==MODULE_DECLARE_NODE){
