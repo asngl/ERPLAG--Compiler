@@ -78,6 +78,33 @@ int getWidth(Type type){
 	return 0;
 }
 
+int getWidthLocal(Type type){
+	if(type.arrayFlag ==1){
+		if(type.isStatic==0)
+		return arrayWidth;
+		else
+		{
+			switch(type.type){
+				case DT_INTEGER:
+					return (type.high.bound-type.low.bound+1)*intWidth;
+				case DT_REAL:
+					return (type.high.bound-type.low.bound+1)*realWidth;
+				case DT_BOOLEAN:
+					return (type.high.bound-type.low.bound+1)*boolWidth;
+			}
+		}
+	}
+	switch(type.type){
+		case DT_INTEGER:
+			return intWidth;
+		case DT_REAL:
+			return realWidth;
+		case DT_BOOLEAN:
+			return boolWidth;
+	}
+	return 0;
+}
+
 
 
 ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
@@ -181,8 +208,8 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 
 		initNode->lineNumber=currVar->lineNumber;
 		initNode->offset=baseOffset;
-		baseOffset+=getWidth(initNode->type);
-		initNode->width=getWidth(initNode->type);
+		initNode->width=getWidthLocal(initNode->type);
+		baseOffset+=initNode->width;
 		int hash;
 		hash = computeHashFromString(currVar->node.idListNode.varName);
 		initNode->next=(localTable->variableTable)[hash];
@@ -193,11 +220,68 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 }
 
 
-
-
+/*
 LocalTable *populateLocalTable(struct ASTNode *node)
 {
+	switch(node->tag)
+	{
+		case INPUT_NODE:
+			//EMPTY
+			break;
+		case OUTPUT_NODE:
+			//EMPTY
+			break;
+		case ASSIGN_NODE:
+			break;
+		case MODULE_REUSE_NODE:
+			break;
+		case CONDITION_NODE:
+			break;
+		case CASE_NODE:
+			break;
+		case FOR_NODE:
+			break;
+		case WHILE_NODE:
+			break;
+		case DECLARE_NODE:
+			break;
+	}
+}
+*/
+LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
+{
+	LocalTable *parent=(LocalTable *)malloc(sizeof(LocalTable));
+	while(root!=null)
+	{
+		switch(root->tag)
+		{
+			case INPUT_NODE:root=root->node.inputNode.next;
+				//EMPTY
+				break;
+			case OUTPUT_NODE:root=root->node.outputNode.next;
+				//EMPTY
+				break;
+			case ASSIGN_NODE:root=root->node.assignNode.next;
+				//EMPTY
+				break;
+			case MODULE_REUSE_NODE:
+				//EMPTY
+				break;
+			case CONDITION_NODE:
 
+				break;
+			// case CASE_NODE:
+			// 	break;
+			case FOR_NODE:
+				LocalTable *child;
+				child==(LocalTable *)malloc(sizeof(LocalTable));
+				break;
+			case WHILE_NODE:
+				break;
+			case DECLARE_NODE:
+				break;
+		}
+	}
 }
 
 
