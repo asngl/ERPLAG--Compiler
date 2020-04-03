@@ -7,7 +7,7 @@
 #define intWidth 4
 #define realWidth 8
 #define boolWidth 1
-
+#define controlSize 20
 
 int computeHashFromString(char *str){
 	int sum=0,i=0;
@@ -52,6 +52,10 @@ FunctionTable *newFunctionNode(char *funcName){
 	newNode->useFlag=-1;
 	newNode->fsize=-1;
 	newNode->lineNumber=-1;
+	newNode->lineNumberDef=-1;
+	newNode->controlBaseOffset=-1;
+	newNode->staticVariableOffset=-1;
+	newNode->dynamicVariableOffset=-1;
 	newNode->inputParaList=NULL;
 	newNode->outputParaList=NULL;
 	newNode->localTable=newLocalTable();
@@ -119,11 +123,85 @@ ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
 	return initNode;
 }
 
-VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
-LocalTable *populateLocalTable(struct ASTNode *node);
-VariableEntry *insertLocalTable(LocalTable *localTable,struct DeclareNode declareNode);
+VariableEntry *searchLocalTable(LocalTable *localTable,char *string){
+	int hash;
+	hash = computeHashFromString(string);
+	VariableEntry *ptr;
+	ptr = (localTable->variableTable)[hash];
+	while(ptr!=NULL){
+		if(strcmp(string,ptr->varName)==0){
+			return ptr;
+		}
+		ptr=ptr->next;
+	}
+	return NULL;
 
-void addChild(LocalTable *localTable, LocalTable *siblingTable);
+}
+
+int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)	//returns offset after allocation
+{
+	struct ASTNode *currVar;
+	currVar = root->node.declareNode.idList;
+	while(currVar!=NULL){
+		VariableEntry *search;
+		search=searchLocalTable(localTable,currVar->node.idListNode.varName);
+		if(search!=NULL){
+			printf("Error on line number: %d, "%s" already declared on line number: %d",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
+			continue;
+		}
+		VariableEntry *initNode;
+		initNode = (VariableEntry *)malloc(sizeof(VariableEntry));
+		strcpy(initNode->varName,currVar->node.idListNode.varName);
+		initNode->type.type=root->node.declareNode.dataType;
+		if(root->node.declareNode.Range==NULL){
+			initNode->type.arrayFlag=0;
+		}
+		else{
+			initNode->type.arrayFlag=1;
+			if(root->node.declareNode.Range->node.rangeNode.Range1->tag == ID_NODE){
+				initNode->type.tagLow=1;
+				strcpy(initNode->type.low.lexeme,root->node.declareNode.Range->node.rangeNode.Range1->node.idNode.varName);
+			}else{
+				initNode->type.tagLow=0;
+				initNode->type.low.bound=root->node.declareNode.Range->node.rangeNode.Range1->node.numNode.num;
+			}
+			if(root->node.declareNode.Range->node.rangeNode.Range2->tag == ID_NODE){
+				initNode->type.tagHigh=1;
+				strcpy(initNode->type.high.lexeme,root->node.declareNode.Range->node.rangeNode.Range2->node.idNode.varName);
+			}else{
+				initNode->type.tagHigh=0;
+				initNode->type.high.bound=root->node.declareNode.Range->node.rangeNode.Range2->node.numNode.num;
+			}
+			if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
+				initNode->type.isStatic =1;
+			}else{
+				initNode->type.isStatic =0;
+			}
+		}
+
+		initNode->lineNumber=currVar->lineNumber;
+		initNode->offset=baseOffset;
+		baseOffset+=getWidth(initNode->type);
+		initNode->width=getWidth(initNode->type);
+		int hash;
+		hash = computeHashFromString(currVar->node.idListNode.varName);
+		initNode->next=(localTable->variableTable)[hash];
+		(localTable->variableTable)[hash] = initNode;
+		currVar=currVar->node.idListNode.next;
+	}
+	return baseOffset;
+}
+
+
+
+
+LocalTable *populateLocalTable(struct ASTNode *node)
+{
+
+}
+
+
+//void addChild(LocalTable *localTable, LocalTable *siblingTable);
 
 
 
@@ -196,7 +274,12 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 				tmp=tmp->next;
 			offset=tmp->offset+tmp->width;
 		}
+		ptr->controlBaseOffset=offset;
+		offset+=controlSize;
+		ptr->staticVariableOffset=offset;
+
 		ptr->localTable = populateLocalTable(root->node.moduleNode.body,offset);
+		ptr->dynamicVariableOffset = offset + ptr->localTable->size;
 		return ptr;
 	}
 	else{

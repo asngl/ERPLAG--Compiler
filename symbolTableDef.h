@@ -54,6 +54,7 @@ typedef struct LocalTable
 	struct LocalTable *rightSibling;
 	struct LocalTable *lastChild;
 	Scope scope;
+	int size;
 	VariableEntryTable variableTable;
 }LocalTable;
 
@@ -65,6 +66,9 @@ typedef struct FunctionTable{
 	int fsize;
 	int lineNumber;			//Line number for function Declaration
 	int lineNumberDef;		//Line number for function Defintion
+	int controlBaseOffset;
+	int staticVariableOffset;
+	int dynamicVariableOffset;
 	ParameterList *inputParaList;
 	ParameterList *outputParaList;
 	LocalTable *localTable;
