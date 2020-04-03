@@ -28,7 +28,7 @@ typedef struct VariableEntry
 	int width;  //Length in bytes
 	struct VariableEntry *next;// For collisions
 }VariableEntry;
-
+currVar->node.idListNode.varName
 typedef VariableEntry[MOD] VariableEntryTable;
 
 typedef struct ParameterList
