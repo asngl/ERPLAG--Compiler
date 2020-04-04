@@ -519,7 +519,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    case 89:
 	    	result=createASTNode(DECLARE_NODE);
 	    	result->node.declareNode.idList=createAST(getNthChild(root,2));
-	       	result->node.declareNode.dataType=getDatatype(getNthChild(root,4));
+
+	       	typeNode=getNthChild(root,4);
+			dt=getDatatype(typeNode);
+			if(dt==DT_ARRAY)
+				result->node.declareNode.dataType=getType(getNthChild(typeNode,6));
+			else
+				result->node.paraListNode.dataType=dt;
+
 	        result->node.declareNode.Range=createAST(getNthChild(root,4));
 	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
