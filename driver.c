@@ -16,6 +16,9 @@ Ayush Singhal  2017A7PS0116P
 #include "parser.h"
 #include "ASTNodeDef.h"
 #include <time.h>
+#include "symbolTableDef.h"
+#include "symbolTable.h"
+
 
 struct ParseTreeNode *parseInputSourceCode(char *);
 void printParseTree(struct ParseTreeNode * root, char * outfile);
@@ -83,6 +86,9 @@ int main(int argc, char *argv[])
 				printf("\n Printing AST: \n");
 				ASTroot=createAST(root);
 				printInlineAstTree(ASTroot,0);
+				SymbolTable *mainTable;
+				mainTable=populateSymbolTable(ASTroot);
+				
 				break;
 			case 4:
 				//Option to check the amount of time taken by compiler to process the parse tree

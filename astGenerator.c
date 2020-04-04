@@ -1,3 +1,6 @@
+
+#ifndef _ASTGENERATORC
+#define _ASTGENERATORC
 #include "ASTNodeDef.h"
 #include "lexerDef.h"
 #include "grammar_InitDef.h"
@@ -143,8 +146,15 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result=NULL;
 			break;
 		case 6:
-			result=createAST(getNthChild(root,5));
-			break;
+            result=createASTNode(MODULE_NODE);
+            strcpy(result->node.moduleNode.moduleName, "driver");
+            result->node.moduleNode.inputList=NULL;
+            result->node.moduleNode.ret=NULL;
+            result->node.moduleNode.body=createAST(getNthChild(root,5));
+            result->node.moduleNode.startLine=getNthChild(getNthChild(root,6),1)->token_info.lineno;
+            result->node.moduleNode.endLine=getNthChild(getNthChild(root,6),3)->token_info.lineno;
+            result->lineNumber=getNthChild(root,1)->token_info.lineno;
+            break;
 		case 7:
 			result=createASTNode(MODULE_NODE);
 			strcpy(result->node.moduleNode.moduleName, getNthChild(root,3)->token_info.lexeme);
@@ -717,3 +727,5 @@ void printInlineAstTree(struct ASTNode *root, int spaces){
 
 	}
 }
+
+#endif

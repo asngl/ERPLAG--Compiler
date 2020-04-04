@@ -1,13 +1,26 @@
 
-int computeHashFromString(char *);// Copy from grammarInitDef.h
+#ifndef _SYMBOLTABLEH
+#define _SYMBOLTABLEH
+#include "ASTNodeDef.h"
+#include "symbolTableDef.h"
 
-ParameterList *populateParaList(struct ASTNode *node);
-LocalTable *populateLocalTable(struct ASTNode *node);
 
-FunctionTable *insertSymbolTable(SymbolTable *symbolTable,struct ModuleDeclareNode moduleDeclareNode);
-FunctionTable *searchSymbolTable(SymbolTable *symbolTable,char *string);
+extern int computeHashFromString(char *);// Copy from grammarInitDef.h
 
-VariableEntry *insertLocalTable(LocalTable *localTable,struct DeclareNode declareNode);
-VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
+extern ParameterList *populateParaList(struct ASTNode *root,int baseOffset);
+extern LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset);
 
-void addChild(LocalTable *localTable, LocalTable *siblingTable);
+extern FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root);
+extern FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string);
+extern LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset);
+
+extern int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset);
+extern VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
+
+extern void addChild(LocalTable *localTable, LocalTable *siblingTable);
+extern LocalTable *newLocalTable();
+extern FunctionTable *newFunctionNode(char *funcName);
+extern int getWidth(Type type);
+extern int getWidthLocal(Type type);
+extern SymbolTable *populateSymbolTable(struct ASTNode *root);
+#endif

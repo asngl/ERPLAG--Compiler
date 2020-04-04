@@ -1,3 +1,7 @@
+
+#ifndef _SYMBOLTABLEDEFH
+#define _SYMBOLTABLEDEFH
+
 #include "ASTNodeDef.h"
 #define MOD 127
 //enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};
@@ -16,7 +20,6 @@ typedef struct Type
 	ArrayBound high;
 	int tagHigh;
 	int isStatic;	//1 for Static, 0 for Dynamic
-
 }Type;
 
 typedef struct VariableEntry
@@ -28,8 +31,9 @@ typedef struct VariableEntry
 	int width;  //Length in bytes
 	struct VariableEntry *next;// For collisions
 }VariableEntry;
-currVar->node.idListNode.varName
-typedef VariableEntry[MOD] VariableEntryTable;
+
+
+typedef VariableEntry *VariableEntryTable[MOD];
 
 typedef struct ParameterList
 {
@@ -74,16 +78,11 @@ typedef struct FunctionTable{
 	LocalTable *localTable;
 	struct FunctionTable *next; // For Collisions
 }FunctionTable;
-/*
-struct ParaListNode{
-	char name[STRING_MAX_SIZE];
-	enum Datatype type;
-	struct ASTNode *next;
-	struct ASTNode *Range;
-};
-*/
+
 typedef struct SymbolTableEntry{
 	FunctionTable *pointer;
 }SymbolTableEntry;
 
-typedef SymbolTableEntry[MOD] SymbolTable;
+typedef SymbolTableEntry SymbolTable[MOD];
+
+#endif

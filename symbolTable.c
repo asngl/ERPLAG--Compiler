@@ -1,7 +1,12 @@
+
+#ifndef _SYMBOLTABLEC
+#define _SYMBOLTABLEC
 #include "symbolTable.h"
 #include "symbolTableDef.h"
 #include "ASTNodeDef.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define arrayWidth 10
 #define intWidth 4
@@ -41,6 +46,10 @@ LocalTable *newLocalTable(){
 	node->leftChild=NULL;
 	node->rightSibling=NULL;
 	node->lastChild=NULL;
+	for (int i = 0; i < MOD; ++i)
+	{
+		node->variableTable[i]=NULL;
+	}
 	return node;
 }
 
@@ -174,7 +183,7 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 		VariableEntry *search;
 		search=searchLocalTable(localTable,currVar->node.idListNode.varName);
 		if(search!=NULL){
-			printf("Error on line number: %d, "%s" already declared on line number: %d",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
+			printf("Error on line number: %d, %s already declared on line number: %d",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
 			continue;
 		}
 		VariableEntry *initNode;
@@ -221,7 +230,22 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 }
 
 
-//void addChild(LocalTable *parent, LocalTable *child);
+
+void addChild(LocalTable *parent, LocalTable *child){
+    LocalTable *ptr;
+    ptr=parent->leftChild;
+    if(ptr==NULL){
+        parent->leftChild=child;
+        parent->lastChild=child;
+        child->parent=parent;
+        return;
+    }
+    ptr=parent->lastChild;
+    ptr->rightSibling=child;
+    parent->lastChild=child;
+    child->parent=parent;
+    return;
+}
 
 
 LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
@@ -234,7 +258,7 @@ LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
     struct ASTNode *cases;
     struct ASTNode *root;
     cases=head->node.conditionNode.Case;
-    while(true)
+    while(1)
     {
         if(defaultDone==0)
             root=cases->node.caseNode.stmt;
@@ -453,3 +477,36 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		return NULL;
 	}
 }
+
+SymbolTable *populateSymbolTable(struct ASTNode *root){
+    SymbolTable *mainTable;
+    mainTable=(SymbolTable *)malloc(sizeof(SymbolTable));
+    for (int i = 0; i < MOD; ++i)
+    {
+    	(*mainTable)[i].pointer =NULL;
+    }
+    struct ASTNode *currNode;
+    currNode=root->node.programNode.moduleDeclarations;
+    while(currNode!=NULL){
+        insertSymbolTable(*mainTable,currNode);
+        currNode=currNode->node.moduleDeclareNode.next;
+    }
+    currNode=root->node.programNode.otherModules1;
+    while(currNode!=NULL){        
+        insertSymbolTable(*mainTable,currNode);
+        currNode=currNode->node.moduleNode.next;
+    }
+    currNode=root->node.programNode.driverModule;
+    insertSymbolTable(*mainTable,currNode);
+    currNode=root->node.programNode.otherModules2;
+    while(currNode!=NULL){        
+        insertSymbolTable(*mainTable,currNode);
+        currNode=currNode->node.moduleNode.next;
+    }
+    return mainTable;
+}
+
+
+
+#endif
+
