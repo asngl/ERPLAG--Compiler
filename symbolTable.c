@@ -431,7 +431,6 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 			tmp=symbolTable[hash].pointer;
 			ptr->next=tmp;
 			symbolTable[hash].pointer=ptr;
-			return ptr;
 		}
 		if(ptr->defineFlag==1){
 			printf("ERROR: on line number %d, Function %s already defined on line number: %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
