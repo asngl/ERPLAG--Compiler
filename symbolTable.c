@@ -466,6 +466,8 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->staticVariableOffset=offset;
 
 		ptr->localTable = populateLocalTable(root->node.moduleNode.body,offset);
+		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
+		ptr->localTable->scope.endLine=root->node.moduleNode.startLine;
 		ptr->dynamicVariableOffset = offset + ptr->localTable->size;
 		return ptr;
 	}
