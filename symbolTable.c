@@ -423,7 +423,6 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr=searchSymbolTable(symbolTable,root->node.moduleNode.moduleName);
 		if(ptr==NULL){
 			ptr = newFunctionNode(root->node.moduleNode.moduleName);
-			ptr->defineFlag=1;
 			ptr->lineNumberDef=root->lineNumber;
 			int hash;
 			hash=computeHashFromString(root->node.moduleNode.moduleName);
@@ -438,7 +437,6 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		}
 		if(ptr->useFlag==-1){
 			printf("ERROR: on line number %d, Function %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
-			return NULL;
 		}
 		ptr->defineFlag=1;
 		ptr->lineNumberDef=root->lineNumber;
