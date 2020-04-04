@@ -513,13 +513,13 @@ void printType(Type type){
         }
         else{
             printf("Dynamic array of Type:%d", type.type);
-            if(type.tagLow=0){
+            if(type.tagLow==0){
                 printf("with lower bound: %d",type.low.bound);
             }
             else
                 printf("with lower bound: %s ",type.low.lexeme);
         
-            if(type.tagHigh=0){
+            if(type.tagHigh==0){
                 printf("with higher bound: %d\n",type.high.bound);
             }
             else

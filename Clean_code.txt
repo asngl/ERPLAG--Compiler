@@ -26,8 +26,8 @@ start
 end
 <<<driver program>>>
 start
-	declare k:integer;
 	declare A:array[k..15] of real;
+	declare k:integer;
 	declare s:real;
 	get_value(k);
 	use module readArr with parameters A,k;

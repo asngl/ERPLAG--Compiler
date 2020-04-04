@@ -525,7 +525,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			if(dt==DT_ARRAY)
 				result->node.declareNode.dataType=getType(getNthChild(typeNode,6));
 			else
-				result->node.paraListNode.dataType=dt;
+				result->node.paraListNode.type=dt;
 
 	        result->node.declareNode.Range=createAST(getNthChild(root,4));
 	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
