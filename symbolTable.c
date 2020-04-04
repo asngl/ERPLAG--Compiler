@@ -523,6 +523,8 @@ void printType(Type type){
             else
                 printf("with higher bound: %s \n",type.high.lexeme);
         }        
+    }else{
+    	printf("Type is %d\n",type.type );
     }
 }
 
