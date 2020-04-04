@@ -584,14 +584,14 @@ void printParameterList(ParameterList *list)
 void printFunctionTable(FunctionTable *funTable)
 {
     if(funTable == NULL) return;
-    printf("\n Function %s \n",funTable->funcName);
-    printf("\t Declaration Line number %d \n",funTable->lineNumber);
-    printf("\t Definition Line number %d \n",funTable->lineNumberDef);
-    printf("\t Input parameterList \n");
+    printf("\nFunction %s \n",funTable->funcName);
+    printf("\tDeclaration Line number %d \n",funTable->lineNumber);
+    printf("\tDefinition Line number %d \n",funTable->lineNumberDef);
+    printf("\tInput parameterList \n");
     printParameterList(funTable->inputParaList);
-    printf("\t Output parameterList \n");
+    printf("\tOutput parameterList \n");
     printParameterList(funTable->outputParaList);
-    printf("\t Local Table structure \n");
+    printf("\tLocal Table structure \n");
     printLocalTable(funTable->localTable,1);
 }
 

@@ -153,6 +153,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             result->node.moduleNode.body=createAST(getNthChild(root,5));
             result->node.moduleNode.startLine=getNthChild(getNthChild(root,5),1)->token_info.lineno;
             result->node.moduleNode.endLine=getNthChild(getNthChild(root,5),3)->token_info.lineno;
+            result->node.moduleNode.next=NULL;
             result->lineNumber=getNthChild(root,1)->token_info.lineno;
             break;
 		case 7:
@@ -167,7 +168,6 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			break;
 		case 8:
 			result=createAST(getNthChild(root,3));
-			result->lineNumber=getNthChild(root,1)->token_info.lineno;
 			break;
 		case 9:
 			result=NULL;
@@ -244,7 +244,6 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			break;
 		case 24:
 			result=createAST(getNthChild(root,2));
-			result->lineNumber=getNthChild(root,1)->token_info.lineno;
 			break;
 		case 25:
 			result=createAST(getNthChild(root,1));
@@ -572,7 +571,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        break;
 	    case 97:
 	        result=createAST(getNthChild(root,3));
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
+	        if(result!=NULL)
+	        	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
 	    case 98:
 	        result=NULL;
