@@ -507,6 +507,106 @@ SymbolTable *populateSymbolTable(struct ASTNode *root){
 }
 
 
+void printType(Type type){
+    if(type.arrayFlag==1){
+        if(type.isStatic==1){
+            printf("Static array of Type:%d with lower bound: %d and upper bound: %d\n ", type.type, type.low.bound, type.high.bound);
+        }
+        else{
+            printf("Dynamic array of Type:%d", type.type);
+            if(type.tagLow=0){
+                printf("with lower bound: %d",type.low.bound);
+            }
+            else
+                printf("with lower bound: %s ",type.low.lexeme);
+        
+            if(type.tagHigh=0){
+                printf("with higher bound: %d\n",type.high.bound);
+            }
+            else
+                printf("with higher bound: %s \n",type.high.lexeme);
+        }        
+    }
+}
+
+void printTabs(int tabs)
+{
+    while(tabs--)printf("\t");
+}
+
+void printVariableTable(VariableEntryTable variableEntryTable,int tabs)
+{
+    VariableEntry *entry;
+    for(int i=0;i<MOD;i++)
+    {
+        entry=variableEntryTable[i];
+        while(entry!=NULL)
+        {
+            printTabs(tabs);
+            printf("%s :: Line %d :: Offset %d :: Width %d\n",entry->varName,entry->lineNumber,entry->offset,entry->width);
+            printTabs(tabs+1);
+            printType(entry->type);
+            entry=entry->next;
+        }
+    }
+}
+
+
+void printLocalTable(LocalTable *localTable,int tabs)
+{
+    printTabs(tabs);
+    printf("Scope: Line %d to Line %d :: ActRecordSize %d\n",localTable->scope.startLine,localTable->scope.endLine,localTable->size);
+    printTabs(tabs);
+    printf("Local Variables\n");
+    printVariableTable(localTable->variableTable,tabs+1);
+    printTabs(tabs);
+    printf("Children\n");
+    LocalTable *child=localTable->leftChild;
+    while(child!=NULL)
+    {
+        printLocalTable(child,tabs+1);
+        child=child->rightSibling;
+    }
+}
+
+
+void printParameterList(ParameterList *list)
+{
+    while(list!=NULL){
+        printf("VarName: %s\n",list->varName);
+        printType(list->type);
+        printf("Line Number: %d \n", list->lineNumber);
+        printf("Offset: %d\n", list->offset);
+        printf("Width: %d\n",list->width);
+        list=list->next;
+    }
+}
+void printFunctionTable(FunctionTable *funTable)
+{
+    if(funTable == NULL) return;
+    printf("\n Function %s \n",funTable->funcName);
+    printf("\t Declaration Line number %d \n",funTable->lineNumber);
+    printf("\t Definition Line number %d \n",funTable->lineNumberDef);
+    printf("\t Input parameterList \n");
+    printParameterList(funTable->inputParaList);
+    printf("\t Output parameterList \n");
+    printParameterList(funTable->outputParaList);
+    printf("\t Local Table structure \n");
+    printLocalTable(funTable->localTable,1);
+}
+
+void printSymbolTable(SymbolTable *symbolTable)
+{
+    for(int i=0;i<MOD;i++)
+    {
+        FunctionTable* funTable=(*symbolTable)[i].pointer;
+        while(funTable!=NULL)
+        {
+            printFunctionTable(funTable);
+            funTable=funTable->next;
+        }
+    }
+}
 
 #endif
 

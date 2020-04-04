@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
 				printInlineAstTree(ASTroot,0);
 				SymbolTable *mainTable;
 				mainTable=populateSymbolTable(ASTroot);
+				printSymbolTable(mainTable);
 				
 				break;
 			case 4:

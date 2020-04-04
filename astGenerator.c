@@ -151,8 +151,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
             result->node.moduleNode.inputList=NULL;
             result->node.moduleNode.ret=NULL;
             result->node.moduleNode.body=createAST(getNthChild(root,5));
-            result->node.moduleNode.startLine=getNthChild(getNthChild(root,6),1)->token_info.lineno;
-            result->node.moduleNode.endLine=getNthChild(getNthChild(root,6),3)->token_info.lineno;
+            result->node.moduleNode.startLine=getNthChild(getNthChild(root,5),1)->token_info.lineno;
+            result->node.moduleNode.endLine=getNthChild(getNthChild(root,5),3)->token_info.lineno;
             result->lineNumber=getNthChild(root,1)->token_info.lineno;
             break;
 		case 7:
