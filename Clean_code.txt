@@ -1,30 +1,56 @@
+declare module readArr;
 
-
-declare module compute;
+<<module arraySum>>
+takes input[list:array[1..15] of    real, n:integer];
+returns  [sum:real];
+start
+	declare index:integer;
+	declare t:boolean;
+	sum:=0.0;
+	for(index in  1..15)
+	start
+		t:= index<=n;
+		switch(t)
+		start
+			case true: print(list[index]);
+				   sum:=sum+list[index];
+				   break;
+			case false: print(sum);
+				    print(index);
+				    
+				    break;
+		end
+		
+	end
+	print(sum);
+end
 <<<driver program>>>
 start
-	declare var_1_, var_2_, var_3_:integer;
-	declare R1_abc: boolean;
-	declare r2_ABC: integer;
-	declare R3_abc: real;
-	get_value(var_1_);
-	var_2_:=10;
-	var_3_:= -(6);
-	[R1_abc, r2_ABC, R3_abc] := use module compute with parameters var_1_, var_2_, var_34;
-	
+	declare k:integer;
+	declare A:array[k..15] of real;
+	declare s:real;
+	get_value(k);
+	use module readArr with parameters A,k;
+	[s]:= use module arraySum with parameters A,k;
+	print(s);
 end
-<<module compute>>
-takes input[a:integer, b:integer, c:integer];
-returns [res_1:boolean, res_2_a:integer, res_2__b:real];
+
+
+
+
+
+
+<<module readArr>>
+takes input [arr1:array[1..15] of real,k:integer];
 start
-	declare b:boolean;
-	res_2_a:= -(a*b-c/5);
-	res_2__b:= ((res_2_a + a)*12+22.34E-2)/13;
-	b := a <=  b AND c >= a OR  a<0 AND false;
-	res_1:= (true AND c==b)OR(b>p AND (a<=c));
-	 
-	print(res_1);
+	declare tempvar:real;
+	declare i:integer;
+	i:=1;
+	while(i<=k)
+	start
+		get_value(tempvar);
+		arr1[i]:=tempvar;
+		i:=i+1;
+		
+	end
 end
-
-
-

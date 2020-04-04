@@ -145,7 +145,7 @@ ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
 		}else{
 			initNode->type.tagHigh=0;
 			initNode->type.high.bound=root->node.paraListNode.Range->node.rangeNode.Range2->node.numNode.num;
-		}
+		}	
 		if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
 			initNode->type.isStatic =1;
 		}else{
@@ -435,7 +435,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 			printf("ERROR: on line number %d, Function %s already defined on line number: %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
 			return NULL;
 		}
-		if(ptr->useFlag==-1){
+		if(ptr->declareFlag==1 && ptr->useFlag==-1){
 			printf("ERROR: on line number %d, Function %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
 		}
 		ptr->defineFlag=1;
@@ -467,7 +467,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 
 		ptr->localTable = populateLocalTable(root->node.moduleNode.body,offset);
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
-		ptr->localTable->scope.endLine=root->node.moduleNode.startLine;
+		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
 		ptr->dynamicVariableOffset = offset + ptr->localTable->size;
 		return ptr;
 	}
