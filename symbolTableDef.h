@@ -85,6 +85,11 @@ typedef struct SymbolTableEntry{
 
 typedef SymbolTableEntry SymbolTable[MOD];
 
+
+typedef struct Context{
+	SymbolTableEntry **symbolTable;
+}Context;
+
 #endif
 
 

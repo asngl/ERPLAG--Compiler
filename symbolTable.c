@@ -248,9 +248,10 @@ void addChild(LocalTable *parent, LocalTable *child){
 }
 
 
-LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
+LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *head,int baseOffset)
 {
     LocalTable *parent=newLocalTable();
+    parent->parent=parentOfparent;
     LocalTable *child;
     int newOffset;
     int defaultDone=0;
@@ -279,7 +280,7 @@ LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
                     //EMPTY
                     break;
                 case CONDITION_NODE:
-                    child=populateConditionNodeLocalTable(root,baseOffset);
+                    child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
                     child->scope.startLine=root->node.conditionNode.startLine;
                     child->scope.endLine=root->node.conditionNode.endLine;        
                     baseOffset+=child->size;
@@ -295,7 +296,7 @@ LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
                     }*/
                     break;
                 case FOR_NODE:
-                    child=populateLocalTable(root->node.forNode.stmt,baseOffset);
+                    child=populateLocalTable(context,parent,root->node.forNode.stmt,baseOffset);
                     child->scope.startLine=root->node.forNode.startLine;
                     child->scope.endLine=root->node.forNode.endLine;        
                     baseOffset+=child->size;
@@ -304,7 +305,7 @@ LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
                     root=root->node.forNode.next;
                     break;
                 case WHILE_NODE:
-                    child=populateLocalTable(root->node.whileNode.stmt,baseOffset);
+                    child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
                     child->scope.startLine=root->node.whileNode.startLine;
                     child->scope.endLine=root->node.whileNode.endLine;              
                     baseOffset+=child->size;
@@ -330,9 +331,10 @@ LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset)
     }
     return parent;
 }
-LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
+LocalTable *populateLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset)
 {
     LocalTable *parent=newLocalTable();
+    parent->parent=parentOfparent;
     LocalTable *child;
     int newOffset;
     struct ASTNode *ptr;
@@ -353,7 +355,7 @@ LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
                 //EMPTY
                 break;
             case CONDITION_NODE:
-                child=populateConditionNodeLocalTable(root,baseOffset);
+                child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
                 child->scope.startLine=root->node.conditionNode.startLine;
                 child->scope.endLine=root->node.conditionNode.endLine;        
                 baseOffset+=child->size;
@@ -369,7 +371,7 @@ LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
                 }*/
                 break;
             case FOR_NODE:
-                child=populateLocalTable(root->node.forNode.stmt,baseOffset);
+                child=populateLocalTable(context,parent,root->node.forNode.stmt,baseOffset);
                 child->scope.startLine=root->node.forNode.startLine;
                 child->scope.endLine=root->node.forNode.endLine;        
                 baseOffset+=child->size;
@@ -378,7 +380,7 @@ LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset)
                 root=root->node.forNode.next;
                 break;
             case WHILE_NODE:
-                child=populateLocalTable(root->node.whileNode.stmt,baseOffset);
+                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
                 child->scope.startLine=root->node.whileNode.startLine;
                 child->scope.endLine=root->node.whileNode.endLine;              
                 baseOffset+=child->size;
@@ -465,7 +467,9 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		offset+=controlSize;
 		ptr->staticVariableOffset=offset;
 
-		ptr->localTable = populateLocalTable(root->node.moduleNode.body,offset);
+		struct Context context;
+		context.symbolTable=&symbolTable;
+		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
 		ptr->dynamicVariableOffset = offset + ptr->localTable->size;

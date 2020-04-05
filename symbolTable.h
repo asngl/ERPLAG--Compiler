@@ -8,11 +8,11 @@
 extern int computeHashFromString(char *);// Copy from grammarInitDef.h
 
 extern ParameterList *populateParaList(struct ASTNode *root,int baseOffset);
-extern LocalTable *populateLocalTable(struct ASTNode *root,int baseOffset);
+extern LocalTable *populateLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset);
 
 extern FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root);
 extern FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string);
-extern LocalTable *populateConditionNodeLocalTable(struct ASTNode *head,int baseOffset);
+extern LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *head,int baseOffset);
 
 extern int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset);
 extern VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
