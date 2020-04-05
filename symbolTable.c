@@ -331,30 +331,116 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
     }
     return parent;
 }
-LocalTable *populateLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset)
+
+
+VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber);    //return 1 if no error else 0
+int assertNotForbidden(Context context,char name[], int lineNumber);
+
+int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
+int validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
+
+LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset)
 {
     LocalTable *parent=newLocalTable();
     parent->parent=parentOfparent;
     LocalTable *child;
     int newOffset;
     struct ASTNode *ptr;
+    FunctionTable *funcptr;
+    VariableEntry *varptr;
     while(root!=NULL)
     {
         switch(root->tag)
         {
-            case INPUT_NODE:root=root->node.inputNode.next;
-                //EMPTY
+            case INPUT_NODE:
+                /*if((varptr=checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber))!=NULL)
+                    if(assertNotForbidden(context,root->node.inputNode.name,root->lineNumber)==1)
+                        setModifyFlag(context,parent,root->node.inputNode.name);
+               */
+                if(assertNotForbidden(context,root->node.inputNode.name,root->lineNumber)==1){
+                    varptr=checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+                    if(varptr!=NULL)
+                        varptr->initFlag=1;
+                }
+                root=root->node.inputNode.next;
                 break;
-            case OUTPUT_NODE:root=root->node.outputNode.next;
-                //EMPTY
+            case OUTPUT_NODE:
+                checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+                root=root->node.outputNode.next;
                 break;
-            case ASSIGN_NODE:root=root->node.assignNode.next;
-                //EMPTY
+            case ASSIGN_NODE:
+                if(validateExpression(context,parent,root)==1)
+                {
+                    setModifyFlag(context,parent,root->node.assignNode.LHS);
+                }
+                root=root->node.assignNode.next;
                 break;
-            case MODULE_REUSE_NODE:root=root->node.moduleReuseNode.next;
-                //EMPTY
+            case MODULE_REUSE_NODE:
+                //Set use flag
+                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
+                {
+                    printf("Error on line number:%d , Recursion attempt on function %s\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    root=root->node.moduleReuseNode.next;
+                    break;
+                }
+                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
+                if(funcptr==NULL){                   
+                    printf("Error on line number:%d , Function %s not defined\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    root=root->node.moduleReuseNode.next;
+                    break;
+                }
+                
+
+                funcptr->useFlag=1;
+                ptr=root->node.moduleReuseNode.idList;
+                while(ptr!=NULL)
+                {
+                    checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+                    ptr=ptr->node.idListNode.next;
+                }
+                ptr=root->node.moduleReuseNode.optional;
+                while(ptr!=NULL)
+                {
+                    if(assertNotForbidden(context,ptr->node.idListNode.varName,root->lineNumber)==1){
+                        varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+                        if(varptr!=NULL)
+                            varptr->initFlag=1;
+                    }
+                    ptr=ptr->node.idListNode.next;
+                }
+                root=root->node.moduleReuseNode.next;
                 break;
             case CONDITION_NODE:
+                varptr=checkDeclarationBeforeUse(context,parent,root->node.conditionNode.id,root->lineNumber);
+                if(varptr->type.arrayFlag==1){
+                    printf("Error on line number:%d, usage of %s is forbidden inside switch as it is an array\n",root->lineNumber,varptr->varName);
+                }
+                else{
+                    switch(varptr->type.type){
+                        case DT_INTEGER:
+                            ptr=root->node.conditionNode.Case;
+                            while(ptr!=NULL){
+                                if(ptr->node.caseNode.value->tag!=NUM_NODE){
+                                    printf("Error on line number:%d, Case value defined is not an integer\n",ptr->lineNumber);
+                                }
+                                ptr=ptr->node.caseNode.next;
+                            }
+                            if(root->node.conditionNode.Default==NULL)
+                                printf("Error on line number:%d, Default not declared for integer switch \n",root->lineNumber);
+                        case DT_REAL:
+                            printf("Error on line number:%d, value inside switch is of type real",root->lineNumber);
+                        case DT_BOOLEAN:
+                            ptr=root->node.conditionNode.Case;
+                            while(ptr!=NULL){
+                                if(ptr->node.caseNode.value->tag!=BOOL_NODE){
+                                    printf("Error on line number:%d, Case value defined is not a boolean\n",ptr->lineNumber);
+                                }
+                                ptr=ptr->node.caseNode.next;
+                            }
+                            if(root->node.conditionNode.Default!=NULL)
+                                printf("Error on line number:%d, Default not declared for boolean switch \n",root->lineNumber);
+                    }
+                }
                 child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
                 child->scope.startLine=root->node.conditionNode.startLine;
                 child->scope.endLine=root->node.conditionNode.endLine;        
@@ -371,6 +457,16 @@ LocalTable *populateLocalTable(struct Context context,LocalTable *parentOfparent
                 }*/
                 break;
             case FOR_NODE:
+                if(assertNotForbidden(context,root->node.forNode.id,root->lineNumber)==1){
+                        varptr=checkDeclarationBeforeUse(context,parent,root->node.forNode.id,root->lineNumber);
+                        if(varptr!=NULL)
+                            varptr->initFlag=1;
+                }
+                varptr=(VariableEntry *)malloc(sizeof(VariableEntry));
+                strcpy(varptr->varName,root->node.forNode.id);
+                varptr->lineNumber=root->lineNumber;
+                varptr->next=context.forbiddenVariables;
+                context.forbiddenVariables=varptr;
                 child=populateLocalTable(context,parent,root->node.forNode.stmt,baseOffset);
                 child->scope.startLine=root->node.forNode.startLine;
                 child->scope.endLine=root->node.forNode.endLine;        
@@ -378,9 +474,15 @@ LocalTable *populateLocalTable(struct Context context,LocalTable *parentOfparent
                 addChild(parent,child);
                 parent->size+=child->size;
                 root=root->node.forNode.next;
+                context.forbiddenVariables=varptr->next;
+                free(varptr);
                 break;
             case WHILE_NODE:
+                setModifyFlagExpression(context,parent,root,0);
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
+                if(setModifyFlagExpression(context,parent,root,-1)==0){
+                    printf("Error at line Number:%d, no variables inside while loop are being modified\n",root->lineNumber);
+                }
                 child->scope.startLine=root->node.whileNode.startLine;
                 child->scope.endLine=root->node.whileNode.endLine;              
                 baseOffset+=child->size;
@@ -469,6 +571,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 
 		struct Context context;
 		context.symbolTable=&symbolTable;
+		strcpy(context.funcName, ptr->funcName);
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;

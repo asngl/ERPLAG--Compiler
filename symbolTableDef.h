@@ -29,6 +29,7 @@ typedef struct VariableEntry
 	int lineNumber;
 	int offset; //Offset to be calculated for code generation
 	int width;  //Length in bytes
+	int initFlag;
 	struct VariableEntry *next;// For collisions
 }VariableEntry;
 
@@ -88,6 +89,8 @@ typedef SymbolTableEntry SymbolTable[MOD];
 
 typedef struct Context{
 	SymbolTableEntry **symbolTable;
+	char funcName[25];
+	VariableEntry *forbiddenVariables;
 }Context;
 
 #endif
