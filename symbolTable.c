@@ -292,7 +292,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                    leftType=varptr->type;
 	                    if(root->node.assignNode.index!=NULL)
 	                    {
-							if(leftType.isArrayFlag==0)
+							if(leftType.arrayFlag==0)
 							{
 								printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
 								break;
@@ -309,7 +309,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 								  break;
 								}
-								leftType.isArrayFlag=0;
+								leftType.arrayFlag=0;
 							}
 	                        
 	                        assertTypeEquality(leftType,rightType,root->lineNumber);
@@ -422,7 +422,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                setModifyFlagExpression(context,parent,root,0);
 	                rightType=validateExpression(context,table,root->node.whileNode.expr);
 					leftType.type=DT_BOOL;
-					leftType.isArrayFlag=0;
+					leftType.arrayFlag=0;
 					assertTypeEquality(leftType,rightType,root->lineNumber);
 	                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
 	                if(setModifyFlagExpression(context,parent,root,-1)==0){
@@ -491,7 +491,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                     leftType=varptr->type;
                     if(root->node.assignNode.index!=NULL)
                     {
-						if(leftType.isArrayFlag==0)
+						if(leftType.arrayFlag==0)
 						{
 							printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
 							break;
@@ -508,7 +508,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 							  break;
 							}
-							leftType.isArrayFlag=0;
+							leftType.arrayFlag=0;
 						}
                         
                         assertTypeEquality(leftType,rightType,root->lineNumber);
@@ -621,7 +621,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 setModifyFlagExpression(context,parent,root,0);
                 rightType=validateExpression(context,table,root->node.whileNode.expr);
 				leftType.type=DT_BOOL;
-				leftType.isArrayFlag=0;
+				leftType.arrayFlag=0;
 				assertTypeEquality(leftType,rightType,root->lineNumber);
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
                 if(setModifyFlagExpression(context,parent,root,-1)==0){

@@ -17,11 +17,6 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
     return correct;
 }
 
-int validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
-{
-	return 0;
-}
-
 int assertTypeEquality(Type type1, Type type2, int lineNumber){
     if(type1.arrayFlag == 1 && type2.arrayFlag == 1){
         if(type1.type == type2.type){
@@ -43,6 +38,110 @@ int assertTypeEquality(Type type1, Type type2, int lineNumber){
     }
     return 0;
 }             
+
+Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
+{    
+    Type type,leftType;
+    VariableEntry *varptr;
+    switch(root->tag)
+    {   
+		case BOOL_NODE:
+			type.type=DT_BOOLEAN;
+			type.arrayFlag=0;
+			return type;
+		case ID_NODE:
+			varptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
+			leftType=varptr->type;
+			if(root->node.idNode.index!=NULL){
+			    if(leftType.arrayFlag==0){
+			        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
+			    }
+			    if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
+			    {
+			        if(leftType.low.bound > node.idNode.index->node.numNode.num)
+			        {
+			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			        }
+			        if(leftType.high.bound < node.idNode.index->node.numNode.num)
+			        {
+			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			        }
+			        leftType.arrayFlag=0;
+			    }
+			}        
+			return leftType;
+		case NUM_NODE:
+			type.type=DT_INTEGER;
+			type.arrayFlag=0;
+			return type;
+			case RNUM_NODE:
+			type.type=DT_REAL;
+			type.arrayFlag=0;
+			return type;
+		case UNARY_NODE:
+			type=validateExpression(context,parent,root->node.unaryNode.expr);
+			if(type.type == DT_BOOLEAN){
+			 printf("Error on line number:%d, unary operations cannot be applied on Boolean expressions",root->lineNumber);
+			}
+			if(type.arrayFlag==1){
+			 printf("Error on line number:%d, unary operations cannot be applied on an array",root->lineNumber);
+			}
+		case BINARY_NODE:
+			type=validateExpression(context,parent,root->node.binaryNode.expr1);
+			type2=validateExpression(context,parent,root->node.binaryNode.expr2);
+			if(type.arrayFlag==1 || type2.arrayFlag==1 )
+			{
+			    printf("Error on line number:%d, binary operations cannot be applied on an array",root->lineNumber);
+			    return type;
+			}
+			switch(root->node.binaryNode.op) //enum Operator{OP_PLUS,OP_MINUS,OP_MUL,OP_DIV,OP_AND,OP_OR,OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
+			{
+			    case OP_PLUS: case OP_MINUS: case OP_MUL: case OP_DIV:
+			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
+			        {
+			            printf("Semantic error on line %d: Cannot perform arithmetic operation on boolean type operands.\n",root->lineNumber);
+			            return type;
+			        }
+			        else if(type.type!=type2.type)
+			        {
+			            printf("Semantic error on line %d: Cannot perform arithmetic operation with one int and one real operand.\n",root->lineNumber);
+			            return type;
+			        }
+			        return type;
+			    case OP_AND:case OP_OR:
+			        if(type.type!=DT_BOOLEAN || type2.type!=DT_BOOLEAN)
+			        {
+			            printf("Semantic error on line %d: Cannot perform logical operation on non-boolean type operands.\n",root->lineNumber);
+			            return type;
+			        }
+			        return type;
+			    case OP_LT:case OP_LE:case OP_GT:case OP_GE:
+			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
+			        {
+			            printf("Semantic error on line %d: Cannot perform inequality operations on boolean type operands.\n",root->lineNumber);
+			            return type;
+			        }
+			        else if(type.type!=type2.type)
+			        {
+			            printf("Semantic error on line %d: Cannot perform relational operations with one int and one real operand.\n",root->lineNumber);
+			            return type;
+			        }
+			        type.type=DT_BOOLEAN;
+			        return type;
+			    case OP_EQ:case OP_NE:
+			        if(type.type!=type2.type)
+			        {
+			            printf("Semantic error on line %d: Cannot perform equality operations with differing datatype operands.\n",root->lineNumber);
+			            return type;
+			        }
+			        type.type=DT_BOOLEAN;
+			        return type;
+			            
+			}  
+      	return type;    
+    }
+}
+
           
 int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit){
     if(root->tag==NUM_NODE || root->tag==RNUM_NODE || root->tag==BOOL_NODE)
