@@ -91,6 +91,8 @@ typedef struct Context{
 	SymbolTableEntry **symbolTable;
 	char funcName[25];
 	VariableEntry *forbiddenVariables;
+	VariableEntry *inputList;
+	VariableEntry *outputList;
 }Context;
 
 #endif

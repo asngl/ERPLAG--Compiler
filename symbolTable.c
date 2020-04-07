@@ -423,12 +423,6 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 }
 
 
-VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber);    //return 1 if no error else 0
-int assertNotForbidden(Context context,char name[], int lineNumber);
-
-int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
-int validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
-
 LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset)
 {
     LocalTable *parent=newLocalTable();
@@ -586,6 +580,20 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
     }
     return parent;
 }
+VariableEntry *cloneParaListAsVariables(ParameterList *list)
+{
+	if(list==NULL)
+		return NULL;
+	VariableEntry *varptr=(VariableEntry *)malloc(sizeof(VariableEntry));
+	strcpy(varptr->varName,list->varName);
+	varptr->type=list->type;
+	varptr->offset=list->offset;
+	varptr->width=list->width;
+	varptr->initFlag=0;
+	varptr->lineNumber=list->lineNumber;
+	varptr->next=cloneParaListAsVariables(list->next);
+	return varptr;
+}
 
 FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 	if(root->tag==MODULE_DECLARE_NODE){
@@ -658,7 +666,21 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		struct Context context;
 		context.symbolTable=&symbolTable;
 		strcpy(context.funcName, ptr->funcName);
+		context.inputList=cloneParaListAsVariables(ptr->inputParaList);
+		context.outputList=cloneParaListAsVariables(ptr->outputParaList);
+		
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
+		
+		VariableEntry *ptr=context.outputList;
+		while(ptr!=NULL)
+		{
+			if(ptr->initFlag==0)
+			{
+				printf("Output paramter %s of function %s at line %d is not assigned any value inside function definition.\n"ptr->varName,context.funcName,ptr->lineNumber);
+			}
+			ptr=ptr->next;
+		}
+
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
 		ptr->dynamicVariableOffset = offset + ptr->localTable->size;
