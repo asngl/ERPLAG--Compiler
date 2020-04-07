@@ -260,6 +260,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
     struct ASTNode *root;
     FunctionTable *funcptr;
     VariableEntry *varptr;
+    Type leftType,rightType;
     cases=head->node.conditionNode.Case;
     while(1)
     {

@@ -8,6 +8,6 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
 int assertNotForbidden(Context context,char name[], int lineNumber);
 
 int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
-int validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
+Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
 
 #endif
