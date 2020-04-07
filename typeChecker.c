@@ -138,8 +138,9 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        return type;
 			            
 			}  
-      	return type;    
+      		return type;    
     }
+    return type;
 }
 
           
