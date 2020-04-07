@@ -1,6 +1,7 @@
 #ifndef _TYPECHECKERC
 #define _TYPECHECKERC
-
+#include "symbolTableDef.h"
+#include "ASTNodeDef.h"
 
 int assertNotForbidden(Context context,char name[], int lineNumber)
 {
@@ -21,6 +22,28 @@ int validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 	return 0;
 }
 
+int assertTypeEquality(Type type1, Type type2, int lineNumber){
+    if(type1.arrayFlag == 1 && type2.arrayFlag == 1){
+        if(type1.type == type2.type){
+            if(type1.isStatic == 1 && type2.isStatic == 1){
+                if(type1.low.bound == type2.low.bound && type1.high.bound == type2.high.bound) return 1;
+            }
+
+            else if(type1.isStatic == 1 || type2.isStatic == 1){ //if only one is static
+                    if(type1.tagLow == 0 && type2.tagLow ==0 && type1.low.bound != type2.low.bound) return 0;
+                    if(type1.tagHigh == 0 && type2.tagHigh ==0 && type1.high.bound != type2.high.bound) return 0;
+            }
+            return 1;
+        }
+    }
+    else if(type1.arrayFlag == 0 && type2.arrayFlag == 0){
+    if(type1.type == DT_INTEGER && type2.type == DT_INTEGER) return 1;
+    if(type1.type == DT_REAL && type2.type == DT_REAL) return 1;
+    if(type1.type == DT_BOOLEAN && type2.type == DT_BOOLEAN) return 1;
+    }
+    return 0;
+}             
+          
 int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit){
     if(root->tag==NUM_NODE || root->tag==RNUM_NODE || root->tag==BOOL_NODE)
         return 0;

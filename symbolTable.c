@@ -282,12 +282,39 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root=root->node.outputNode.next;
 	                break;
 	            case ASSIGN_NODE:
-	                if(validateExpression(context,parent,root)==1)
+					rightType=validateExpression(context,table,root->node.assignNode.expr);   
+	                if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
 	                {
-	                    setModifyFlag(context,parent,root->node.assignNode.LHS);
-	                }
-	                root=root->node.assignNode.next;
-	                break;
+	                    varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
+	                    if(varptr==NULL)break;
+	                    varptr->initFlag=1;
+	                    leftType=varptr->type;
+	                    if(root->node.assignNode.index!=NULL)
+	                    {
+							if(leftType.isArrayFlag==0)
+							{
+								printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+								break;
+							}
+							if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
+							{
+								if(leftType.low.bound > node.assignNode.index->node.numNode.num)
+								{
+								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  break;
+								}
+								if(leftType.high.bound < node.assignNode.index->node.numNode.num)
+								{
+								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  break;
+								}
+								leftType.isArrayFlag=0;
+							}
+	                        
+	                        assertTypeEquality(leftType,rightType,root->lineNumber);
+	                    }
+	                    root=root->node.assignNode.next;
+	                    break;
 	            case MODULE_REUSE_NODE:
 	                //Set use flag
 	                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
@@ -392,6 +419,10 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                break;
 	            case WHILE_NODE:
 	                setModifyFlagExpression(context,parent,root,0);
+	                rightType=validateExpression(context,table,root->node.whileNode.expr);
+					leftType.type=DT_BOOL;
+					leftType.isArrayFlag=0;
+					assertTypeEquality(leftType,rightType,root->lineNumber);
 	                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
 	                if(setModifyFlagExpression(context,parent,root,-1)==0){
 	                    printf("Error at line Number:%d, no variables inside while loop are being modified\n",root->lineNumber);
@@ -432,6 +463,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
     struct ASTNode *ptr;
     FunctionTable *funcptr;
     VariableEntry *varptr;
+    Type leftType,rightType;
     while(root!=NULL)
     {
         switch(root->tag)
@@ -449,12 +481,39 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root=root->node.outputNode.next;
                 break;
             case ASSIGN_NODE:
-                if(validateExpression(context,parent,root)==1)
+				rightType=validateExpression(context,table,root->node.assignNode.expr);   
+                if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
                 {
-                    setModifyFlag(context,parent,root->node.assignNode.LHS);
-                }
-                root=root->node.assignNode.next;
-                break;
+                    varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
+                    if(varptr==NULL)break;
+                    varptr->initFlag=1;
+                    leftType=varptr->type;
+                    if(root->node.assignNode.index!=NULL)
+                    {
+						if(leftType.isArrayFlag==0)
+						{
+							printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+							break;
+						}
+						if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
+						{
+							if(leftType.low.bound > node.assignNode.index->node.numNode.num)
+							{
+							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  break;
+							}
+							if(leftType.high.bound < node.assignNode.index->node.numNode.num)
+							{
+							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  break;
+							}
+							leftType.isArrayFlag=0;
+						}
+                        
+                        assertTypeEquality(leftType,rightType,root->lineNumber);
+                    }
+                    root=root->node.assignNode.next;
+                    break;
             case MODULE_REUSE_NODE:
                 //Set use flag
                 if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
@@ -559,6 +618,10 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 break;
             case WHILE_NODE:
                 setModifyFlagExpression(context,parent,root,0);
+                rightType=validateExpression(context,table,root->node.whileNode.expr);
+				leftType.type=DT_BOOL;
+				leftType.isArrayFlag=0;
+				assertTypeEquality(leftType,rightType,root->lineNumber);
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
                 if(setModifyFlagExpression(context,parent,root,-1)==0){
                     printf("Error at line Number:%d, no variables inside while loop are being modified\n",root->lineNumber);
