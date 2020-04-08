@@ -90,6 +90,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        }
 			        leftType.arrayFlag=0;
 			    }
+                leftType.arrayFlag=0;
 			}        
 			return leftType;
 		case NUM_NODE:
