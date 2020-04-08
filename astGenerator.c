@@ -235,6 +235,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result=createASTNode(RANGE_NODE);
 			result->node.rangeNode.Range1=createAST(getNthChild(root,1));
 			result->node.rangeNode.Range2=createAST(getNthChild(root,3));
+			result->lineNumber=getNthChild(root,2)->token_info.lineno;
 			break;
 		case 21:
 			break;
@@ -440,6 +441,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	result=createASTNode(UNARY_NODE);
 	    	result->node.unaryNode.op=getOperator(getNthChild(root,1));
 	    	result->node.unaryNode.expr=createAST(getNthChild(root,2));
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	    	break;
 	    case 61:
 			result=createAST(getNthChild(root,2));
@@ -460,6 +462,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	    	break;
 	    case 63:
 			result=NULL;
@@ -474,15 +477,18 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    case 65:
 	    	result=createASTNode(BOOL_NODE);
 	    	result->node.boolNode.value=BOOL_TRUE;
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	    	break;
 	    case 66:
 	    	result=createASTNode(BOOL_NODE);
 	    	result->node.boolNode.value=BOOL_FALSE;
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	    	break;
 	    case 67:
 			result=createASTNode(BINARY_NODE);
 			result->node.binaryNode.op=getOperator(getNthChild(root,1));
 			result->node.binaryNode.expr2=createAST(getNthChild(root,2));
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
 			break;
 	    case 68:
 			result=NULL;
@@ -506,6 +512,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
 	    case 71:
 	        result=NULL;
@@ -529,6 +536,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
+	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
 	    case 74:
 	        result=NULL;
