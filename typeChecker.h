@@ -3,11 +3,11 @@
 #include "symbolTableDef.h"
 #include "ASTNodeDef.h"
 
-int assertTypeEquality(Type type1, Type type2, int lineNumber);
-VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber);    //return 1 if no error else 0
-int assertNotForbidden(Context context,char name[], int lineNumber);
+extern int assertTypeEquality(Type type1, Type type2, int lineNumber);
+extern VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber);    //return 1 if no error else 0
+extern int assertNotForbidden(Context context,char name[], int lineNumber);
 
-int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
-Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
+extern int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
+extern Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
 
 #endif

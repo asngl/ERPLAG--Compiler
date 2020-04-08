@@ -2,7 +2,10 @@
 #define _TYPECHECKERC
 #include "symbolTableDef.h"
 #include "ASTNodeDef.h"
-
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "typeChecker.h"
 int assertNotForbidden(Context context,char name[], int lineNumber)
 {
     VariableEntry* ptr=context.forbiddenVariables;
@@ -11,8 +14,10 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
     {
         if(strcmp(ptr->varName,name)==0)
         {
-            printf("Semantic Error on  line %d: Attempt to modify variable %s used in a for loop at line %d\n",lineNumber,name,ptr->lineNumber);correct=0;
+            printf("Semantic Error on  line %d: Attempt to modify variable %s used in a for loop at line %d\n",lineNumber,name,ptr->lineNumber);
+            correct=0;
         }
+        ptr=ptr->next;
     }
     return correct;
 }
@@ -41,7 +46,7 @@ int assertTypeEquality(Type type1, Type type2, int lineNumber){
 
 Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 {    
-    Type type,leftType;
+    Type type,leftType,type2;
     VariableEntry *varptr;
     switch(root->tag)
     {   
@@ -58,13 +63,13 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    }
 			    if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
 			    {
-			        if(leftType.low.bound > node.idNode.index->node.numNode.num)
+			        if(leftType.low.bound > root->node.idNode.index->node.numNode.num)
 			        {
-			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 			        }
-			        if(leftType.high.bound < node.idNode.index->node.numNode.num)
+			        if(leftType.high.bound < root->node.idNode.index->node.numNode.num)
 			        {
-			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 			        }
 			        leftType.arrayFlag=0;
 			    }
@@ -149,7 +154,7 @@ int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *r
         return 0;
     if(root->tag==ID_NODE){
         VariableEntry *ptr;
-        ptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName);
+        ptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
         if(bit == 0){
             ptr->initFlag=0;
             return 0;

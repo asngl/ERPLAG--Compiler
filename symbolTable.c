@@ -3,6 +3,7 @@
 #define _SYMBOLTABLEC
 #include "symbolTable.h"
 #include "symbolTableDef.h"
+#include "typeChecker.h"
 #include "ASTNodeDef.h"
 #include <string.h>
 #include <stdlib.h>
@@ -283,7 +284,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root=root->node.outputNode.next;
 	                break;
 	            case ASSIGN_NODE:
-					rightType=validateExpression(context,table,root->node.assignNode.expr);   
+					rightType=validateExpression(context,parent,root->node.assignNode.expr);   
 	                if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
 	                {
 	                    varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
@@ -299,23 +300,23 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 							}
 							if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
 							{
-								if(leftType.low.bound > node.assignNode.index->node.numNode.num)
+								if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 								{
-								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 								  break;
 								}
-								if(leftType.high.bound < node.assignNode.index->node.numNode.num)
+								if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 								{
-								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 								  break;
 								}
 								leftType.arrayFlag=0;
 							}
-	                        
-	                        assertTypeEquality(leftType,rightType,root->lineNumber);
-	                    }
-	                    root=root->node.assignNode.next;
-	                    break;
+                        }
+                        assertTypeEquality(leftType,rightType,root->lineNumber);
+                    }
+                    root=root->node.assignNode.next;
+                    break;
 	            case MODULE_REUSE_NODE:
 	                //Set use flag
 	                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
@@ -420,8 +421,8 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                break;
 	            case WHILE_NODE:
 	                setModifyFlagExpression(context,parent,root,0);
-	                rightType=validateExpression(context,table,root->node.whileNode.expr);
-					leftType.type=DT_BOOL;
+	                rightType=validateExpression(context,parent,root->node.whileNode.expr);
+					leftType.type=DT_BOOLEAN;
 					leftType.arrayFlag=0;
 					assertTypeEquality(leftType,rightType,root->lineNumber);
 	                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
@@ -482,7 +483,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root=root->node.outputNode.next;
                 break;
             case ASSIGN_NODE:
-				rightType=validateExpression(context,table,root->node.assignNode.expr);   
+				rightType=validateExpression(context,parent,root->node.assignNode.expr);   
                 if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
                 {
                     varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
@@ -498,23 +499,24 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 						}
 						if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
 						{
-							if(leftType.low.bound > node.assignNode.index->node.numNode.num)
+							if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 							{
-							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 							  break;
 							}
-							if(leftType.high.bound < node.assignNode.index->node.numNode.num)
+							if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 							{
-							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 							  break;
 							}
 							leftType.arrayFlag=0;
 						}
-                        
-                        assertTypeEquality(leftType,rightType,root->lineNumber);
-                    }
-                    root=root->node.assignNode.next;
-                    break;
+                    }    
+                    assertTypeEquality(leftType,rightType,root->lineNumber);
+                    
+                }
+                root=root->node.assignNode.next;
+                break;
             case MODULE_REUSE_NODE:
                 //Set use flag
                 if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
@@ -619,8 +621,8 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 break;
             case WHILE_NODE:
                 setModifyFlagExpression(context,parent,root,0);
-                rightType=validateExpression(context,table,root->node.whileNode.expr);
-				leftType.type=DT_BOOL;
+                rightType=validateExpression(context,parent,root->node.whileNode.expr);
+				leftType.type=DT_BOOLEAN;
 				leftType.arrayFlag=0;
 				assertTypeEquality(leftType,rightType,root->lineNumber);
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
@@ -732,17 +734,17 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		strcpy(context.funcName, ptr->funcName);
 		context.inputList=cloneParaListAsVariables(ptr->inputParaList);
 		context.outputList=cloneParaListAsVariables(ptr->outputParaList);
-		
+		context.forbiddenVariables=NULL;
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
 		
-		VariableEntry *ptr=context.outputList;
-		while(ptr!=NULL)
+		VariableEntry *varptr=context.outputList;
+		while(varptr!=NULL)
 		{
-			if(ptr->initFlag==0)
+			if(varptr->initFlag==0)
 			{
-				printf("Output paramter %s of function %s at line %d is not assigned any value inside function definition.\n"ptr->varName,context.funcName,ptr->lineNumber);
+				printf("Output paramter %s of function %s at line %d is not assigned any value inside function definition.\n",varptr->varName,context.funcName,varptr->lineNumber);
 			}
-			ptr=ptr->next;
+			varptr=varptr->next;
 		}
 
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
