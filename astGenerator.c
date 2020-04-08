@@ -307,6 +307,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 		case 37:
 			result=createAST(getNthChild(root,2));
 			strcpy(result->node.idNode.varName,getNthChild(root,1)->token_info.lexeme);
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
 			break;
 
 		case 38:
@@ -441,7 +442,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	result=createASTNode(UNARY_NODE);
 	    	result->node.unaryNode.op=getOperator(getNthChild(root,1));
 	    	result->node.unaryNode.expr=createAST(getNthChild(root,2));
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	    	break;
 	    case 61:
 			result=createAST(getNthChild(root,2));
