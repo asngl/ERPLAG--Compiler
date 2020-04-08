@@ -23,6 +23,8 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
 }
 
 int assertTypeEquality(Type type1, Type type2, int lineNumber){
+	if(type1.type==DT_ERROR || type2.type==DT_ERROR)
+		return 1;
     if(type1.arrayFlag == 1 && type2.arrayFlag == 1){
         if(type1.type == type2.type){
             if(type1.isStatic == 1 && type2.isStatic == 1){
@@ -56,20 +58,35 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			return type;
 		case ID_NODE:
 			varptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
+			if(varptr==NULL)
+			{
+				type.type=DT_ERROR;
+				type.arrayFlag=0;
+				return type;
+			}
 			leftType=varptr->type;
 			if(root->node.idNode.index!=NULL){
 			    if(leftType.arrayFlag==0){
 			        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
+			        type.type=DT_ERROR;
+					type.arrayFlag=0;
+					return type;
 			    }
 			    if(leftType.isStatic==1&&root->node.idNode.index->tag==NUM_NODE)
 			    {
 			        if(leftType.low.bound > root->node.idNode.index->node.numNode.num)
 			        {
-			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+				        type.type=DT_ERROR;
+						type.arrayFlag=0;
+						return type;
 			        }
 			        if(leftType.high.bound < root->node.idNode.index->node.numNode.num)
 			        {
-			              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            type.type=DT_ERROR;
+						type.arrayFlag=0;
+						return type;
 			        }
 			        leftType.arrayFlag=0;
 			    }
@@ -85,16 +102,29 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			return type;
 		case UNARY_NODE:
 			type=validateExpression(context,parent,root->node.unaryNode.expr);
+			if(type.type==DT_ERROR)return type;
 			if(type.type == DT_BOOLEAN){
-			 printf("Error on line number:%d, unary operations cannot be applied on Boolean expressions",root->lineNumber);
+				printf("Error on line number:%d, unary operations cannot be applied on Boolean expressions",root->lineNumber);
+				type.type=DT_ERROR;
+				type.arrayFlag=0;
+				return type;
 			}
 			if(type.arrayFlag==1){
-			 printf("Error on line number:%d, unary operations cannot be applied on an array",root->lineNumber);
+				printf("Error on line number:%d, unary operations cannot be applied on an array",root->lineNumber);
+				type.type=DT_ERROR;
+				type.arrayFlag=0;
+				return type;
 			}
             return type;
 		case BINARY_NODE:
 			type=validateExpression(context,parent,root->node.binaryNode.expr1);
 			type2=validateExpression(context,parent,root->node.binaryNode.expr2);
+			if(type.type==DT_ERROR || type2.type==DT_ERROR)
+			{
+				type.type=DT_ERROR;
+				type.arrayFlag=0;
+				return type;
+			}
 			if(type.arrayFlag==1 || type2.arrayFlag==1 )
 			{
 			    printf("Error on line number:%d, binary operations cannot be applied on an array",root->lineNumber);
