@@ -280,7 +280,33 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root=root->node.inputNode.next;
 	                break;
 	            case OUTPUT_NODE:
-	                checkDeclarationBeforeUse(context,parent,root->node.outputNode.name,root->lineNumber);
+	            	if(root->node.outputNode.value->tag == ID_NODE){
+	                	ptr=root->node.outputNode.value;
+	                	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.varName,root->lineNumber);
+	                	if(varptr==NULL){
+	                		root=root->node.outputNode.next;
+	                		break;
+	                	}
+	                	leftType=varptr->type;
+	                	if(ptr->node.idNode.index!=NULL){
+	                	    if(leftType.arrayFlag==0){
+	                	        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
+	                	    }
+	                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
+	                	    {
+	                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
+	                	        {
+	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	        }
+	                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
+	                	        {
+	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	        }
+	                	        leftType.arrayFlag=0;
+	                	    }
+	                	}
+
+	            	}
 	                root=root->node.outputNode.next;
 	                break;
 	            case ASSIGN_NODE:
@@ -479,9 +505,35 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root=root->node.inputNode.next;
                 break;
             case OUTPUT_NODE:
-                checkDeclarationBeforeUse(context,parent,root->node.outputNode.name,root->lineNumber);
-                root=root->node.outputNode.next;
-                break;
+	            	if(root->node.outputNode.value->tag == ID_NODE){
+	                	ptr=root->node.outputNode.value;
+	                	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.varName,root->lineNumber);
+	                	if(varptr==NULL){
+	                		root=root->node.outputNode.next;
+	                		break;
+	                	}
+	                	leftType=varptr->type;
+	                	if(ptr->node.idNode.index!=NULL){
+	                	    if(leftType.arrayFlag==0){
+	                	        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
+	                	    }
+	                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
+	                	    {
+	                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
+	                	        {
+	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	        }
+	                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
+	                	        {
+	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	        }
+	                	        leftType.arrayFlag=0;
+	                	    }
+	                	}
+
+	            	}
+	                root=root->node.outputNode.next;
+	                break;
             case ASSIGN_NODE:
 				rightType=validateExpression(context,parent,root->node.assignNode.expr);   
                 if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)

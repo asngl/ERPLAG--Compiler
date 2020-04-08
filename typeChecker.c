@@ -61,7 +61,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    if(leftType.arrayFlag==0){
 			        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
 			    }
-			    if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
+			    if(leftType.isStatic==1&&root->node.idNode.index->tag==NUM_NODE)
 			    {
 			        if(leftType.low.bound > root->node.idNode.index->node.numNode.num)
 			        {
