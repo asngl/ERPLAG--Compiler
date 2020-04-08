@@ -91,6 +91,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			if(type.arrayFlag==1){
 			 printf("Error on line number:%d, unary operations cannot be applied on an array",root->lineNumber);
 			}
+            return type;
 		case BINARY_NODE:
 			type=validateExpression(context,parent,root->node.binaryNode.expr1);
 			type2=validateExpression(context,parent,root->node.binaryNode.expr2);
