@@ -446,13 +446,13 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                free(varptr);
 	                break;
 	            case WHILE_NODE:
-	                setModifyFlagExpression(context,parent,root,0);
+	                setModifyFlagExpression(context,parent,root->node.whileNode.expr,0);
 	                rightType=validateExpression(context,parent,root->node.whileNode.expr);
 					leftType.type=DT_BOOLEAN;
 					leftType.arrayFlag=0;
 					assertTypeEquality(leftType,rightType,root->lineNumber);
 	                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
-	                if(setModifyFlagExpression(context,parent,root,-1)==0){
+	                if(setModifyFlagExpression(context,parent,root->node.whileNode.expr,-1)==0){
 	                    printf("Error at line Number:%d, no variables inside while loop are being modified\n",root->lineNumber);
 	                }
 	                child->scope.startLine=root->node.whileNode.startLine;
@@ -672,13 +672,13 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 free(varptr);
                 break;
             case WHILE_NODE:
-                setModifyFlagExpression(context,parent,root,0);
+                setModifyFlagExpression(context,parent,root->node.whileNode.expr,0);
                 rightType=validateExpression(context,parent,root->node.whileNode.expr);
 				leftType.type=DT_BOOLEAN;
 				leftType.arrayFlag=0;
 				assertTypeEquality(leftType,rightType,root->lineNumber);
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
-                if(setModifyFlagExpression(context,parent,root,-1)==0){
+                if(setModifyFlagExpression(context,parent,root->node.whileNode.expr,-1)==0){
                     printf("Error at line Number:%d, no variables inside while loop are being modified\n",root->lineNumber);
                 }
                 child->scope.startLine=root->node.whileNode.startLine;
