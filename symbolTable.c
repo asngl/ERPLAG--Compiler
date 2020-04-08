@@ -280,7 +280,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root=root->node.inputNode.next;
 	                break;
 	            case OUTPUT_NODE:
-	                checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+	                checkDeclarationBeforeUse(context,parent,root->node.outputNode.name,root->lineNumber);
 	                root=root->node.outputNode.next;
 	                break;
 	            case ASSIGN_NODE:
@@ -327,7 +327,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                }
 	                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
 	                if(funcptr==NULL){                   
-	                    printf("Error on line number:%d , Function %s not defined\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    printf("Error on line number:%d , Function %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
 	                    root=root->node.moduleReuseNode.next;
 	                    break;
 	                }
@@ -479,7 +479,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root=root->node.inputNode.next;
                 break;
             case OUTPUT_NODE:
-                checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+                checkDeclarationBeforeUse(context,parent,root->node.outputNode.name,root->lineNumber);
                 root=root->node.outputNode.next;
                 break;
             case ASSIGN_NODE:
@@ -527,7 +527,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 }
                 funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
                 if(funcptr==NULL){                   
-                    printf("Error on line number:%d , Function %s not defined\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    printf("Error on line number:%d , Function %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
                     root=root->node.moduleReuseNode.next;
                     break;
                 }
