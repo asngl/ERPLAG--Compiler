@@ -207,7 +207,7 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
         currVar=currVar->next;
     }
     if(parent->parent==NULL){
-        printf("Error: No declaration of variable:%s used on line number:%d found",name,lineNumber);
+        printf("Error: No declaration of variable:%s used on line number:%d found\n",name,lineNumber);
         return NULL;
     }
     return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);
