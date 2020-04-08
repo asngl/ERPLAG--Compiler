@@ -452,6 +452,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result=createASTNode(BINARY_NODE);
 			result->node.binaryNode.op=getOperator(getNthChild(root,1));
 	    	result->node.binaryNode.expr2=createAST(getNthChild(root,3));
+	    	if(result->node.binaryNode.expr2==NULL)
+	    	{
+	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	}
+	    	else
+	    	{
+	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
+	    	}
 	    	break;
 	    case 63:
 			result=NULL;
@@ -490,6 +498,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        result=createASTNode(BINARY_NODE);
 	        result->node.binaryNode.op=getOperator(getNthChild(root,1));
 	        result->node.binaryNode.expr2=createAST(getNthChild(root,3));
+	        if(result->node.binaryNode.expr2==NULL)
+	    	{
+	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	}
+	    	else
+	    	{
+	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
+	    	}
 	        break;
 	    case 71:
 	        result=NULL;
@@ -505,6 +521,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        result=createASTNode(BINARY_NODE);
 	        result->node.binaryNode.op=getOperator(getNthChild(root,1));
 	        result->node.binaryNode.expr2=createAST(getNthChild(root,3));
+	        if(result->node.binaryNode.expr2==NULL)
+	    	{
+	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	}
+	    	else
+	    	{
+	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
+	    	}
 	        break;
 	    case 74:
 	        result=NULL;
