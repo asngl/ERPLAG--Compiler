@@ -462,7 +462,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	    	break;
 	    case 63:
 			result=NULL;
@@ -488,7 +488,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result=createASTNode(BINARY_NODE);
 			result->node.binaryNode.op=getOperator(getNthChild(root,1));
 			result->node.binaryNode.expr2=createAST(getNthChild(root,2));
-			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 			break;
 	    case 68:
 			result=NULL;
@@ -512,7 +512,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	        break;
 	    case 71:
 	        result=NULL;
@@ -536,7 +536,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    	{
 	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
 	    	}
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	        break;
 	    case 74:
 	        result=NULL;
@@ -654,6 +654,7 @@ void printSpaces2(int n)
 void printInlineAstTree(struct ASTNode *root, int spaces){
 
 	if(root == NULL)return;
+	printf("%3d",root->lineNumber);
 	printSpaces2(spaces);
 	switch(root->tag){
 		case PROGRAM_NODE:
