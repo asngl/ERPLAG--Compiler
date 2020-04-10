@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 				//printInlineParseTree(root,0);
 				//printf("\n Printing AST: \n");
 				ASTroot=createAST(root);
-				//printInlineAstTree(ASTroot,0);
+				printInlineAstTree(ASTroot,0);
 				SymbolTable *mainTable;
 				mainTable=populateSymbolTable(ASTroot);
 				//printSymbolTable(mainTable);
