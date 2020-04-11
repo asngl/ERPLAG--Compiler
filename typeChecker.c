@@ -2,6 +2,7 @@
 #define _TYPECHECKERC
 #include "symbolTableDef.h"
 #include "ASTNodeDef.h"
+#include "symbolTable.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -250,7 +251,7 @@ void secondPass(struct ASTNode *root, Context context){
     if(root==NULL)
         return;
     FunctionTable *funcptr;
-    ASTNode *ptr;
+    struct ASTNode *ptr;
     ParameterList *paraptr;
     VariableEntry *varptr,*para_var_ptr;
     switch(root->tag){
@@ -314,7 +315,7 @@ void secondPass(struct ASTNode *root, Context context){
             if(funcptr==NULL)
                 return;
             if(funcptr->defineFlag!=1){
-                printf("Error on line number: %d, Function : %s is declared but not defined",root->lineNumber,root->moduleReuseNode.id);
+                printf("Error on line number: %d, Function : %s is declared but not defined",root->lineNumber,root->node.moduleReuseNode.id);
                 return;
             }
             ptr = root->node.moduleReuseNode.idList;
@@ -333,10 +334,10 @@ void secondPass(struct ASTNode *root, Context context){
                 ptr=ptr->node.idListNode.next;
             }
             if(ptr!=NULL){
-                printf("Error on line number:%d, more input variables used in the statement than actual needed\n");
+                printf("Error on line number:%d, more input variables used in the statement than actual needed\n",root->lineNumber);
             } 
             if(paraptr!=NULL){
-                printf("Error on line number:%d, less input variables used in the statement than actual needed\n");
+                printf("Error on line number:%d, less input variables used in the statement than actual needed\n",root->lineNumber);
             }      
             if(paraptr)
             ptr = root->node.moduleReuseNode.optional;
@@ -355,10 +356,10 @@ void secondPass(struct ASTNode *root, Context context){
                 ptr=ptr->node.idListNode.next;
             }
             if(ptr!=NULL){
-                printf("Error on line number:%d, more output variables used in the statement than actual needed\n");
+                printf("Error on line number:%d, more output variables used in the statement than actual needed\n",root->lineNumber);
             } 
             if(paraptr!=NULL){
-                printf("Error on line number:%d, less output variables used in the statement than actual needed\n");
+                printf("Error on line number:%d, less output variables used in the statement than actual needed\n",root->lineNumber);
             }
             break;
         case ID_LIST_NODE:
@@ -405,7 +406,7 @@ void secondPass(struct ASTNode *root, Context context){
             secondPass(root->node.binaryNode.expr2,context);
             break;
         default:
-           
+           break;
     }
 }
 
