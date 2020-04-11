@@ -403,8 +403,10 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                            }
 	                            if(root->node.conditionNode.Default==NULL)
 	                                printf("Error on line number:%d, Default not declared for integer switch \n",root->lineNumber);
+	                            break;
 	                        case DT_REAL:
 	                            printf("Error on line number:%d, value inside switch is of type real",root->lineNumber);
+	                            break;
 	                        case DT_BOOLEAN:
 	                            ptr=root->node.conditionNode.Case;
 	                            while(ptr!=NULL){
@@ -636,8 +638,10 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                             }
                             if(root->node.conditionNode.Default==NULL)
                                 printf("Error on line number:%d, Default not declared for integer switch \n",root->lineNumber);
+                            break;
                         case DT_REAL:
                             printf("Error on line number:%d, value inside switch is of type real",root->lineNumber);
+                            break;
                         case DT_BOOLEAN:
                             ptr=root->node.conditionNode.Case;
                             while(ptr!=NULL){
