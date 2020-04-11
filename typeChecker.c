@@ -217,6 +217,7 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
     VariableEntry *currVar;
     currVar=context.outputList;
     while(currVar!=NULL){
+        //printf("%s",currVar->varName);
         if(strcmp(currVar->varName,name)==0){
             return currVar;
         }
@@ -253,6 +254,8 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
     Context context;
     context.symbolTable = &symbolTable;
     strcpy(context.funcName,funcName);
+    context.inputList=NULL;
+    context.outputList=NULL;
     FunctionTable *funcptr, *currfunc;
     struct ASTNode *ptr;
     ParameterList *paraptr;
