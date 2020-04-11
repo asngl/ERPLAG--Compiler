@@ -315,7 +315,11 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
 	                {
 	                    varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
-	                    if(varptr==NULL)break;
+	                    if(varptr==NULL)
+	                    {
+	                    	root=root->node.assignNode.next;
+	                    	break;
+	                    }
 	                    varptr->initFlag=1;
 	                    leftType=varptr->type;
 	                    if(root->node.assignNode.index!=NULL)
@@ -323,6 +327,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 							if(leftType.arrayFlag==0)
 							{
 								printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+								root=root->node.assignNode.next;
 								break;
 							}
 							if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
@@ -330,11 +335,13 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 								{
 								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  root=root->node.assignNode.next;
 								  break;
 								}
 								if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 								{
 								  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  root=root->node.assignNode.next;
 								  break;
 								}
 								leftType.arrayFlag=0;
@@ -540,7 +547,11 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
                 {
                     varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
-                    if(varptr==NULL)break;
+                    if(varptr==NULL)
+                    {
+                    	root=root->node.assignNode.next;
+                    	break;
+                    }
                     varptr->initFlag=1;
                     leftType=varptr->type;
                     if(root->node.assignNode.index!=NULL)
@@ -548,6 +559,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 						if(leftType.arrayFlag==0)
 						{
 							printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+							root=root->node.assignNode.next;
 							break;
 						}
 						if(leftType.isStatic==1&&root->node.assignNode.index->tag==NUM_NODE)
@@ -555,11 +567,13 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 							{
 							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  root=root->node.assignNode.next;
 							  break;
 							}
 							if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 							{
 							  printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  root=root->node.assignNode.next;
 							  break;
 							}
 							leftType.arrayFlag=0;
