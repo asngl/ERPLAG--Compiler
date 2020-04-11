@@ -8,7 +8,7 @@ Ayush Singhal  2017A7PS0116P
 #ifndef macrolexerDefh
 #define macrolexerDefh
 #include "grammar_InitDef.h"
-#define MAX_BUFFER_SIZE 100
+#define MAX_BUFFER_SIZE 40000
 #define MAX_LOOK_BACK_SIZE 2
 #define MAX_LEXEME_SIZE 25
 
