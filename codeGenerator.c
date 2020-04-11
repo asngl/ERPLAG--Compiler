@@ -56,7 +56,7 @@ Code generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 {
 	Code finalCode=newEmptyCode();
 	Code temp1,temp2,temp3;
-	Code endOfScopeCode;
+	Code endOfScopeCode=newEmptyCode();
 
 	while(root!=NULL)
 	{

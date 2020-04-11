@@ -1,4 +1,4 @@
-enum Instruction{MOV,CMP,ADD,SUB,MUL,DIV,LABEL};
+enum Instruction{PRINT,INPUT,MOV,CMP,ADD,SUB,MUL,DIV,LABEL};
 enum valueType{MEM,REG,IMM_NUM,IMM_RNUM};
 enum Register{AX,BX,CX,DX,ESP,EBP};
 
@@ -24,6 +24,7 @@ typedef struct Value{
 typedef struct Line{
 	enum Instruction instr;
 	char label[25];
+	
 	Value res; 	// Result
 	Value op1;	//Operand 1
 	Value op2;	//Operand 2
