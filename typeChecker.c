@@ -31,13 +31,11 @@ int assertTypeEquality(Type type1, Type type2, int lineNumber){
             if(type1.isStatic == 1 && type2.isStatic == 1){
                 if(type1.low.bound == type2.low.bound && type1.high.bound == type2.high.bound) return 1;
             }
-
-            else if(type1.isStatic == 1 || type2.isStatic == 1){ //if only one is static
-                    if(type1.tagLow == 0 && type2.tagLow ==0 && type1.low.bound != type2.low.bound) return 0;
-                    if(type1.tagHigh == 0 && type2.tagHigh ==0 && type1.high.bound != type2.high.bound) return 0;
-            }
+            if(type1.tagLow == 0 && type2.tagLow ==0 && type1.low.bound != type2.low.bound) return 0;
+            if(type1.tagHigh == 0 && type2.tagHigh ==0 && type1.high.bound != type2.high.bound) return 0;
             return 1;
         }
+        else return 0;
     }
     else if(type1.arrayFlag == 0 && type2.arrayFlag == 0){
     if(type1.type == DT_INTEGER && type2.type == DT_INTEGER) return 1;
