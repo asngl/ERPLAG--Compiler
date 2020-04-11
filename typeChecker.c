@@ -248,36 +248,39 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
     
 }
 
-void secondPass(struct ASTNode *root, Context context){
+void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
 
     if(root==NULL)
         return;
-    FunctionTable *funcptr;
+    Context context;
+    context.symbolTable = &symbolTable;
+    strcpy(context.funcName,funcName);
+    FunctionTable *funcptr, *currfunc;
     struct ASTNode *ptr;
     ParameterList *paraptr;
     VariableEntry *varptr,*para_var_ptr;
     switch(root->tag){
         case PROGRAM_NODE:
-            secondPass(root->node.programNode.moduleDeclarations,context);
-            secondPass(root->node.programNode.otherModules1,context);
-            secondPass(root->node.programNode.driverModule,context);
-            secondPass(root->node.programNode.otherModules2,context);
+            secondPass(root->node.programNode.moduleDeclarations,symbolTable,funcName);
+            secondPass(root->node.programNode.otherModules1,symbolTable,funcName);
+            secondPass(root->node.programNode.driverModule,symbolTable,"driver");
+            secondPass(root->node.programNode.otherModules2,symbolTable,funcName);
             break;
         case MODULE_DECLARE_NODE:
-            secondPass(root->node.moduleDeclareNode.next,context);
+            secondPass(root->node.moduleDeclareNode.next,symbolTable,funcName);
             break;
         case ID_NODE:
-            secondPass(root->node.idNode.index, context);
+            secondPass(root->node.idNode.index, symbolTable,funcName);
             break;
         case MODULE_NODE:
-            secondPass(root->node.moduleNode.inputList,context);
-            secondPass(root->node.moduleNode.ret,context);
-            secondPass(root->node.moduleNode.body,context);
-            secondPass(root->node.moduleNode.next,context);
+            secondPass(root->node.moduleNode.inputList,symbolTable,funcName);
+            secondPass(root->node.moduleNode.ret,symbolTable,funcName);
+            secondPass(root->node.moduleNode.body,symbolTable,root->node.moduleNode.moduleName);
+            secondPass(root->node.moduleNode.next,symbolTable,funcName);
             break;
         case PARA_LIST_NODE:
-            secondPass(root->node.paraListNode.Range,context);
-            secondPass(root->node.paraListNode.next,context);
+            secondPass(root->node.paraListNode.Range,symbolTable,funcName);
+            secondPass(root->node.paraListNode.next,symbolTable,funcName);
             break;
         case NUM_NODE:
             
@@ -290,30 +293,34 @@ void secondPass(struct ASTNode *root, Context context){
             break;
         case INPUT_NODE:
            
-            secondPass(root->node.inputNode.next,context);
+            secondPass(root->node.inputNode.next,symbolTable,funcName);
             break;
         case OUTPUT_NODE:
            
-            secondPass(root->node.outputNode.value,context);
-            secondPass(root->node.outputNode.next,context);
+            secondPass(root->node.outputNode.value,symbolTable,funcName);
+            secondPass(root->node.outputNode.next,symbolTable,funcName);
             break;
         case RANGE_NODE:
            
-            secondPass(root->node.rangeNode.Range1,context);
-            secondPass(root->node.rangeNode.Range2,context);
+            secondPass(root->node.rangeNode.Range1,symbolTable,funcName);
+            secondPass(root->node.rangeNode.Range2,symbolTable,funcName);
             break;
         case ASSIGN_NODE:
           
-            secondPass(root->node.assignNode.index,context);
-            secondPass(root->node.assignNode.expr,context);
-            secondPass(root->node.assignNode.next,context);
+            secondPass(root->node.assignNode.index,symbolTable,funcName);
+            secondPass(root->node.assignNode.expr,symbolTable,funcName);
+            secondPass(root->node.assignNode.next,symbolTable,funcName);
             break;
         case MODULE_REUSE_NODE:
            
-            secondPass(root->node.moduleReuseNode.optional,context);
-            secondPass(root->node.moduleReuseNode.idList,context);
-            secondPass(root->node.moduleReuseNode.next,context);
-            funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
+            secondPass(root->node.moduleReuseNode.optional,symbolTable,funcName);
+            secondPass(root->node.moduleReuseNode.idList,symbolTable,funcName);
+            funcptr=searchSymbolTable(symbolTable,root->node.moduleReuseNode.id);
+            currfunc=searchSymbolTable(symbolTable,funcName);
+            if(currfunc==NULL){
+            	printf("Cannot access current function \n");
+            	return;
+            }
             if(funcptr==NULL)
                 return;
             if(funcptr->defineFlag!=1){
@@ -322,8 +329,8 @@ void secondPass(struct ASTNode *root, Context context){
             }
             ptr = root->node.moduleReuseNode.idList;
             paraptr = funcptr->inputParaList;
-            while(ptr!=NULL || paraptr!=NULL){
-                varptr = checkDeclarationBeforeUse(context,funcptr->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
+            while(ptr!=NULL && paraptr!=NULL){
+                varptr = checkDeclarationBeforeUse(context,currfunc->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
                 if(varptr==NULL){
                     paraptr=paraptr->next;
                     ptr=ptr->node.idListNode.next;
@@ -341,11 +348,10 @@ void secondPass(struct ASTNode *root, Context context){
             if(paraptr!=NULL){
                 printf("Error on line number:%d, less input variables used in the statement than actual needed\n",root->lineNumber);
             }      
-            if(paraptr)
             ptr = root->node.moduleReuseNode.optional;
             paraptr = funcptr->outputParaList;
-            while(ptr!=NULL || paraptr!=NULL){
-                varptr = checkDeclarationBeforeUse(context,funcptr->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
+            while(ptr!=NULL && paraptr!=NULL){
+                varptr = checkDeclarationBeforeUse(context,currfunc->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
                 if(varptr==NULL){
                     paraptr=paraptr->next;
                     ptr=ptr->node.idListNode.next;
@@ -363,49 +369,50 @@ void secondPass(struct ASTNode *root, Context context){
             if(paraptr!=NULL){
                 printf("Error on line number:%d, less output variables used in the statement than actual needed\n",root->lineNumber);
             }
+            secondPass(root->node.moduleReuseNode.next,symbolTable,funcName);
             break;
         case ID_LIST_NODE:
            
-            secondPass(root->node.idListNode.next,context);
+            secondPass(root->node.idListNode.next,symbolTable,funcName);
             break;
         case DECLARE_NODE:
            
-            secondPass(root->node.declareNode.idList,context);
-            secondPass(root->node.declareNode.Range,context);
-            secondPass(root->node.declareNode.next,context);
+            secondPass(root->node.declareNode.idList,symbolTable,funcName);
+            secondPass(root->node.declareNode.Range,symbolTable,funcName);
+            secondPass(root->node.declareNode.next,symbolTable,funcName);
             break;
         case CONDITION_NODE:
            
-            secondPass(root->node.conditionNode.Case,context);
-            secondPass(root->node.conditionNode.Default,context);
-            secondPass(root->node.conditionNode.next,context);
+            secondPass(root->node.conditionNode.Case,symbolTable,funcName);
+            secondPass(root->node.conditionNode.Default,symbolTable,funcName);
+            secondPass(root->node.conditionNode.next,symbolTable,funcName);
             break;
         case CASE_NODE:
             
-            secondPass(root->node.caseNode.value,context);
-            secondPass(root->node.caseNode.stmt,context);
-            secondPass(root->node.caseNode.next,context);
+            secondPass(root->node.caseNode.value,symbolTable,funcName);
+            secondPass(root->node.caseNode.stmt,symbolTable,funcName);
+            secondPass(root->node.caseNode.next,symbolTable,funcName);
             break;
         case FOR_NODE:
            
-            secondPass(root->node.forNode.range,context);
-            secondPass(root->node.forNode.stmt,context);
-            secondPass(root->node.forNode.next,context);
+            secondPass(root->node.forNode.range,symbolTable,funcName);
+            secondPass(root->node.forNode.stmt,symbolTable,funcName);
+            secondPass(root->node.forNode.next,symbolTable,funcName);
             break;
         case WHILE_NODE:
            
-            secondPass(root->node.whileNode.expr,context);
-            secondPass(root->node.whileNode.stmt,context);
-            secondPass(root->node.whileNode.next,context);
+            secondPass(root->node.whileNode.expr,symbolTable,funcName);
+            secondPass(root->node.whileNode.stmt,symbolTable,funcName);
+            secondPass(root->node.whileNode.next,symbolTable,funcName);
             break;
         case UNARY_NODE:
            
-            secondPass(root->node.unaryNode.expr,context);
+            secondPass(root->node.unaryNode.expr,symbolTable,funcName);
             break;
         case BINARY_NODE:
             
-            secondPass(root->node.binaryNode.expr1,context);
-            secondPass(root->node.binaryNode.expr2,context);
+            secondPass(root->node.binaryNode.expr1,symbolTable,funcName);
+            secondPass(root->node.binaryNode.expr2,symbolTable,funcName);
             break;
         default:
            break;

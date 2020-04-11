@@ -1,100 +1,56 @@
+declare module readArr;
 
-
-
-
-
-<<module var_demo>>
-takes input [x:integer, w: boolean, p:real];
-returns [m:integer, n:integer, u: boolean];
+<<module arraySum>>
+takes input[list:array[1..15] of    real, n:integer];
+returns  [sum:real];
 start
-	declare a,b:integer; 
-	m:= 56;
-        n:= 20;
-	declare m,n: boolean;
-	get_value(b);
-	declare value, q, r: real;
-	get_value(q);
-	r:= 23.67e+2;
-	for(a in 1..10)
+	declare index:integer;
+	declare t:boolean;
+	sum:=0.0;
+	for(index in  1..15)
 	start
-		declare b, q: integer;
-		declare r: boolean;		
-		get_value(b);
-		q:= 18;
-		r:= b+q*a+x < 100 AND w OR m;   	   
-		print(a);
-		declare q,r: real;			
-		print(r);
-		q:= b-a*x+y*20;                 	
-	end
-	value:= p+q*r; 
-	m:=a <= x AND true;
-	u:= true AND false OR v;			
-	u:= a<=b;
-	declare w: integer;				
-	w:= 23;                                 	
-	n:= a*25+100;
-	declare b, c: real;				
-	c:= value-q+r;
-	w:= w + 5;					
-end
-
-
-<<module compute>>
-takes input[a:integer, b:integer, s: real, c:integer];
-returns [res_1:boolean, res_2_a:integer, res_2__b:real];
-start
-	declare new:boolean;
-	declare abc_1, pqr_2: integer;
-	pqr_2:= abc_1 + 6;
-	declare abc_1: real;					
-	res_2_a:= -(a*b-c/pqr_2);
-	declare s: integer;					
-	declare q4, q5: real;
-	res_2__b:= (res_2_b + p)*12+22.34E-2*q5;		
-	declare m,n: boolean;
-	s:= 12;
-	res_1 := a <=  b AND c >= a OR  a<0 AND false;
-	
-	m:= n AND (abc_1<=pqr_2);
-	while(m OR a>=b AND res_2_b<=129.54e+3)
-	start
-		b:=b+1;
-		m:= n OR b>=res_2_a;
-		declare w1, w2: integer;
-		declare abc_1: integer;
-		switch (m)
+		t:= index<=n;
+		switch(t)
 		start
-			case true: declare w1, s: real;
- 				   s:= w1 + 54.24e-2+ q4;
-				   abc_1:=  w2 + a*pqr_2 - c*abc_1;
-				   break;	
-			case false: w1:= w1+5.76;
-				    s:= s*k;                   
-                                    declare s:integer;	        
-				    break;	
+			case true: print(list[index]);
+				   sum:=sum+list[index];
+				   break;
+			case false: print(sum);
+				    print(index);
+				    
+				    break;
 		end
-		abc_1:= 16;
-             	w2:= a-s*abc_1*c-pqr_2+w1;
-		m:= abc_1<=pqr_2 OR res_1;
-		w1:= w2*a-s*k*c-pqr_2;                  	
+		
 	end
-	m:= m OR (a <= b) AND (res_2 >= 30.65);
-	res_1:= (true AND c==b)OR(b>p AND (a<=d));		
-	declare new: integer;					
-	new:= a<b;
-	print(res_1);
+	print(sum);
 end
-
-
 <<<driver program>>>
 start
-	declare v_1_2_3:integer;
-	get_value(v_1_2_43);							
-	declare result_, v7, v9:integer;
-	declare u1:boolean;
-	[u1, result_, k]:=use module compute with parameters v_1_2_3, v7, v9;	
-	print(result_);
-	declare u1: real;					
+	declare A:array[1..15] of real;
+	declare k:integer;
+	declare s:integer;
+	get_value(k);
+	use module readArr with parameters A,k;
+	[s]:= use module arraySum with parameters A,k;
+	print(s);
 end
 
+
+
+
+
+
+<<module readArr>>
+takes input [arr1:array[1..15] of real,k:integer];
+start
+	declare tempvar:real;
+	declare i:integer;
+	i:=1;
+	while(i<=k)
+	start
+		get_value(tempvar);
+		arr1[i]:=tempvar;
+		i:=i+1;
+		
+	end
+end

@@ -346,6 +346,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								}
 								leftType.arrayFlag=0;
 							}
+							leftType.arrayFlag=0;
                         }
                         if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
 	                    {
@@ -583,6 +584,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							}
 							leftType.arrayFlag=0;
 						}
+						leftType.arrayFlag=0;
                     }    
                     if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
                     {

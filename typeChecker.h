@@ -9,6 +9,6 @@ extern int assertNotForbidden(Context context,char name[], int lineNumber);
 
 extern int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit);
 extern Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root);
-extern void secondPass(struct ASTNode *root, Context context);
+extern void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]);
 
 #endif

@@ -87,11 +87,10 @@ int main(int argc, char *argv[])
 				//printInlineParseTree(root,0);
 				//printf("\n Printing AST: \n");
 				ASTroot=createAST(root);
-				printInlineAstTree(ASTroot,0);
+				//printInlineAstTree(ASTroot,0);
 				mainTable=populateSymbolTable(ASTroot);
 				//printSymbolTable(mainTable);
-				context.symbolTable=mainTable;
-				secondPass(ASTroot,context);
+				secondPass(ASTroot,*mainTable,"");
 				
 				break;
 			case 4:
