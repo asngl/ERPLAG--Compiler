@@ -188,6 +188,8 @@ int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *r
     if(root->tag==ID_NODE){
         VariableEntry *ptr;
         ptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
+        if(ptr==NULL)
+            return 0;
         if(bit == 0){
             ptr->initFlag=0;
             return 0;
