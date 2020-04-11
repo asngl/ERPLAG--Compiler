@@ -245,6 +245,168 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
     
 }
 
+void secondPass(struct ASTNode *root, Context context){
 
+    if(root==NULL)
+        return;
+    FunctionTable *funcptr;
+    ASTNode *ptr;
+    ParameterList *paraptr;
+    VariableEntry *varptr,*para_var_ptr;
+    switch(root->tag){
+        case PROGRAM_NODE:
+            secondPass(root->node.programNode.moduleDeclarations,context);
+            secondPass(root->node.programNode.otherModules1,context);
+            secondPass(root->node.programNode.driverModule,context);
+            secondPass(root->node.programNode.otherModules2,context);
+            break;
+        case MODULE_DECLARE_NODE:
+            secondPass(root->node.moduleDeclareNode.next,context);
+            break;
+        case ID_NODE:
+            secondPass(root->node.idNode.index, context);
+            break;
+        case MODULE_NODE:
+            secondPass(root->node.moduleNode.inputList,context);
+            secondPass(root->node.moduleNode.ret,context);
+            secondPass(root->node.moduleNode.body,context);
+            secondPass(root->node.moduleNode.next,context);
+            break;
+        case PARA_LIST_NODE:
+            secondPass(root->node.paraListNode.Range,context);
+            secondPass(root->node.paraListNode.next,context);
+            break;
+        case NUM_NODE:
+            
+            break;
+        case RNUM_NODE:
+            
+            break;
+        case BOOL_NODE:
+           
+            break;
+        case INPUT_NODE:
+           
+            secondPass(root->node.inputNode.next,context);
+            break;
+        case OUTPUT_NODE:
+           
+            secondPass(root->node.outputNode.value,context);
+            secondPass(root->node.outputNode.next,context);
+            break;
+        case RANGE_NODE:
+           
+            secondPass(root->node.rangeNode.Range1,context);
+            secondPass(root->node.rangeNode.Range2,context);
+            break;
+        case ASSIGN_NODE:
+          
+            secondPass(root->node.assignNode.index,context);
+            secondPass(root->node.assignNode.expr,context);
+            secondPass(root->node.assignNode.next,context);
+            break;
+        case MODULE_REUSE_NODE:
+           
+            secondPass(root->node.moduleReuseNode.optional,context);
+            secondPass(root->node.moduleReuseNode.idList,context);
+            secondPass(root->node.moduleReuseNode.next,context);
+            funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
+            if(funcptr==NULL)
+                return;
+            if(funcptr->defineFlag!=1){
+                printf("Error on line number: %d, Function : %s is declared but not defined",root->lineNumber,root->moduleReuseNode.id);
+                return;
+            }
+            ptr = root->node.moduleReuseNode.idList;
+            paraptr = funcptr->inputParaList;
+            while(ptr!=NULL || paraptr!=NULL){
+                varptr = checkDeclarationBeforeUse(context,funcptr->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
+                if(varptr==NULL){
+                    paraptr=paraptr->next;
+                    ptr=ptr->node.idListNode.next;
+                    continue;
+                }
+                if(assertTypeEquality(varptr->type,paraptr->type,ptr->lineNumber)==0){
+                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,varptr->varName,paraptr->varName);
+                }
+                paraptr=paraptr->next;
+                ptr=ptr->node.idListNode.next;
+            }
+            if(ptr!=NULL){
+                printf("Error on line number:%d, more input variables used in the statement than actual needed\n");
+            } 
+            if(paraptr!=NULL){
+                printf("Error on line number:%d, less input variables used in the statement than actual needed\n");
+            }      
+            if(paraptr)
+            ptr = root->node.moduleReuseNode.optional;
+            paraptr = funcptr->outputParaList;
+            while(ptr!=NULL || paraptr!=NULL){
+                varptr = checkDeclarationBeforeUse(context,funcptr->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
+                if(varptr==NULL){
+                    paraptr=paraptr->next;
+                    ptr=ptr->node.idListNode.next;
+                    continue;
+                }
+                if(assertTypeEquality(varptr->type,paraptr->type,ptr->lineNumber)==0){
+                    printf("Error on line number:%d , type mismatch for output variable %s and parameter %s \n",ptr->lineNumber,varptr->varName,paraptr->varName);
+                }
+                paraptr=paraptr->next;
+                ptr=ptr->node.idListNode.next;
+            }
+            if(ptr!=NULL){
+                printf("Error on line number:%d, more output variables used in the statement than actual needed\n");
+            } 
+            if(paraptr!=NULL){
+                printf("Error on line number:%d, less output variables used in the statement than actual needed\n");
+            }
+            break;
+        case ID_LIST_NODE:
+           
+            secondPass(root->node.idListNode.next,context);
+            break;
+        case DECLARE_NODE:
+           
+            secondPass(root->node.declareNode.idList,context);
+            secondPass(root->node.declareNode.Range,context);
+            secondPass(root->node.declareNode.next,context);
+            break;
+        case CONDITION_NODE:
+           
+            secondPass(root->node.conditionNode.Case,context);
+            secondPass(root->node.conditionNode.Default,context);
+            secondPass(root->node.conditionNode.next,context);
+            break;
+        case CASE_NODE:
+            
+            secondPass(root->node.caseNode.value,context);
+            secondPass(root->node.caseNode.stmt,context);
+            secondPass(root->node.caseNode.next,context);
+            break;
+        case FOR_NODE:
+           
+            secondPass(root->node.forNode.range,context);
+            secondPass(root->node.forNode.stmt,context);
+            secondPass(root->node.forNode.next,context);
+            break;
+        case WHILE_NODE:
+           
+            secondPass(root->node.whileNode.expr,context);
+            secondPass(root->node.whileNode.stmt,context);
+            secondPass(root->node.whileNode.next,context);
+            break;
+        case UNARY_NODE:
+           
+            secondPass(root->node.unaryNode.expr,context);
+            break;
+        case BINARY_NODE:
+            
+            secondPass(root->node.binaryNode.expr1,context);
+            secondPass(root->node.binaryNode.expr2,context);
+            break;
+        default:
+           
+    }
+}
 
 #endif
