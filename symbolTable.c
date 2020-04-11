@@ -184,7 +184,8 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 		VariableEntry *search;
 		search=searchLocalTable(localTable,currVar->node.idListNode.varName);
 		if(search!=NULL){
-			printf("Error on line number: %d, %s already declared on line number: %d",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
+			printf("Error on line number: %d, %s already declared on line number: %d\n",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
+			currVar=currVar->node.idListNode.next;
 			continue;
 		}
 		VariableEntry *initNode;
