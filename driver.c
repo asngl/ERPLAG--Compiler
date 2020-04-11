@@ -18,7 +18,7 @@ Ayush Singhal  2017A7PS0116P
 #include <time.h>
 #include "symbolTableDef.h"
 #include "symbolTable.h"
-
+#include "typeChecker.h"
 
 struct ParseTreeNode *parseInputSourceCode(char *);
 void printParseTree(struct ParseTreeNode * root, char * outfile);
@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
 	char *outfile="Clean_code.txt";
 	FILE *fp;
 	char c;
+	Context context;
+	SymbolTable *mainTable;
 	struct ParseTreeNode *root;
 	struct ASTNode *ASTroot;
 	clock_t start_time, end_time;
@@ -86,9 +88,10 @@ int main(int argc, char *argv[])
 				//printf("\n Printing AST: \n");
 				ASTroot=createAST(root);
 				printInlineAstTree(ASTroot,0);
-				SymbolTable *mainTable;
 				mainTable=populateSymbolTable(ASTroot);
 				//printSymbolTable(mainTable);
+				context.symbolTable=mainTable;
+				secondPass(ASTroot,context);
 				
 				break;
 			case 4:
