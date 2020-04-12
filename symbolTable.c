@@ -824,8 +824,6 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		strcpy(context.funcName, ptr->funcName);
 		context.inputList=cloneParaListAsVariables(ptr->inputParaList);
 		context.outputList=cloneParaListAsVariables(ptr->outputParaList);
-		root->node.moduleNode.inputList->localTableEntry=context.inputList;
-		root->node.moduleNode.ret->localTableEntry= context.outputList;
 		context.forbiddenVariables=NULL;
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
 		
