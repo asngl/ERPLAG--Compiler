@@ -120,7 +120,6 @@ struct BinaryNode{
 	struct ASTNode *expr2;
 };
 
-
 union untaggedASTNode{
 	struct ProgramNode programNode;
 	struct ModuleDeclareNode moduleDeclareNode;
@@ -148,7 +147,7 @@ struct ASTNode{
 	union untaggedASTNode node;
 	enum  NodeType tag;
   	int lineNumber;
-  	VariableEntry *localTableEntry;
+  	struct VariableEntry *localTableEntry;
 };
 
 #endif

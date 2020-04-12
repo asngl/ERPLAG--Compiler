@@ -2,103 +2,108 @@
 
 
 
-
-
-
-<<module switch_var_demo1>>
-takes input [x: integer, y: real, z:boolean];
-returns [u: integer];
+<<module var_demo_array>>
+takes input [x:integer, m:array [2..20] of integer, p:real];
+returns [ n:integer, k: boolean];
 start
-
-	declare m,n,k: integer;
-	declare h:boolean;
-	declare p: real;
-	get_value(n);
-	switch(k)
+	declare a,b,h:integer;	
+	get_value(b);
+	declare p: array[2..20] of integer;	
+	a:= m[5]+3;				   
+	p:= m;					   
+	k:=true;	
+	p:= m + p;                                 
+	p[10]:= a*b-20*h;                          			 
+	while(k AND x<=m[11] OR false)
 	start
-		case 10: declare A:real;
-			 declare Q: integer;
-			 declare B: array[10..30] of integer;
-			 declare E: array[4..10] of integer;
-			 B[12]:= k*20; 	                  	
-			 break;
-		case 20: A:= 12.90 + p;       
-			 get_value(Q);
-			 for(m in 10..15)
-			 start
-				n:= n+m;
-			 end
-			 E[7]:= k+12 - Q*10;       
-			 break;
-		case true: m:=m-n;			
-			 break;
-		default: E[9]:= B[15]+Q;	       
-			 break;			 	
+		declare p, u:integer;
+		declare b: array[2..20] of integer;
+		b:= m;
+		b[2]:= u+m[25];			    
+		p:= b[18]*18.56E+2;		   
 	end
-
-	u:= u+ x*m-n;
-
-	switch(p)				
-	start
-		case 1: p:=p+1;
-			break;
-		default:h:=false;
-			break;
-	end
-
-	switch(h)
-	start
-		case false: declare A:real;
-			 declare Q: integer;
-			 declare B: array[10..30] of integer;
-			 declare E: array[4..10] of integer;
-			 B[12]:= k*20; 	                  	
-			 break;
-		case 20: A:= 12.90 + p;       		
-			 get_value(Q);
-			 for(m in 10..15)
-			 start
-				n:= n+m;
-			 end
-			 E[7]:= k+12 - Q*10;       
-			 break;
-		case true: m:=m-n;
-			 print(m);			
-			 break;
-		default: E[9]:= B[15]+Q;	       
-			 break;			 	
-	end
-	
+        n:= a - p*b;				   
+	b:= b+3;
+	k:= a>b OR b>100;
+	print(k);	
 end
 
-<<module for_loop_demo>>
-takes input [x: integer, y: real, z:boolean];
-returns [u: integer];
-start
 
+<<module f1>>
+takes input[a: array[10..30] of integer, b:array[10..30] of integer, c:real];
+returns [m:boolean, n:integer];
+start
+	declare x,y, p: real;
 	declare k: integer;
-	for(k in 12..70)
+	get_value(y);
+	get_value(x);
+	declare A,B: array[4..10] of integer;
+	get_value(B);
+	declare D,C: array[10..30] of integer;
+	A:=B;
+	C:=a;
+	D:=C;					 
+	for (k in 15..40)
 	start
-		u:= x+k;
-		k:= k+2;                             
-	end 
+		x:=x+k*y;				    
+		declare u, v:real;
+		u := y+c*34.2;
+		v:= u-c*p-20.5E+2;		 
+		switch(k)
+		start
+			case 10: declare A:real;
+				 declare Q: integer;
+				 declare B: array[10..30] of integer;
+				 declare E: array[4..10] of integer;
+				 B[9]:= k*20; 	                       	
+				 B:=C;           	      
+				 E:= Q;                       	 
+				 break;
+			case 20: A:= 12.90 + u*y - c;         
+				 get_value(Q);
+				 E[7]:= k+12 - Q*10+u;            
+				 break;
+			default: E[9]:= B[15]+Q;	      	       
+				 break;			 	
+		end
+		x:=x + u*v- u<=v;                             
+	end
+	x:=c+y;	
+	C[18]:= a[18]+ b[18];
+	A[5]:= B[6]- 10;
+	m:= A[5]< C[18] + A[11];			       
+	n:= 20*8-5;	
 end
+
+
 
 <<<driver program>>>
 start
-	declare a, b: integer;
-	declare c: real;
-	declare d: boolean;
-	[a]:=use module for_loop_demo with parameters b, c, d;
-	switch(a)
-	start
-		case 1: a:=a+b;
-			break;
-		case 2: a:=a-b;
-			break;
-		case 3: a:= a*b;
-			break;
-		case 4: a:= a/b;
-			break;
-	end					
+	declare v_1_2_3, A:integer;
+	declare u1, k:boolean;
+        A:=12;
+	declare p: real;
+	p:= 23.56;
+	get_value(v_1_2_3);							 		
+	declare B, C: array [2..20] of integer;
+	[ v_1_2_3, u1]:=use module var_demo_array with parameters A,B,p;		
+	[ v_1_2_3, k]:=use module var_demo_array with parameters A,B,p;	
+	declare a,b:integer;
+	a:= 5.89e-2;			        
+	get_value(b);
+	declare value, q, r: real;
+	get_value(q);
+	r:= 23.67e+2;
+	value:= p+q*r-a*value; 			
+	k:= true AND false OR q;		
+	u1:= a<=b;
+	declare w: integer;			 
+	w:= 23+B[6];                                  
+	b:= a*25+100*C[1];		         
+	declare D: array[20..40] of integer;			 
+	D:= value-q+r;				
+	w:= w + 5;		 
+	B:= C;
+	C:= D;				                
 end
+

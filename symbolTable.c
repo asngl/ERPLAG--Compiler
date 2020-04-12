@@ -353,7 +353,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                    }    
 	                    if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
 	                    {
-	                    	printf("::Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
+	                    	printf("Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
 	                    }
 	                }
 	                root=root->node.assignNode.next;
@@ -597,7 +597,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                     }    
                     if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
                     {
-                    	printf("::Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
+                    	printf("Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
                     }
                 }
                 root=root->node.assignNode.next;
