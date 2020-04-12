@@ -148,6 +148,7 @@ struct ASTNode{
 	union untaggedASTNode node;
 	enum  NodeType tag;
   	int lineNumber;
+  	VariableEntry *localTableEntry;
 };
 
 #endif

@@ -275,46 +275,49 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	            case INPUT_NODE:
 	                if(assertNotForbidden(context,root->node.inputNode.name,root->lineNumber)==1){
 	                    varptr=checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+	                    root->localTableEntry=varptr;
 	                    if(varptr!=NULL)
 	                        varptr->initFlag=1;
 	                }
 	                root=root->node.inputNode.next;
 	                break;
 	            case OUTPUT_NODE:
-	            	if(root->node.outputNode.value->tag == ID_NODE){
-	                	ptr=root->node.outputNode.value;
-	                	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.varName,root->lineNumber);
-	                	if(varptr==NULL){
-	                		root=root->node.outputNode.next;
-	                		break;
-	                	}
-	                	leftType=varptr->type;
-	                	if(ptr->node.idNode.index!=NULL){
-	                	    if(leftType.arrayFlag==0){
-	                	        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
-	                	    }
-	                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
-	                	    {
-	                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
-	                	        {
-	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
-	                	        }
-	                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
-	                	        {
-	                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
-	                	        }
-	                	        leftType.arrayFlag=0;
-	                	    }
-	                	}
+		            	if(root->node.outputNode.value->tag == ID_NODE){
+		                	ptr=root->node.outputNode.value;
+		                	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.varName,root->lineNumber);
+		                	ptr->localTableEntry=varptr;
+		                	if(varptr==NULL){
+		                		root=root->node.outputNode.next;
+		                		break;
+		                	}
+		                	leftType=varptr->type;
+		                	if(ptr->node.idNode.index!=NULL){
+		                	    if(leftType.arrayFlag==0){
+		                	        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
+		                	    }
+		                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
+		                	    {
+		                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
+		                	        {
+		                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+		                	        }
+		                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
+		                	        {
+		                	              printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+		                	        }
+		                	        leftType.arrayFlag=0;
+		                	    }
+		                	}
 
-	            	}
-	                root=root->node.outputNode.next;
-	                break;
+		            	}
+		                root=root->node.outputNode.next;
+		                break;
 	            case ASSIGN_NODE:
 					rightType=validateExpression(context,parent,root->node.assignNode.expr);   
 	                if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
 	                {
 	                    varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
+	                    root->localTableEntry=varptr;
 	                    if(varptr==NULL)
 	                    {
 	                    	root=root->node.assignNode.next;
@@ -347,14 +350,14 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								leftType.arrayFlag=0;
 							}
 							leftType.arrayFlag=0;
-                        }
-                        if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
+	                    }    
+	                    if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
 	                    {
-	                    	printf("Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
+	                    	printf("::Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
 	                    }
-                    }
-                    root=root->node.assignNode.next;
-                    break;
+	                }
+	                root=root->node.assignNode.next;
+	                break;
 	            case MODULE_REUSE_NODE:
 	                //Set use flag
 	                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
@@ -375,7 +378,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                ptr=root->node.moduleReuseNode.idList;
 	                while(ptr!=NULL)
 	                {
-	                    checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+	                    ptr->localTableEntry=checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
 	                    ptr=ptr->node.idListNode.next;
 	                }
 	                ptr=root->node.moduleReuseNode.optional;
@@ -383,6 +386,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                {
 	                    if(assertNotForbidden(context,ptr->node.idListNode.varName,root->lineNumber)==1){
 	                        varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+	                        ptr->localTableEntry=varptr;
 	                        if(varptr!=NULL)
 	                            varptr->initFlag=1;
 	                    }
@@ -392,6 +396,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                break;
 	            case CONDITION_NODE:
 	                varptr=checkDeclarationBeforeUse(context,parent,root->node.conditionNode.id,root->lineNumber);
+	                root->localTableEntry=varptr;
 	                if(varptr->type.arrayFlag==1){
 	                    printf("Error on line number:%d, usage of %s is forbidden inside switch as it is an array\n",root->lineNumber,varptr->varName);
 	                }
@@ -441,6 +446,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	            case FOR_NODE:
 	                if(assertNotForbidden(context,root->node.forNode.id,root->lineNumber)==1){
 	                        varptr=checkDeclarationBeforeUse(context,parent,root->node.forNode.id,root->lineNumber);
+	                        root->localTableEntry=varptr;
 	                        if(varptr!=NULL)
 	                            varptr->initFlag=1;
 	                }
@@ -513,6 +519,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
             case INPUT_NODE:
                 if(assertNotForbidden(context,root->node.inputNode.name,root->lineNumber)==1){
                     varptr=checkDeclarationBeforeUse(context,parent,root->node.inputNode.name,root->lineNumber);
+                    root->localTableEntry=varptr;
                     if(varptr!=NULL)
                         varptr->initFlag=1;
                 }
@@ -522,6 +529,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 	            	if(root->node.outputNode.value->tag == ID_NODE){
 	                	ptr=root->node.outputNode.value;
 	                	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.varName,root->lineNumber);
+	                	ptr->localTableEntry=varptr;
 	                	if(varptr==NULL){
 	                		root=root->node.outputNode.next;
 	                		break;
@@ -553,6 +561,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 if(assertNotForbidden(context,root->node.assignNode.LHS,root->lineNumber)==1)
                 {
                     varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.LHS,root->lineNumber);
+                    root->localTableEntry=varptr;
                     if(varptr==NULL)
                     {
                     	root=root->node.assignNode.next;
@@ -588,7 +597,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                     }    
                     if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
                     {
-                    	printf("Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
+                    	printf("::Type Mismatch Error on line number %d: types of lhs and rhs of assignment statement do not match\n",root->lineNumber);
                     }
                 }
                 root=root->node.assignNode.next;
@@ -613,7 +622,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 ptr=root->node.moduleReuseNode.idList;
                 while(ptr!=NULL)
                 {
-                    checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+                    ptr->localTableEntry=checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
                     ptr=ptr->node.idListNode.next;
                 }
                 ptr=root->node.moduleReuseNode.optional;
@@ -621,6 +630,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 {
                     if(assertNotForbidden(context,ptr->node.idListNode.varName,root->lineNumber)==1){
                         varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idListNode.varName,root->lineNumber);
+                        ptr->localTableEntry=varptr;
                         if(varptr!=NULL)
                             varptr->initFlag=1;
                     }
@@ -630,6 +640,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 break;
             case CONDITION_NODE:
                 varptr=checkDeclarationBeforeUse(context,parent,root->node.conditionNode.id,root->lineNumber);
+                root->localTableEntry=varptr;
                 if(varptr->type.arrayFlag==1){
                     printf("Error on line number:%d, usage of %s is forbidden inside switch as it is an array\n",root->lineNumber,varptr->varName);
                 }
@@ -679,6 +690,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
             case FOR_NODE:
                 if(assertNotForbidden(context,root->node.forNode.id,root->lineNumber)==1){
                         varptr=checkDeclarationBeforeUse(context,parent,root->node.forNode.id,root->lineNumber);
+                        root->localTableEntry=varptr;
                         if(varptr!=NULL)
                             varptr->initFlag=1;
                 }
