@@ -4,55 +4,8 @@ void assertNodeType(enum NodeType a,enum NodeType b)
 		printf("\n\tASSERTION ERROR, Expected %d Found %d \n",a,b);
 }
 
-Line *newLine()
-{
-	Line *line=malloc(sizeof(Line));
-	line->nextLine=NULL;
-	return line;
-}
 
-Code newEmptyCode()
-{
-	Code code;
-	code.firstLine=NULL;
-	code.lastLine=NULL;
-	return code;
-}
-
-Code newCode(Line *line)
-{
-	Code code;
-	code.firstLine=line;
-	code.lastLine=line;
-	return code;
-}
-
-Line *newCustomLabelLine(char *label)
-{
-	Line *line=newLine();
-	line->instr=LABEL;
-	strcpy(line->label,label);
-	return line;
-}
-Code mergeCode(Code code1,Code code2)
-{
-	Code final=newEmptyCode();
-	if(code1.firstLine==NULL)
-	{
-		final=code2;
-		return final;
-	}
-	else if(code2.firstLine==NULL)
-	{
-		final=code1;
-		return final;
-	}
-	code1.lastLine->nextLine=code2.firstLine;
-	final.firstLine=code1.firstLine;
-	final.lastLine=code2.lastLine;
-}
-
-Code generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
+void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 {
 	Code finalCode=newEmptyCode();
 	Code temp1,temp2,temp3;
@@ -92,7 +45,7 @@ Code generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 	return finalCode;
 }
 
-Code generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
+void generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
 {
 	assert(MODULE_NODE,root->tag);
 	Code finalCode=newEmptyCode();
@@ -107,12 +60,13 @@ Code generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
 	return finalCode;
 }
 
-Code generateProgramCode(struct ASTNode *root)
+void generateProgramCode(struct ASTNode *root)
 {
 	struct ASTNode *ASTptr;
 
 	assertNodeType(PROGRAM_NODE,root->tag);
-	LabelGenerator *lg=initLabelGenerator();
+
+	initLabelGenerator();
 
 	Code finalCode=generateModuleCode(lg,root->node.programNode.driverModule);
 	
