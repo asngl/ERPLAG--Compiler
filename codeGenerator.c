@@ -283,44 +283,117 @@ void generateInputCode(struct ASTNode *root)
         }
     }
 }
-void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
-{
-	while(root!=NULL)
-	{
-		case INPUT_NODE:
-			generateInputCode(root);
-			root=root->node.inputNode.next;
-			return;
-		case OUTPUT_NODE:
-			generateOutputCode(root);
-			root=root->node.outputNode.next;
-			return;
-		case ASSIGN_NODE:
-			root=root->node.assignNode.next;
-			return;
-		case MODULE_REUSE_NODE:
-			root=root->node.moduleReuseNode.next;
-			return;
-		case CONDITION_NODE:
-			root=root->node.conditionNode.next;
-			return;
-		case CASE_NODE:
-			root=root->node.caseNode.next;
-			return;
-		case FOR_NODE:
-			root=root->node.forNode.next;
-			return;
-		case WHILE_NODE:
-			root=root->node.whileNode.next;
-			return;
-		case DECLARE_NODE:
-			root=root->node.declareNode.next;
-			return;
-	}
-	finalCode=mergeCode(finalCode,endOfScopeCode);
-	return finalCode;
+
+void generateOutputCode(struct ASTNode *root){
+    if(root->tag==BOOL_NODE){
+        fprintf(fp,"mov   ax,%d",root->node.boolNode.value);
+        int label,label2;
+        label=createLabel();
+        label2=createLabel();
+            
+        fprintf(fp,"cmp ax,0");
+        fprintf(fp,"jz _label%d",label);
+        fprintf(fp,"mov     rdi,_formatBooleanTrue");
+        fprintf(fp,"jmp     _label%d",label2);
+        fprintf(fp,"_label%d",label1);
+        fprintf(fp,"mov     rdi,_formatBooleanFalse");
+        fprintf(fp,"_label%d:",label2);
+        fprintf(fp,"mov     rax,0");
+ 
+        fprintf(fp,"call    printf");
+    }else
+    if(root->tag==NUM_NODE){
+        frpintf(fp,"mov    rdi, _formatIntOutput");
+        fprintf(fp,"mov    rsi,%d,root->node.numNode.num",root->node.numNode.num);
+        fprintf(fp,"mov    rax,0");
+        fprintf("call printf");
+    }else
+    if(root->tag==RNUM_NODE){
+        fprintf(fp,"mov    rdi,_formatRealOutput");
+        fprintf(fp,"movss    xmm0,%f",root->node.rNumNode.rnum);
+        fprintf(fp,"mov rax,1");
+        fprintf(fp,"call printf");
+    }else
+    {
+        VariableEntry *ptr = root->localTableEntry;
+        if(ptr->type.arrayFlag==1){
+            if(root->node.idNode.index==NULL){
+                if(ptr->type.type==DT_BOOLEAN){
+                    
+                }else
+                if(ptr->type.type==DT_INTEGER){
+                    
+                }else
+                {
+                    
+                }
+            }else
+            if(root->node.idNode.index==NUM_NODE){
+                if(ptr->type.type==DT_BOOLEAN){
+                    
+                }else
+                if(ptr->type.type==DT_INTEGER){
+                    
+                }else
+                {
+                    
+                }
+            }else
+            {
+                if(ptr->type.type==DT_BOOLEAN){
+                    
+                }else
+                if(ptr->type.type==DT_INTEGER){
+                    
+                }else
+                {
+                    
+                }
+            }
+        }
+    }
 }
 
+void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
+{
+    VariableEntry *varptr;
+    int allocatedSpace;
+    
+    while(root!=NULL)
+    {
+        case INPUT_NODE:
+            generateInputCode(root);
+            root=root->node.inputNode.next;
+            return;
+        case OUTPUT_NODE:
+            generateOutputCode(root->node.outputNode.value);
+            root=root->node.outputNode.next;
+            return;
+        case ASSIGN_NODE:
+            root=root->node.assignNode.next;
+            return;
+        case MODULE_REUSE_NODE:
+            root=root->node.moduleReuseNode.next;
+            return;
+        case CONDITION_NODE:
+            root=root->node.conditionNode.next;
+            return;
+        case CASE_NODE:
+            root=root->node.caseNode.next;
+            return;
+        case FOR_NODE:
+            root=root->node.forNode.next;
+            return;
+        case WHILE_NODE:
+            root=root->node.whileNode.next;
+            return;
+        case DECLARE_NODE:
+            root=root->node.declareNode.next;
+            return;
+    }
+    
+    return finalCode;
+} 
 void generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
 {
 	assert(MODULE_NODE,root->tag);
