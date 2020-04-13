@@ -18,7 +18,7 @@ print:
         push    rax
         push    rcx
 
-        mov     rdi,_formatIntArray             ; set 1st parameter (format)
+        mov     rdi,_formatRealArray             ; set 1st parameter (format)
         mov     rsi,6d
         mov     rdx,rax
         mov     rcx,rbx
@@ -47,13 +47,14 @@ _label34:
         push    rax
         push    rcx
 
-        mov    rdi,_formatIntInput
+        mov    rdi,_formatRealInput
 
-        lea     rsi,[rbp+rax*8]
+        lea     rsi,[_flttmp0]
         mov     rax,0
 
         call    scanf                  ; printf(format, current_number)
-
+        movss   xmm0,[_flttmp0]
+        movss   dword [rbp+rax*4],xmm0
         pop     rcx
         pop     rax     
         pop     rbp
@@ -70,10 +71,10 @@ _label36:
         push    rax
         push    rcx
 
-        mov    rdi,_formatIntOutput
+        mov    rdi,_formatRealOutput
 
-        mov     rsi,[rbp+rax*8]
-        mov     rax,0
+        movss   xmm0,dword [rbp+rax*4]
+        mov     rax,1
 
         call    printf                  ; printf(format, current_number)
 
@@ -102,19 +103,33 @@ _label35: ;Freeing up 48 bytes
         SECTION .data
 
 _flttmp0:
-        dq  0.1
+        dw  0.1
 _flttmp1:
         dq  0.5; 64 bit float
 
 _formatIntArray:
-        db  "Enter %ld numbers for integer array from %ld to %ld ", 10, 0
-_formatBoolArray:
-        db  "Enter %ld numbers for boolean array from %ld to %ld ", 10, 0
+        db  "Enter %hd numbers for integer array from %hi to %hi ", 10, 0
+
+_formatBooleanArray:
+        db  "Enter %hi numbers for boolean array from %hi to %hi ", 10, 0
+
 _formatRealArray:
-        db  "Enter %ld numbers for real array from %ld to %ld ", 10, 0
+        db  "Enter %hi numbers for real array from %hi to %hi ", 10, 0
 
 _formatIntInput:
-        db  "%ld",0
+        db  "%d",0
 
 _formatIntOutput:
-        db  "%ld",10,0
+        db  "%d",10,0
+
+_formatBooleanInput:
+        db  "%d",0
+
+_formatBooleanOutput:
+        db  "%s",10,0
+
+_formatRealInput:
+        db  "%f",0
+
+_formatRealOutput:
+        db  "%f",10,0
