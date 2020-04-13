@@ -331,14 +331,13 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             ptr = root->node.moduleReuseNode.idList;
             paraptr = funcptr->inputParaList;
             while(ptr!=NULL && paraptr!=NULL){
-                varptr = checkDeclarationBeforeUse(context,currfunc->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
-                if(varptr==NULL){
-                    paraptr=paraptr->next;
-                    ptr=ptr->node.idListNode.next;
-                    continue;
+                if(ptr->localTableEntry==NULL){
+                	ptr=ptr->node.idListNode.next;
+                	paraptr=paraptr->next;
+                	continue;
                 }
-                if(assertTypeEquality(varptr->type,paraptr->type,ptr->lineNumber)==0){
-                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,varptr->varName,paraptr->varName);
+                if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
+                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
@@ -352,14 +351,13 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             ptr = root->node.moduleReuseNode.optional;
             paraptr = funcptr->outputParaList;
             while(ptr!=NULL && paraptr!=NULL){
-                varptr = checkDeclarationBeforeUse(context,currfunc->localTable, ptr->node.idListNode.varName,ptr->lineNumber);
-                if(varptr==NULL){
-                    paraptr=paraptr->next;
-                    ptr=ptr->node.idListNode.next;
-                    continue;
+                if(ptr->localTableEntry==NULL){
+                	ptr=ptr->node.idListNode.next;
+                	paraptr=paraptr->next;
+                	continue;
                 }
-                if(assertTypeEquality(varptr->type,paraptr->type,ptr->lineNumber)==0){
-                    printf("Error on line number:%d , type mismatch for output variable %s and parameter %s \n",ptr->lineNumber,varptr->varName,paraptr->varName);
+                if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
+                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
