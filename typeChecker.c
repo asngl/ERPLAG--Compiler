@@ -90,14 +90,14 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
                     if(root->node.idNode.index->tag==ID_NODE)
                     {
                         varptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.index->node.idNode.varName,root->lineNumber);
-                        ptr->node.idNode.index->localTableEntry=varptr;
+                        root->node.idNode.index->localTableEntry=varptr;
                         if(varptr!=NULL)
                         {
                             if(varptr->type.type!=DT_INTEGER)
                             {
                                 printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                             }
-                            else if(varptr->type.isArrayFlag==1)
+                            else if(varptr->type.arrayFlag==1)
                             {
                                 printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                             }
@@ -105,6 +105,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
                             {
                                 printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                             }
+                        }
                     }
 			        leftType.arrayFlag=0;
 			    }

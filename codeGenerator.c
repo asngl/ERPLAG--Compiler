@@ -4,6 +4,7 @@ void assertNodeType(enum NodeType a,enum NodeType b)
 		printf("\n\tASSERTION ERROR, Expected %d Found %d \n",a,b);
 }
 int LABEL_COUNTER;
+int TEMPORARY_COUNTER;
 void initLabelGenerator()
 {
 	LABEL_COUNTER=0;
@@ -114,7 +115,7 @@ void generateInputCode(struct ASTNode *root)
         else
         {
         	///TODO
-            int width=4;
+            int width=8;
             fprintf(fp,"		mov rax,qword [rbp+%d]\n",ptr->offset);
             fprintf(fp,"		mov rdx,word [rbp+%d]\n",ptr->offset+8);
             fprintf(fp,"		mov rcx,word [rbp+%d]\n",ptr->offset+10);
@@ -243,7 +244,7 @@ void generateInputCode(struct ASTNode *root)
         else
         {
         	///TODO
-            int width=4;
+            int width=8;
             fprintf(fp,"		movsx rsi,dword [rbp+%d]\n",ptr->offset);
             
 			fprintf(fp,"        push    rax");
@@ -286,12 +287,12 @@ void generateInputCode(struct ASTNode *root)
 
 void generateOutputCode(struct ASTNode *root){
     if(root->tag==BOOL_NODE){
-        fprintf(fp,"mov   ax,%d",root->node.boolNode.value);
+        fprintf(fp,"mov   rax,%d",root->node.boolNode.value);
         int label,label2;
         label=createLabel();
         label2=createLabel();
             
-        fprintf(fp,"cmp ax,0");
+        fprintf(fp,"cmp rax,0");
         fprintf(fp,"jz _label%d",label);
         fprintf(fp,"mov     rdi,_formatBooleanTrue");
         fprintf(fp,"jmp     _label%d",label2);
@@ -299,7 +300,9 @@ void generateOutputCode(struct ASTNode *root){
         fprintf(fp,"mov     rdi,_formatBooleanFalse");
         fprintf(fp,"_label%d:",label2);
         fprintf(fp,"mov     rax,0");
- 
+
+        
+
         fprintf(fp,"call    printf");
     }else
     if(root->tag==NUM_NODE){
@@ -357,42 +360,172 @@ void generateOutputCode(struct ASTNode *root){
 void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 {
     VariableEntry *varptr;
+    struct ASTNode *currVar;
     int allocatedSpace;
-    
+    fprintf(fp, "mov 	rdx,0");
     while(root!=NULL)
     {
-        case INPUT_NODE:
-            generateInputCode(root);
-            root=root->node.inputNode.next;
-            return;
-        case OUTPUT_NODE:
-            generateOutputCode(root->node.outputNode.value);
-            root=root->node.outputNode.next;
-            return;
-        case ASSIGN_NODE:
-            root=root->node.assignNode.next;
-            return;
-        case MODULE_REUSE_NODE:
-            root=root->node.moduleReuseNode.next;
-            return;
-        case CONDITION_NODE:
-            root=root->node.conditionNode.next;
-            return;
-        case CASE_NODE:
-            root=root->node.caseNode.next;
-            return;
-        case FOR_NODE:
-            root=root->node.forNode.next;
-            return;
-        case WHILE_NODE:
-            root=root->node.whileNode.next;
-            return;
-        case DECLARE_NODE:
-            root=root->node.declareNode.next;
-            return;
+    	switch(root->tag)
+    	{
+	        case INPUT_NODE:
+	            generateInputCode(root);
+	            root=root->node.inputNode.next;
+	            break;
+	        case OUTPUT_NODE:
+	            generateOutputCode(root->node.outputNode.value);
+	            root=root->node.outputNode.next;
+	            break;
+	        case ASSIGN_NODE:
+	        	generateAssignmentCode(root);
+	            root=root->node.assignNode.next;
+	            break;
+	        case MODULE_REUSE_NODE:
+	            root=root->node.moduleReuseNode.next;
+	            break;
+	        case CONDITION_NODE:
+	            root=root->node.conditionNode.next;
+	            break;
+	        case CASE_NODE:
+	            root=root->node.caseNode.next;
+	            break;
+	        case FOR_NODE:
+	            root=root->node.forNode.next;
+	            break;
+	        case WHILE_NODE:
+	            root=root->node.whileNode.next;
+	            break;
+	        case DECLARE_NODE:
+	        	currVar=root->node.declareNode.idList;
+	        	varptr=currVar->localTableEntry;
+	        	if(root->node.declareNode.Range!=NULL)
+	        	{
+	        		if(varptr->type.tagLow==0)
+	        		{
+	        			mov 	rsi,varptr->type.low.bound
+	        		}
+	        		else
+	        		{
+	        			mov 	rsi,
+	        		}
+	        		if(varptr->type.tagHigh==0)
+	        		{
+	        			mov 	rdi,varptr->type.high.bound
+	        		}
+	        		else
+	        		{
+	        			
+	        		}
+	        		mov 	rsi,start
+	        		mov 	rdi,end
+
+	        		mov 	rcx,rdi
+	        		sub		rcx,rsi
+	        		inc 	rcx
+	        		mul     rcx,8
+	        	}
+	        	while(currVar!=NULL)
+	        	{
+	        		varptr=currVar->localTableEntry;
+	        		if(varptr->type.isArrayFlag==1)
+	        		{
+	        			if(varptr->type.isStatic==1)
+	        			{
+	        				lea 	rax,[ebp-8-(varptr->offset+24)]
+	        				mov 	qword [ebp-8-varptr->offset],rax
+	        			}
+	        			else
+	        			{
+	        				sub		rsp,rcx
+	        				add		rdx,rcx
+
+	        				mov 	rax,rsp
+	        				add		rax,8
+	        				mov 	qword [ebp-8-varptr->offset],rax
+	        			}
+	        			mov 	qword [ebp-8-(varptr->offset+8)],rsi
+	        			mov 	qword [ebp-8-(varptr->offset+16)],rdi
+	        		}
+	        		currVar=currVar->next;
+	        	}
+	            root=root->node.declareNode.next;
+	            break;
+	        default:break;
+	    }
     }
-    
-    return finalCode;
+    fprintf(fp, "add 	rsp,rdx");
+    return;
+}
+void printStartingCode()
+{
+	fprintf(fp,"global  main ;nasm -felf64 sample.asm && gcc -no-pie sample.o && ./a.out\n");
+	fprintf(fp,"        extern  printf\n");
+	fprintf(fp,"        extern  scanf\n");
+	fprintf(fp,"        SECTION .text\n");
+	fprintf(fp,"main:\n");
+	fprintf(fp,"        push    rbp\n");
+	fprintf(fp,"        mov     rbp,rsp\n");
+	fprintf(fp,"        and     rsp,0xfffffff0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"        ;PUSH PARAMETERS NOW\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"        call    driver\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"        ;POP PARAMETERS NOW\n");
+	fprintf(fp,"        \n");
+	fprintf(fp,"        ;Fill output parameters while poppping\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"        mov     rsp,rbp\n");
+	fprintf(fp,"        pop     rbp\n");
+	fprintf(fp,"        \n");
+	fprintf(fp,"        ret\n");
+}
+void  generateErrorHandlingCode()
+{
+	fprintf(fp,"_arrayerrorlabel_:\n");
+	fprintf(fp,"        and     rsp,0xfffffff0\n");
+	fprintf(fp,"        mov     rdi,_errorString\n");
+	fprintf(fp,"        mov     rax,0\n");
+	fprintf(fp,"        call    printf\n");
+	fprintf(fp,"        mov     rax,1\n");
+	fprintf(fp,"        ret\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_errorString:\n");
+	fprintf(fp,"        db  \"Array Index Out of Bounds \"\n");
+	fprintf(fp,"_errorArray:\n");
+	fprintf(fp,"        db  \"                    \",10\n");
+	fprintf(fp,"_errorString2:\n");
+	fprintf(fp,"        db  \" Index %d was out of bounds %d and %d\",10,0\n");
+fprintf(fp,"\n");
+}
+void generateDataCode()
+{
+	// printTemporaries
+	fprintf(fp,"_formatIntArray:\n");
+	fprintf(fp,"        db  \"Enter %hd numbers for integer array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatBooleanArray:\n");
+	fprintf(fp,"        db  \"Enter %hi numbers for boolean array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatRealArray:\n");
+	fprintf(fp,"        db  \"Enter %hi numbers for real array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatIntInput:\n");
+	fprintf(fp,"        db  \"%d\",0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatIntOutput:\n");
+	fprintf(fp,"        db  \"%d\",10,0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatBooleanInput:\n");
+	fprintf(fp,"        db  \"%d\",0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatBooleanOutput:\n");
+	fprintf(fp,"        db  \"%s\",10,0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatRealInput:\n");
+	fprintf(fp,"        db  \"%lf\",0\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"_formatRealOutput:\n");
+	fprintf(fp,"        db  \"%lf\",10,\n");
 } 
 void generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
 {
@@ -409,13 +542,15 @@ void generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
 	return finalCode;
 }
 
-void generateProgramCode(struct ASTNode *root)
+void generateProgramCode(struct ASTNode *root,char *filename)
 {
 	struct ASTNode *ASTptr;
 
 	assertNodeType(PROGRAM_NODE,root->tag);
-
+	fp=fopen(filename,"w+");
 	initLabelGenerator();
+	TEMPORARY_COUNTER=0;
+	printStartingCode();
 
 	Code finalCode=generateModuleCode(lg,root->node.programNode.driverModule);
 	
@@ -438,5 +573,7 @@ void generateProgramCode(struct ASTNode *root)
 		finalCode=mergeCode(finalCode,temp);
 		ASTptr=ASTptr->node.moduleNode.next;
 	}
-	return finalCode;
+	generateErrorHandlingCode();
+	generateDataCode();
+	return;
 }

@@ -14,7 +14,7 @@ extern FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *
 extern FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string);
 extern LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *head,int baseOffset);
 
-extern int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset);
+extern int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root,int baseOffset);
 extern VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
 
 extern void addChild(LocalTable *localTable, LocalTable *siblingTable);
