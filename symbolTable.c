@@ -10,8 +10,8 @@
 #include <stdio.h>
 
 #define arrayWidth 10
-#define intWidth 4
-#define realWidth 8
+#define intWidth 2
+#define realWidth 4
 #define boolWidth 1
 #define controlSize 20
 
@@ -67,6 +67,8 @@ FunctionTable *newFunctionNode(char *funcName){
 	newNode->controlBaseOffset=-1;
 	newNode->staticVariableOffset=-1;
 	newNode->dynamicVariableOffset=-1;
+	newNode->scope.startLine=-1;
+	newNode->scope.endLine=-1;
 	newNode->inputParaList=NULL;
 	newNode->outputParaList=NULL;
 	newNode->localTable=newLocalTable();
@@ -924,6 +926,8 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		}
 		ptr->defineFlag=1;
 		ptr->lineNumberDef=root->lineNumber;
+		ptr->scope.startLine=root->node.moduleNode.startLine;
+		ptr->scope.endLine=root->node.moduleNode.endLine;
 		ptr->inputParaList = populateParaList(root->node.moduleNode.inputList,0);
 		int offset=0;
 		if(ptr->inputParaList==NULL){
@@ -1008,26 +1012,42 @@ SymbolTable *populateSymbolTable(struct ASTNode *root){
 
 
 void printType(Type type){
+    printf("%d\t\t",type.arrayFlag);
     if(type.arrayFlag==1){
         if(type.isStatic==1){
-            printf("Static array of Type:%d with lower bound: %d and upper bound: %d\n ", type.type, type.low.bound, type.high.bound);
+            printf("static array\t\t");
+            printf("[%d,%d]\t\t\t", type.low.bound, type.high.bound);
         }
         else{
-            printf("Dynamic array of Type:%d", type.type);
+            printf("dynamic array\t\t");
             if(type.tagLow==0){
-                printf("with lower bound: %d",type.low.bound);
+                printf("[%d,",type.low.bound);
             }
             else
-                printf("with lower bound: %s ",type.low.lexeme);
+                printf("[%s,",type.low.lexeme);
         
             if(type.tagHigh==0){
-                printf("with higher bound: %d\n",type.high.bound);
+                printf("%d]%-10s\t\t\t",type.high.bound,"");
             }
             else
-                printf("with higher bound: %s \n",type.high.lexeme);
+                printf("%s]%-10s\t\t\t",type.high.lexeme,"");
         }        
     }else{
-    	printf("Type is %d\n",type.type );
+    	printf("---\t\t\t---\t\t\t");
+    }
+    switch(type.type)
+    {
+    	case 0:
+    		printf("%-20s","integer");
+    		break;
+    	case 1:
+    		printf("%-20s","real");
+    		break;
+    	case 2:
+    		printf("%-20s","boolean");
+    		break;
+    	default:
+    		break;
     }
 }
 
@@ -1036,7 +1056,7 @@ void printTabs(int tabs)
     while(tabs--)printf("\t");
 }
 
-void printVariableTable(VariableEntryTable variableEntryTable,int tabs)
+void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Scope scope,int depth)
 {
     VariableEntry *entry;
     for(int i=0;i<MOD;i++)
@@ -1044,61 +1064,50 @@ void printVariableTable(VariableEntryTable variableEntryTable,int tabs)
         entry=variableEntryTable[i];
         while(entry!=NULL)
         {
-            printTabs(tabs);
-            printf("%s :: Line %d :: Offset %d :: Width %d\n",entry->varName,entry->lineNumber,entry->offset,entry->width);
-            printTabs(tabs+1);
-            printType(entry->type);
-            entry=entry->next;
+        	printf("%-10s\t\t%-10s\t\t%d-%d\t\t%d\t\t",entry->varName,funcName,scope.startLine,scope.endLine,entry->width);
+        	printType(entry->type);
+        	printf("\t\t%d\t\t%d",entry->offset,depth);        
+        	printf("\n");
+        	entry=entry->next;
         }
     }
 }
 
 
-void printLocalTable(LocalTable *localTable,int tabs)
+void printLocalTable(LocalTable *localTable,char *funcName,int depth)
 {
-    printTabs(tabs);
-    printf("Scope: Line %d to Line %d :: ActRecordSize %d\n",localTable->scope.startLine,localTable->scope.endLine,localTable->size);
-    printTabs(tabs);
-    printf("Local Variables\n");
-    printVariableTable(localTable->variableTable,tabs+1);
-    printTabs(tabs);
-    printf("Children\n");
+    printVariableTable(localTable->variableTable,funcName,localTable->scope,depth);
     LocalTable *child=localTable->leftChild;
     while(child!=NULL)
     {
-        printLocalTable(child,tabs+1);
+        printLocalTable(child,funcName,depth+1);
         child=child->rightSibling;
     }
 }
 
 
-void printParameterList(ParameterList *list)
+void printParameterList(ParameterList *list, char *funcName,Scope scope)
 {
     while(list!=NULL){
-        printf("VarName: %s\n",list->varName);
+        printf("%-10s\t\t%-10s\t\t%d-%d\t\t%d\t\t",list->varName,funcName,scope.startLine,scope.endLine,list->width);
         printType(list->type);
-        printf("Line Number: %d \n", list->lineNumber);
-        printf("Offset: %d\n", list->offset);
-        printf("Width: %d\n",list->width);
+        printf("\t\t%d\t\t0",list->offset);        
+        printf("\n");
         list=list->next;
     }
 }
 void printFunctionTable(FunctionTable *funTable)
 {
     if(funTable == NULL) return;
-    printf("\nFunction %s \n",funTable->funcName);
-    printf("\tDeclaration Line number %d \n",funTable->lineNumber);
-    printf("\tDefinition Line number %d \n",funTable->lineNumberDef);
-    printf("\tInput parameterList \n");
-    printParameterList(funTable->inputParaList);
-    printf("\tOutput parameterList \n");
-    printParameterList(funTable->outputParaList);
-    printf("\tLocal Table structure \n");
-    printLocalTable(funTable->localTable,1);
+    printParameterList(funTable->inputParaList,funTable->funcName,funTable->scope);
+    printParameterList(funTable->outputParaList,funTable->funcName,funTable->scope);
+    printLocalTable(funTable->localTable,funTable->funcName,1);
+    
 }
 
 void printSymbolTable(SymbolTable *symbolTable)
 {
+    printf("\n\nPRINTING SYMBOL TABLE:\n");
     for(int i=0;i<MOD;i++)
     {
         FunctionTable* funTable=(*symbolTable)[i].pointer;
