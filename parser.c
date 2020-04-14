@@ -116,17 +116,17 @@ void inorder(struct ParseTreeNode * root, FILE * fp){
 
 //Main function for printing Parse tree in output file
 void printParseTree(struct ParseTreeNode * root, char * outfile){
-FILE * fp = fopen(outfile,"w");
-fprintf(fp,"%20s\t","lexeme");
-fprintf(fp,"%5s\t","line");
-fprintf(fp,"%18s\t","tokenName");
-fprintf(fp,"%8s\t","value");
-fprintf(fp,"%18s\t","parentSymbol");
-fprintf(fp,"%8s\t","isLeaf");
-fprintf(fp,"%18s\t","NodeSymbol");
-fprintf(fp,"\n\n");
-inorder(root,fp);
-fclose(fp);
+	FILE * fp = fopen(outfile,"w");
+	fprintf(fp,"%20s\t","lexeme");
+	fprintf(fp,"%5s\t","line");
+	fprintf(fp,"%18s\t","tokenName");
+	fprintf(fp,"%8s\t","value");
+	fprintf(fp,"%18s\t","parentSymbol");
+	fprintf(fp,"%8s\t","isLeaf");
+	fprintf(fp,"%18s\t","NodeSymbol");
+	fprintf(fp,"\n\n");
+	inorder(root,fp);
+	fclose(fp);
 }
 
 
@@ -288,6 +288,18 @@ void printInlineParseTree(struct ParseTreeNode *root,int spaces)
 	}
 }
 
+
+void countParseNodes(struct ParseTreeNode *root, int *count)
+{
+	if(root==NULL) return;
+	*count+=1;
+	struct ParseTreeNode *ptr=root->leftChild;
+	while(ptr!=NULL)
+	{
+		countParseNodes(ptr,count);
+		ptr=ptr->rightSibling;
+	}
+}
 
 
 //Returns the generated parse tree from given testFile as a structure

@@ -9,8 +9,9 @@ Ayush Singhal  2017A7PS0116P
 #define _PARSERH
 #include "parserDef.h"
 
-extern struct ParseTreeNode *getParseTree(char *);
-
+extern struct ParseTreeNode *parseInputSourceCode(char *);
+extern void printInlineParseTree(struct ParseTreeNode *,int);
+extern void countParseNodes(struct ParseTreeNode *, int *);
 #endif
 
-//Definition of structs used in parser.c
+

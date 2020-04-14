@@ -74,6 +74,7 @@ typedef struct FunctionTable{
 	int controlBaseOffset;
 	int staticVariableOffset;
 	int dynamicVariableOffset;
+	Scope scope;
 	ParameterList *inputParaList;
 	ParameterList *outputParaList;
 	LocalTable *localTable;

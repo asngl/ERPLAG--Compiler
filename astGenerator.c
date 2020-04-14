@@ -2,12 +2,14 @@
 #ifndef _ASTGENERATORC
 #define _ASTGENERATORC
 #include "ASTNodeDef.h"
+#include "astGenerator.h"
 #include "lexerDef.h"
 #include "grammar_InitDef.h"
 #include "parserDef.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 enum Operator getOperator(struct ParseTreeNode *root)
 {
@@ -120,6 +122,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
     {
         case 0:
 		result=createASTNode(PROGRAM_NODE);
+		result->lineNumber=1;
 		result->node.programNode.moduleDeclarations=createAST(getNthChild(root,1));
 		result->node.programNode.otherModules1=createAST(getNthChild(root,2));
 		result->node.programNode.driverModule=createAST(getNthChild(root,3));
@@ -762,6 +765,101 @@ void printInlineAstTree(struct ASTNode *root, int spaces){
 			printf("Binary Node, Op-%d\n", root->node.binaryNode.op);
 			printInlineAstTree(root->node.binaryNode.expr1,spaces+1);
 			printInlineAstTree(root->node.binaryNode.expr2,spaces+1);
+			break;
+		default:
+			printf("No Node Found\n");
+
+	}
+}
+
+void countASTNodes(struct ASTNode *root, int *count)
+{
+	if(root == NULL)return;
+	*count+=1;
+	switch(root->tag){
+		case PROGRAM_NODE:
+			countASTNodes(root->node.programNode.moduleDeclarations,count);
+			countASTNodes(root->node.programNode.otherModules1,count);
+			countASTNodes(root->node.programNode.driverModule,count);
+			countASTNodes(root->node.programNode.otherModules2,count);
+			break;
+		case MODULE_DECLARE_NODE:
+			countASTNodes(root->node.moduleDeclareNode.next,count);
+			break;
+		case ID_NODE:
+			countASTNodes(root->node.idNode.index, count);
+			break;
+		case MODULE_NODE:
+			countASTNodes(root->node.moduleNode.inputList,count);
+			countASTNodes(root->node.moduleNode.ret,count);
+			countASTNodes(root->node.moduleNode.body,count);
+			countASTNodes(root->node.moduleNode.next,count);
+			break;
+		case PARA_LIST_NODE:
+			countASTNodes(root->node.paraListNode.Range,count);
+			countASTNodes(root->node.paraListNode.next,count);
+			break;
+		case NUM_NODE:
+			break;
+		case RNUM_NODE:
+			break;
+		case BOOL_NODE:
+			break;
+		case INPUT_NODE:
+			countASTNodes(root->node.inputNode.next,count);
+			break;
+		case OUTPUT_NODE:
+			countASTNodes(root->node.outputNode.value,count);
+			countASTNodes(root->node.outputNode.next,count);
+			break;
+		case RANGE_NODE:
+			countASTNodes(root->node.rangeNode.Range1,count);
+			countASTNodes(root->node.rangeNode.Range2,count);
+			break;
+		case ASSIGN_NODE:
+			countASTNodes(root->node.assignNode.index,count);
+			countASTNodes(root->node.assignNode.expr,count);
+			countASTNodes(root->node.assignNode.next,count);
+			break;
+		case MODULE_REUSE_NODE:
+			countASTNodes(root->node.moduleReuseNode.optional,count);
+			countASTNodes(root->node.moduleReuseNode.idList,count);
+			countASTNodes(root->node.moduleReuseNode.next,count);
+			break;
+		case ID_LIST_NODE:
+			countASTNodes(root->node.idListNode.next,count);
+			break;
+		case DECLARE_NODE:
+			countASTNodes(root->node.declareNode.idList,count);
+			countASTNodes(root->node.declareNode.Range,count);
+			countASTNodes(root->node.declareNode.next,count);
+			break;
+		case CONDITION_NODE:
+			countASTNodes(root->node.conditionNode.Case,count);
+			countASTNodes(root->node.conditionNode.Default,count);
+			countASTNodes(root->node.conditionNode.next,count);
+			break;
+		case CASE_NODE:
+			countASTNodes(root->node.caseNode.value,count);
+			countASTNodes(root->node.caseNode.stmt,count);
+			countASTNodes(root->node.caseNode.next,count);
+			break;
+		case FOR_NODE:
+			countASTNodes(root->node.forNode.range,count);
+			countASTNodes(root->node.forNode.stmt,count);
+			countASTNodes(root->node.forNode.next,count);
+			break;
+		case WHILE_NODE:
+			countASTNodes(root->node.whileNode.expr,count);
+			countASTNodes(root->node.whileNode.stmt,count);
+			countASTNodes(root->node.whileNode.next,count);
+			break;
+		case UNARY_NODE:
+			countASTNodes(root->node.unaryNode.expr,count);
+			break;
+		case BINARY_NODE:
+			countASTNodes(root->node.binaryNode.expr1,count);
+			countASTNodes(root->node.binaryNode.expr2,count);
 			break;
 		default:
 			printf("No Node Found\n");
