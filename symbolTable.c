@@ -176,9 +176,10 @@ VariableEntry *searchLocalTable(LocalTable *localTable,char *string){
 
 }
 
-int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)	//returns offset after allocation
+int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root,int baseOffset)	//returns offset after allocation
 {
 	struct ASTNode *currVar;
+	VariableEntry *varptr;
 	currVar = root->node.declareNode.idList;
 	while(currVar!=NULL){
 		VariableEntry *search;
@@ -200,6 +201,24 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 			if(root->node.declareNode.Range->node.rangeNode.Range1->tag == ID_NODE){
 				initNode->type.tagLow=1;
 				strcpy(initNode->type.low.lexeme,root->node.declareNode.Range->node.rangeNode.Range1->node.idNode.varName);
+				varptr=checkDeclarationBeforeUse(context,parent,initNode->type.low.lexeme,root->lineNumber);
+				if(varptr!=NULL)
+				{
+					if(varptr->type.type!=DT_INTEGER)
+					{
+						printf("Error on line number %d: Lower Bound Variable %s is not of Integer type\n",root->lineNumber,initNode->type.low.lexeme);
+					}
+					else if(varptr->type.isArrayFlag==1)
+					{
+						printf("Error on line number %d: Lower Bound Variable %s is of Array type\n",root->lineNumber,initNode->type.low.lexeme);
+					}
+					else if(varptr->initFlag==0)
+					{
+						printf("Error on line number %d: Lower Bound Variable %s not initialised\n",root->lineNumber,initNode->type.low.lexeme);
+					}
+
+				}
+				root->node.declareNode.Range->node.rangeNode.Range1->localTableEntry=varptr;
 			}else{
 				initNode->type.tagLow=0;
 				initNode->type.low.bound=root->node.declareNode.Range->node.rangeNode.Range1->node.numNode.num;
@@ -207,6 +226,23 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 			if(root->node.declareNode.Range->node.rangeNode.Range2->tag == ID_NODE){
 				initNode->type.tagHigh=1;
 				strcpy(initNode->type.high.lexeme,root->node.declareNode.Range->node.rangeNode.Range2->node.idNode.varName);
+				varptr=checkDeclarationBeforeUse(context,parent,initNode->type.high.lexeme,root->lineNumber);
+				if(varptr!=NULL)
+				{
+					if(varptr->type.type!=DT_INTEGER)
+					{
+						printf("Error on line number %d: Higher Bound Variable %s is not of Integer type\n",root->lineNumber,initNode->type.high.lexeme);
+					}
+					else if(varptr->type.isArrayFlag==1)
+					{
+						printf("Error on line number %d: Higher Bound Variable %s is of Array type\n",root->lineNumber,initNode->type.high.lexeme);
+					}
+					else if(varptr->initFlag==0)
+					{
+						printf("Error on line number %d: Higher Bound Variable %s not initialised\n",root->lineNumber,initNode->type.high.lexeme);
+					}
+				}
+				root->node.declareNode.Range->node.rangeNode.Range2->localTableEntry=varptr;
 			}else{
 				initNode->type.tagHigh=0;
 				initNode->type.high.bound=root->node.declareNode.Range->node.rangeNode.Range2->node.numNode.num;
@@ -226,6 +262,7 @@ int insertLocalTable(LocalTable *localTable,struct ASTNode *root,int baseOffset)
 		hash = computeHashFromString(currVar->node.idListNode.varName);
 		initNode->next=(localTable->variableTable)[hash];
 		(localTable->variableTable)[hash] = initNode;
+		currVar->localTableEntry=initNode;
 		currVar=currVar->node.idListNode.next;
 	}
 	return baseOffset;
@@ -307,6 +344,25 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 		                	        }
 		                	        leftType.arrayFlag=0;
 		                	    }
+		                	    if(ptr->node.idNode.index->tag==ID_NODE)
+		                	    {
+		                	    	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.index->node.idNode.varName,root->lineNumber);
+		                	    	ptr->node.idNode.index->localTableEntry=varptr;
+									if(varptr!=NULL)
+									{
+										if(varptr->type.type!=DT_INTEGER)
+										{
+											printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+										else if(varptr->type.isArrayFlag==1)
+										{
+											printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+										else if(varptr->initFlag==0)
+										{
+											printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+		                	    }
 		                	}
 
 		            	}
@@ -349,6 +405,26 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								}
 								leftType.arrayFlag=0;
 							}
+							if(root->node.assignNode.index->tag==ID_NODE)
+	                	    {
+	                	    	varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.index->node.idNode.varName,root->lineNumber);
+	                	    	root->node.assignNode.index->localTableEntry=varptr;
+								if(varptr!=NULL)
+								{
+									if(varptr->type.type!=DT_INTEGER)
+									{
+										printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									}
+									else if(varptr->type.isArrayFlag==1)
+									{
+										printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									}
+									else if(varptr->initFlag==0)
+									{
+										printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									}
+								}
+			               	}
 							leftType.arrayFlag=0;
 	                    }    
 	                    if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
@@ -483,7 +559,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root=root->node.whileNode.next;
 	                break;
 	            case DECLARE_NODE:
-	                newOffset=insertLocalTable(parent,root,baseOffset);
+	                newOffset=insertLocalTable(context,parent,root,baseOffset);
 	                parent->size+=newOffset-baseOffset;
 	                baseOffset=newOffset;
 	                root=root->node.declareNode.next;
@@ -551,6 +627,25 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 	                	        }
 	                	        leftType.arrayFlag=0;
 	                	    }
+	                	    if(ptr->node.idNode.index->tag==ID_NODE)
+		                	    {
+		                	    	varptr=checkDeclarationBeforeUse(context,parent,ptr->node.idNode.index->node.idNode.varName,root->lineNumber);
+		                	    	ptr->node.idNode.index->localTableEntry=varptr;
+									if(varptr!=NULL)
+									{
+										if(varptr->type.type!=DT_INTEGER)
+										{
+											printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+										else if(varptr->type.isArrayFlag==1)
+										{
+											printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+										else if(varptr->initFlag==0)
+										{
+											printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										}
+		                	    }
 	                	}
 
 	            	}
@@ -593,6 +688,26 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							}
 							leftType.arrayFlag=0;
 						}
+						if(root->node.assignNode.index->tag==ID_NODE)
+                	    {
+                	    	varptr=checkDeclarationBeforeUse(context,parent,root->node.assignNode.index->node.idNode.varName,root->lineNumber);
+                	    	root->node.assignNode.index->localTableEntry=varptr;
+							if(varptr!=NULL)
+							{
+								if(varptr->type.type!=DT_INTEGER)
+								{
+									printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+								}
+								else if(varptr->type.isArrayFlag==1)
+								{
+									printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+								}
+								else if(varptr->initFlag==0)
+								{
+									printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+								}
+							}
+		               	}
 						leftType.arrayFlag=0;
                     }    
                     if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
@@ -727,7 +842,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root=root->node.whileNode.next;
                 break;
             case DECLARE_NODE:
-                newOffset=insertLocalTable(parent,root,baseOffset);
+                newOffset=insertLocalTable(context,parent,root,baseOffset);
                 parent->size+=newOffset-baseOffset;
                 baseOffset=newOffset;
                 root=root->node.declareNode.next;
@@ -736,6 +851,21 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
     }
     return parent;
 }
+VariableEntry *cloneParaListAsVariables(ParameterList *list,int bit)
+{
+	if(list==NULL)
+		return NULL;
+	VariableEntry *varptr=(VariableEntry *)malloc(sizeof(VariableEntry));
+	strcpy(varptr->varName,list->varName);
+	varptr->type=list->type;
+	varptr->offset=list->offset;
+	varptr->width=list->width;
+	varptr->initFlag=bit;
+	varptr->lineNumber=list->lineNumber;
+	varptr->next=cloneParaListAsVariables(list->next,bit);
+	return varptr;
+}
+
 VariableEntry *cloneParaListAsVariables(ParameterList *list)
 {
 	if(list==NULL)
@@ -822,8 +952,8 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		struct Context context;
 		context.symbolTable=&symbolTable;
 		strcpy(context.funcName, ptr->funcName);
-		context.inputList=cloneParaListAsVariables(ptr->inputParaList);
-		context.outputList=cloneParaListAsVariables(ptr->outputParaList);
+		context.inputList=cloneParaListAsVariables(ptr->inputParaList,1);
+		context.outputList=cloneParaListAsVariables(ptr->outputParaList,0);
 		context.forbiddenVariables=NULL;
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
 		
