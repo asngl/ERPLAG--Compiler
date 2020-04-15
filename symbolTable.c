@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define arrayWidth 10
+#define arrayWidth 1
 #define intWidth 2
 #define realWidth 4
 #define boolWidth 1
@@ -78,7 +78,7 @@ FunctionTable *newFunctionNode(char *funcName){
 
 int getWidth(Type type){
 	if(type.arrayFlag ==1){
-		return arrayWidth;
+		return arrayWidth+2*intWidth;
 	}
 	switch(type.type){
 		case DT_INTEGER:
@@ -99,11 +99,11 @@ int getWidthLocal(Type type){
 		{
 			switch(type.type){
 				case DT_INTEGER:
-					return (type.high.bound-type.low.bound+1)*intWidth;
+					return (type.high.bound-type.low.bound+1)*intWidth+1;
 				case DT_REAL:
-					return (type.high.bound-type.low.bound+1)*realWidth;
+					return (type.high.bound-type.low.bound+1)*realWidth+1;
 				case DT_BOOLEAN:
-					return (type.high.bound-type.low.bound+1)*boolWidth;
+					return (type.high.bound-type.low.bound+1)*boolWidth+1;
 			}
 		}
 	}
@@ -998,29 +998,262 @@ SymbolTable *populateSymbolTable(struct ASTNode *root){
 }
 
 
-void printType(Type type){
-    printf("%d\t\t",type.arrayFlag);
-    if(type.arrayFlag==1){
-        if(type.isStatic==1){
-            printf("static array\t\t");
-            printf("[%d,%d]\t\t\t", type.low.bound, type.high.bound);
+char *to_string(int n,char *s)
+{
+	int i=0;
+	while(n!=0)
+	{
+		s[i++]=(char)('0'+n%10);
+		n=n/10;
+	}
+	s[i]='\0';
+	int len=i-1;
+	i=0;
+	while(i<=len/2)
+	{
+		int temp=s[i];
+		s[i]=s[len-i];
+		s[len-i]=temp;
+		i++;
+	}
+	return s;
+}
+
+char *scopeToString(char *s,int start,int end)
+{
+	char int1[10],int2[10];
+	s=to_string(start,int1);
+	strncat(s,"-",25);
+	strncat(s,to_string(end,int2),25);
+	return s;
+}
+
+void printArrayVar(VariableEntryTable varTable, char *funcName,Scope scope)
+{
+	VariableEntry *ptr;
+	for(int i=0;i<MOD;i++)
+	{
+		ptr=varTable[i];
+		while(ptr!=NULL)
+		{
+			if(ptr->type.arrayFlag)
+			{
+				printf("\t%-21s%d-%d\t%-21s%-20s\t",funcName,scope.startLine,scope.endLine,ptr->varName,ptr->type.isStatic?"static array":"dynamic array");
+				char s[25];
+				s[0]='[';
+				s[1]='\0';
+				if(ptr->type.tagLow==0)
+				{
+					char int1[10];
+					strncat(s,to_string(ptr->type.low.bound,int1),25);
+				}
+				else
+					strncat(s,ptr->type.low.lexeme,25);
+				strncat(s,",",25);
+				if(ptr->type.tagHigh==0){
+					char int2[10];
+					strncat(s,to_string(ptr->type.low.bound,int2),25);
+				}
+				else
+					strncat(s,ptr->type.high.lexeme,25);
+				strncat(s,"]",25);
+				printf("%-30s",s);
+				switch(ptr->type.type)
+				{
+					case DT_INTEGER:
+						printf("%-20s\n","integer");
+						break;
+					case DT_REAL:
+						printf("%-20s\n","real");
+						break;
+					case DT_BOOLEAN:
+						printf("%-20s\n","boolean");
+						break;
+					default:
+						break;
+				}
+			}
+			ptr=ptr->next;
+		}
+	}
+}
+
+
+
+
+void printArrayLT(LocalTable *node, char *funcName)
+{
+	if(node==NULL)	return;
+	printArrayVar(node->variableTable,funcName, node->scope);
+	node=node->leftChild;
+	while(node!=NULL)
+	{
+		printArrayLT(node, funcName);
+		node=node->rightSibling;
+	}
+}
+void printArrayPL(ParameterList *list,char *funcName,Scope scope)
+{
+	while(list!=NULL)
+	{
+		if(list->type.arrayFlag)
+		{
+			printf("\t%-21s%d-%d\t%-21s%-20s\t",funcName,scope.startLine,scope.endLine,list->varName,"static array");
+			char s[25];
+			char int1[10],int2[10];
+			s[0]='[';
+			s[1]='\0';
+			strncat(s,to_string(list->type.low.bound,int1),25);
+			strncat(s,",",25);
+			strncat(s,to_string(list->type.high.bound,int2),25);
+			strncat(s,"]",25);
+			printf("%-30s",s);
+			switch(list->type.type)
+			{
+				case DT_INTEGER:
+					printf("%-20s\n","integer");
+					break;
+				case DT_REAL:
+					printf("%-20s\n","real");
+					break;
+				case DT_BOOLEAN:
+					printf("%-20s\n","boolean");
+					break;
+				default:
+					break;
+			}
+		}
+		list=list->next;
+		
+	}
+}
+	
+
+
+void printArrayFT(FunctionTable *table)
+{
+	if(table==NULL)	return;
+	printArrayPL(table->inputParaList, table->funcName, table->scope);
+	printArrayPL(table->outputParaList, table->funcName, table->scope);
+	printArrayLT(table->localTable,table->funcName);
+}
+
+void printArrayVariables(SymbolTable *symbolTable)
+{
+	for(int i=0;i<MOD;i++)
+	{
+		FunctionTable* funTable=(*symbolTable)[i].pointer;
+		while(funTable!=NULL)
+		{
+		    printArrayFT(funTable);
+		    funTable=funTable->next;
+		}
+	}
+}
+
+int widthVariableEntryTable(VariableEntryTable table)
+{
+	int w=0;
+	VariableEntry *ptr;
+	for(int i=0;i<MOD;i++)
+	{
+		ptr=table[i];
+		while(ptr!=NULL)
+		{
+			w+=ptr->width;
+			ptr=ptr->next;
+		}
+	}
+	return w;
+}
+
+int widthLocalTable(LocalTable *table)
+{
+	int w=widthVariableEntryTable(table->variableTable);
+	table=table->leftChild;
+	while(table!=NULL)
+	{
+		w+=widthLocalTable(table);
+		table=table->rightSibling;
+	}
+	return w;
+}
+
+int widthParameterList(ParameterList *list)
+{
+	int w=0;
+	while(list!=NULL)
+	{
+		w+=list->width;
+		list=list->next;
+	}
+	return w;	
+}
+
+int calculateWidth(FunctionTable *fun)
+{
+	int w=widthParameterList(fun->inputParaList);
+	w+=widthParameterList(fun->outputParaList);
+	w+=widthLocalTable(fun->localTable);
+	return w;
+}
+
+void printRecordWidth(SymbolTable *symbolTable)
+{
+	for(int i=0;i<MOD;i++)
+	{
+		FunctionTable *funTable=(*symbolTable)[i].pointer;
+		while(funTable!=NULL)
+		{
+			int w=calculateWidth(funTable);
+			printf("\t%-25s%d\n",funTable->funcName,w);
+			funTable=funTable->next;
+		}
+	}	
+} 
+
+void printType(Type type)
+{
+    printf("%-10s",type.arrayFlag?"1":"0");
+    if(type.arrayFlag==1)
+    {
+    	char s[25];
+	char int1[10],int2[10];
+	s[0]='[';
+	s[1]='\0';
+    	if(type.isStatic==1)
+    	{
+		printf("%-15s","static array");
+		strncat(s,to_string(type.low.bound,int1),25);
+		strncat(s,",",25);
+		strncat(s,to_string(type.high.bound,int2),25);
+		strncat(s,"]",25);
+		printf("%-30s",s);;
         }
-        else{
-            printf("dynamic array\t\t");
-            if(type.tagLow==0){
-                printf("[%d,",type.low.bound);
-            }
-            else
-                printf("[%s,",type.low.lexeme);
-        
-            if(type.tagHigh==0){
-                printf("%d]%-10s\t\t\t",type.high.bound,"");
-            }
-            else
-                printf("%s]%-10s\t\t\t",type.high.lexeme,"");
+        else
+        {
+		printf("%-15s","dynamic array");
+		if(type.tagLow==0)
+		{
+			char int1[10];
+			strncat(s,to_string(type.low.bound,int1),25);
+		}
+		else
+			strncat(s,type.low.lexeme,25);
+		strncat(s,",",25);
+		if(type.tagHigh==0)
+		{
+			char int2[10];
+			strncat(s,to_string(type.low.bound,int2),25);
+		}
+		else
+			strncat(s,type.high.lexeme,25);
+		strncat(s,"]",25);
+		printf("%-30s",s);
         }        
-    }else{
-    	printf("---\t\t\t---\t\t\t");
+    }
+    else{
+    	printf("%-15s%-30s","---","---");
     }
     switch(type.type)
     {
@@ -1038,11 +1271,6 @@ void printType(Type type){
     }
 }
 
-void printTabs(int tabs)
-{
-    while(tabs--)printf("\t");
-}
-
 void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Scope scope,int depth)
 {
     VariableEntry *entry;
@@ -1051,9 +1279,12 @@ void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Sc
         entry=variableEntryTable[i];
         while(entry!=NULL)
         {
-        	printf("%-10s\t\t%-10s\t\t%d-%d\t\t%d\t\t",entry->varName,funcName,scope.startLine,scope.endLine,entry->width);
+        	char s[25];
+        	char width[10];
+        	printf("\t%-21s%-21s%-25s%-10s",entry->varName,funcName,scopeToString(s,scope.startLine,scope.endLine),to_string(entry->width,width));
         	printType(entry->type);
-        	printf("\t\t%d\t\t%d",entry->offset,depth);        
+        	char depth_string[10],offset[10];
+        	printf("%-11s%-11s",to_string(entry->offset,offset),to_string(depth,depth_string));        
         	printf("\n");
         	entry=entry->next;
         }
@@ -1072,13 +1303,15 @@ void printLocalTable(LocalTable *localTable,char *funcName,int depth)
     }
 }
 
-
 void printParameterList(ParameterList *list, char *funcName,Scope scope)
 {
     while(list!=NULL){
-        printf("%-10s\t\t%-10s\t\t%d-%d\t\t%d\t\t",list->varName,funcName,scope.startLine,scope.endLine,list->width);
+    	char scope_string[25];
+        char width[10];
+        printf("\t%-21s%-21s%-25s%-10s",list->varName,funcName,scopeToString(scope_string,scope.startLine,scope.endLine),to_string(list->width,width));
         printType(list->type);
-        printf("\t\t%d\t\t0",list->offset);        
+        char offset[10];
+        printf("%-11s%-11s",to_string(list->offset,offset),"0");  
         printf("\n");
         list=list->next;
     }

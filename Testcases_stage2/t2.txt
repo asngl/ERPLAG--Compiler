@@ -15,7 +15,7 @@ start
         n:= a - b;
 	declare b:real;				**ERROR: variable b is re-declared**
 	b:= b+3;
-	k:= a>b OR b>100;
+	k:= a+b OR b>100;
 	print(k);	
 end
 

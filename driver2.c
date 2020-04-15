@@ -7,9 +7,11 @@
 #include "parser.h"
 #include "parserDef.h"
 #include "astGenerator.h"
-#include <stdlib.h>
 #include "symbolTable.h"
 #include "typeChecker.h"
+#include <stdlib.h>
+#include <time.h>
+
 int main(int argc, char *argv[])
 {	
 	int input, flag=1;
@@ -22,6 +24,8 @@ int main(int argc, char *argv[])
 	int parseMem=parseNodes*sizeof(struct ParseTreeNode);
 	int astMem=astNodes*sizeof(struct ASTNode);
 	SymbolTable *mainTable;
+	clock_t start_time, end_time;
+	double total_CPU_time, total_CPU_time_in_seconds;
 	while(flag){
 		printf("Choose option: ");
 		scanf("%d",&input);
@@ -39,7 +43,7 @@ int main(int argc, char *argv[])
 				{	
 					token_info=getNextToken();
 					if(token_info.token==EPS)	continue;
-					printf("\t%d\t%s\t\t%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
+					printf("\t%-5d %-25s%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
 					if(token_info.token==FEOF)	break;
 				}
 				break;
@@ -63,12 +67,37 @@ int main(int argc, char *argv[])
 			case 5:
 				//populate Symbol Table and print
 				mainTable=populateSymbolTable(AST_root);
-				printSymbolTable(mainTable);	
-					
+				printSymbolTable(mainTable);
+				break;
+			case 6:
+				//Print activation records and their width
+				mainTable=populateSymbolTable(AST_root);
+				printRecordWidth(mainTable);	
+				break;
+			case 7:
+				//Print array variables and their info
+				mainTable=populateSymbolTable(AST_root);
+				printArrayVariables(mainTable);
+				break;
+			case 8:
+				start_time = clock();
+			    	root=parseInputSourceCode(argv[1]);
+				AST_root=createAST(root);
+				mainTable=populateSymbolTable(AST_root);
+				end_time = clock();
+			    
+			   	total_CPU_time  =  (double) (end_time - start_time);
+			    	total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
+
+			    // Print both total_CPU_time and total_CPU_time_in_seconds 
+			    printf("Total CPU time = %F\n",total_CPU_time);
+				printf("Total CPU time in seconds = %F\n", total_CPU_time_in_seconds);
+				break;
 
 			default:
 				break;
 		}
+		printf("\n\n\n");
 	}
 }
 #endif

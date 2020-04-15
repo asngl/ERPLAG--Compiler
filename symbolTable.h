@@ -23,6 +23,8 @@ extern FunctionTable *newFunctionNode(char *funcName);
 extern int getWidth(Type type);
 extern int getWidthLocal(Type type);
 extern SymbolTable *populateSymbolTable(struct ASTNode *root);
-extern void printSymbolTable(SymbolTable *symbolTable);
+extern void printSymbolTable(SymbolTable *);
+extern void printRecordWidth(SymbolTable *);
+extern void printArrayVariables(SymbolTable *);
 
 #endif
