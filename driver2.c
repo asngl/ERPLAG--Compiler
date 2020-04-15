@@ -14,14 +14,14 @@ int main(int argc, char *argv[])
 {	
 	int input, flag=1;
 	struct TOKEN_INFO token_info;
-	struct ParseTreeNode *root=parseInputSourceCode(argv[1]);;
+	struct ParseTreeNode *root=parseInputSourceCode(argv[1]);
 	struct ASTNode *AST_root=createAST(root);
 	int parseNodes=0,astNodes=0;
 	countParseNodes(root,&parseNodes);
 	countASTNodes(AST_root,&astNodes);				    
 	int parseMem=parseNodes*sizeof(struct ParseTreeNode);
 	int astMem=astNodes*sizeof(struct ASTNode);
-	SymbolTable *mainTable;
+	SymbolTable *mainTable=populateSymbolTable(AST_root);;
 	while(flag){
 		printf("Choose option: ");
 		scanf("%d",&input);
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 				{	
 					token_info=getNextToken();
 					if(token_info.token==EPS)	continue;
-					printf("\t%d\t%s\t\t%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
+					printf("\t%-10d%-25s%s\n",token_info.lineno,token_info.lexeme,mapping[token_info.token].str);
 					if(token_info.token==FEOF)	break;
 				}
 				break;
@@ -62,9 +62,18 @@ int main(int argc, char *argv[])
 				break;
 			case 5:
 				//populate Symbol Table and print
-				mainTable=populateSymbolTable(AST_root);
 				printSymbolTable(mainTable);	
-					
+				break;
+			case 6:
+				//Print activation record width
+				printRecordWidth(mainTable);
+				break;
+			case 7:
+				//Print information about all array variables used
+				printArrayVariables(mainTable);
+				break;
+			case 8:
+				
 
 			default:
 				break;
