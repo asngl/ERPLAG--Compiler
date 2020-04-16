@@ -72,9 +72,9 @@ typedef struct FunctionTable{
 	int fsize;
 	int lineNumber;			//Line number for function Declaration
 	int lineNumberDef;		//Line number for function Defintion
-	int controlBaseOffset;
-	int staticVariableOffset;
-	int dynamicVariableOffset;
+
+	int activationRecordSize;
+
 	Scope scope;
 	ParameterList *inputParaList;
 	ParameterList *outputParaList;

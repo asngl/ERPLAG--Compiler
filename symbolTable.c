@@ -64,9 +64,7 @@ FunctionTable *newFunctionNode(char *funcName){
 	newNode->fsize=-1;
 	newNode->lineNumber=-1;
 	newNode->lineNumberDef=-1;
-	newNode->controlBaseOffset=-1;
-	newNode->staticVariableOffset=-1;
-	newNode->dynamicVariableOffset=-1;
+	newNode->activationRecordSize=-1;
 	newNode->scope.startLine=-1;
 	newNode->scope.endLine=-1;
 	newNode->inputParaList=NULL;
@@ -938,10 +936,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 				tmp=tmp->next;
 			offset=tmp->offset+tmp->width;
 		}
-		ptr->controlBaseOffset=offset;
-		offset+=controlSize;
-		ptr->staticVariableOffset=offset;
-
+		//offset stores length of fucntion parameters if needed
 		struct Context context;
 		context.symbolTable=&symbolTable;
 		strcpy(context.funcName, ptr->funcName);
@@ -962,7 +957,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
-		ptr->dynamicVariableOffset = offset + ptr->localTable->size;
+		ptr->activationRecordSize = ptr->localTable->size;
 		return ptr;
 	}
 	else{
