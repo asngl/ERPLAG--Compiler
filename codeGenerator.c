@@ -1359,6 +1359,7 @@ void  generateErrorHandlingCode()
 }
 void generateDataCode()
 {
+	fprintf(fp,"	SECTION .data\n");
 	// printTemporaries
 	// printFloatConstants of type _flt0,_flt1, till NUM_FLOAT_CONSTANTS-1 with _flt<i>: dq floatConstants[i]
 	fprintf(fp,"_formatIntArray:\n");
