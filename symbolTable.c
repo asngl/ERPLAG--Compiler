@@ -194,6 +194,7 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 		VariableEntry *initNode;
 		initNode = (VariableEntry *)malloc(sizeof(VariableEntry));
 		strcpy(initNode->varName,currVar->node.idListNode.varName);
+		initNode->isParameter=0;
 		initNode->type.type=root->node.declareNode.dataType;
 		if(root->node.declareNode.Range==NULL){
 			initNode->type.arrayFlag=0;
@@ -865,6 +866,7 @@ VariableEntry *cloneParaListAsVariables(ParameterList *list,int bit)
 	varptr->offset=list->offset;
 	varptr->width=list->width;
 	varptr->initFlag=bit;
+	varptr->isParameter=1;
 	varptr->lineNumber=list->lineNumber;
 	varptr->next=cloneParaListAsVariables(list->next,bit);
 	return varptr;
@@ -946,7 +948,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		context.inputList=cloneParaListAsVariables(ptr->inputParaList,1);
 		context.outputList=cloneParaListAsVariables(ptr->outputParaList,0);
 		context.forbiddenVariables=NULL;
-		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,offset);
+		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,0);
 		
 		VariableEntry *varptr=context.outputList;
 		while(varptr!=NULL)

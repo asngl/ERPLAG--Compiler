@@ -30,6 +30,7 @@ typedef struct VariableEntry
 	int offset; //Offset to be calculated for code generation
 	int width;  //Length in bytes
 	int initFlag;
+	int isParameter;
 	struct VariableEntry *next;// For collisions
 }VariableEntry;
 
