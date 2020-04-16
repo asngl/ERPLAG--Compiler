@@ -1003,6 +1003,12 @@ SymbolTable *populateSymbolTable(struct ASTNode *root){
 char *to_string(int n,char *s)
 {
 	int i=0;
+	if(n==0)
+	{
+		s[0]='0';
+		s[1]='\0';
+		return s;
+	}	
 	while(n!=0)
 	{
 		s[i++]=(char)('0'+n%10);
