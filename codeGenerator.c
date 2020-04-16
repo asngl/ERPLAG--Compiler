@@ -1,3 +1,4 @@
+#define MAX_NUM_FLOAT_CONSTANTS 1000
 void assertNodeType(enum NodeType a,enum NodeType b)
 {
 	if(a!=b)
@@ -5,6 +6,8 @@ void assertNodeType(enum NodeType a,enum NodeType b)
 }
 int LABEL_COUNTER;
 int TEMPORARY_COUNTER;
+int NUM_FLOAT_CONSTANTS;
+double floatConstants[MAX_NUM_FLOAT_CONSTANTS];
 void initLabelGenerator()
 {
 	LABEL_COUNTER=0;
@@ -14,81 +17,143 @@ int createLabel()// 37  _label37
 	LABEL_COUNTER++;
 	return LABEL_COUNTER;
 }
+int createFloatConstant(double t)
+{
+	floatConstants[NUM_FLOAT_CONSTANTS]=t;
+	return NUM_FLOAT_CONSTANTS++;
+}
 
 enum Register{RAX,RBX,RCX,RDX,RSI,RDI};
-char* regMap={"rax","rbx","rcx","rdx","rsi","rdi"};
+char* regMap[]={"rax","rbx","rcx","rdx","rsi","rdi"};
 int ARRAY_POINTER_WIDTH=8;
 int BOOLEAN_WIDTH=8;
 int INT_WIDTH=16;
 int FLOAT_WIDTH=32;
+enum FloatRegister{XMM0,XMM1,XMM2,XMM3};
+char *floatRegMap[]={"xmm0","xmm1","xmm2","xmm3"};
 
+void getFloatValue(enum FloatRegister reg,struct ASTNode *root)
+{
+    VariableEntry *varptr=root->localTableEntry;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"        movsd     %s,qword [rbp+16+%d]\n",floatRegMap[reg],varptr->offset);
+    }
+    else
+    {
+        fprintf(fp,"        movsd     %s,qword [rbp-8-%d]\n",floatRegMap[reg],varptr->offset);
+    }
+}
+
+void PUSH(enum Register reg)
+{
+    fprintf(fp,"        push %s\n",regMap[reg]);
+}
+void POP(enum Register reg)
+{
+    fprintf(fp,"        pop %s\n",regMap[reg]);
+}
+void CMP(enum Register reg1,enum Register reg2)
+{
+    fprintf(fp,"    cmp %s,%s\n",regMap[reg1],regMap[reg2]);
+}
+void SUB(enum Register reg1,enum Register reg2)
+{
+    fprintf(fp,"    sub %s,%s\n",regMap[reg1],regMap[reg2]);
+}
 void getValue(enum Register reg,struct ASTNode *root)
 {
-	assertNodeType(root->tag,ID_NODE);
-	VariableEntry *varptr=root->localTableEntry;
-	if(varptr->isParameter==1)
-	{
-		fprintf("		mov 	%s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
-	}
-	else
-	{
-		fprintf("		mov 	%s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
-	}
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
+    }
+    else
+    {
+        fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
+    }
+}
+void getIndex(enum Register reg,struct ASTNode *root)
+{
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    if(root->tag==NUM_NODE)
+    {
+        fprintf(fp,"        mov     %s,%d\n",regMap[reg],root->node.numNode.num);
+    }
+    else// ID_NODE
+    {
+        getValue(RAX,root);
+    }
+}
+void setValue(enum Register reg,struct ASTNode *root)
+{
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",varptr->offset,regMap[reg]);
+    }
+    else
+    {
+        fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",varptr->offset,regMap[reg]);
+    }
 }
 void getAddress(enum Register reg,struct ASTNode *root)
 {
-	assertNodeType(root->tag,ID_NODE);
-	VariableEntry *varptr=root->localTableEntry;
-	if(varptr->isParameter==1)
-	{
-		fprintf("		lea 	%s,qword [rbp+16+%d\n]",regMap[reg],varptr->offset);
-	}
-	else
-	{
-		fprintf("		lea 	%s,qword [rbp-8-%d\n]",regMap[reg],varptr->offset);
-	}
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"        lea     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
+    }
+    else
+    {
+        fprintf(fp,"        lea     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
+    }
 }
 void getLow(enum Register reg,struct ASTNode *root)
 {
-	assertNodeType(root->tag,ID_NODE);
-	VariableEntry *varptr=root->localTableEntry;
-	VariableEntry *ptr;
-	if(varptr->isParameter==1)
-	{
-		fprintf("		mov 	%s,qword [rbp+16+%d\n]",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH);
-	}
-	else
-	{
-		if(varptr->type.tagLow==0)
-			fprintf("		mov 	%s,%d\n",regMap[reg],varptr->type.low.bound);
-		else
-		{
-			ptr=root->node.idNode.Range->node.rangeNode.Range1->localTableEntry;
-			getValue(reg,ptr);
-			fprintf("		mov 	%s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
-		}
-	}
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    VariableEntry *ptr;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"       mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH);
+    }
+    else
+    {
+        if(varptr->type.tagLow==0)
+            fprintf(fp,"       mov     %s,%d\n",regMap[reg],varptr->type.low.bound);
+        else
+        {
+            ptr=varptr->type.lowPtr;
+            getValue(reg,ptr);
+            fprintf(fp,"       mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
+        }
+    }
 }
 void getHigh(enum Register reg,struct ASTNode* root)
 {
-	assertNodeType(root->tag,ID_NODE);
-	VariableEntry *varptr=root->localTableEntry;
-	VariableEntry *ptr;
-	if(varptr->isParameter==1)
-	{
-		fprintf("		mov 	%s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH+INT_WIDTH);
-	}
-	else
-	{
-		if(varptr->type.tagLow==0)
-			fprintf("		mov 	%s,%d\n",regMap[reg],varptr->type.high.bound);
-		else
-		{
-			ptr=root->node.idNode.Range->node.rangeNode.Range1->localTableEntry;
-			getValue(reg,ptr);
-			fprintf("		mov 	%s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
-		}
-	}
+    //assertNodeType(root->tag,ID_NODE);
+    VariableEntry *varptr=root->localTableEntry;
+    VariableEntry *ptr;
+    if(varptr->isParameter==1)
+    {
+        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH+2*INT_WIDTH);
+    }
+    else
+    {
+        if(varptr->type.tagLow==0)
+            fprintf(fp,"        mov     %s,%d\n",regMap[reg],varptr->type.high.bound);
+        else
+        {
+            ptr=varptr->type.highPtr;
+            getValue(reg,ptr);
+            fprintf(fp,"        mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
+        }
+    }
 }
 
 void generateInputCode(struct ASTNode *root)
@@ -631,22 +696,495 @@ void generateOutputCode(struct ASTNode *root){
         }
     }
 }
-
-void getValueRAX(VariableEntry *varptr)
-{
-
+void generateConditionCode(struct AST * root){ 
+    VariableEntry *ptr;
+    ptr=root->localTableEntry;
+    struct ASTNode * cases = root->node.conditionNode.Case;
+    int endlabel = createLabel(); 
+    if(root->node.conditionNode.presentDefault == 0){ //BOOLEAN 
+        while(cases != NULL){   
+            int labe11 = createLabel();
+            int label2 = createLabel();
+            fprintf(fp,"push rbp\n");
+            fprintf(fp,"push rax\n");
+            fprintf(fp,"mov   rax,[rbp-8-%d]\n",ptr->offset);
+            fprintf(fp,"cmp rax,%d\n",cases->node.caseNode.value->node.boolNode.value);
+            fprintf(fp,"jz _label%d\n",label1);
+            fprintf(fp,"pop rax\n");
+            fprintf(fp,"pop rbp\n");
+            fprintf(fp,"jump _label%d\n",label2);
+            fprintf(fp,"_label%d\n",label1);
+            generateScopeCode(cases->node.caseNode.stmt);
+            fprintf(fp,"jump _label%d\n",endlabel);
+            fprintf(fp,"_label%d\n",label2);
+            cases = cases->node.caseNode.next;
+        }
+    }
+    
+    else{   //INTEGER
+        int defaultlabel =  createLabel();
+        while(cases != NULL){   
+            int labe11 = createLabel();
+            int label2 = createLabel();
+            fprintf(fp,"push rbp\n");
+            fprintf(fp,"push rax\n");
+            fprintf(fp,"cmp rax,%d\n",cases->node.caseNode.value->node.numNode.num);
+            fprintf(fp,"jz _label%d\n",label1);
+            fprintf(fp,"push rbp\n");
+            fprintf(fp,"push rax\n");
+            fprintf(fp,"jump _label%d\n",label2);
+            fprintf(fp,"_label%d\n",label1);
+            generateScopeCode(cases->node.caseNode.stmt);
+            //maintain a flag that will decide whether default will be executed or not
+            fprintf(fp,"jump _label%d\n",endlabel);
+            fprintf(fp,"_label%d\n",label2);
+            cases = cases->node.caseNode.next;                  
+        }
+        
+        fprintf(fp,"_label%d\n",defaultlabel);
+        generateScopeCode(cases->node.caseNode.default);
+        fprintf(fp,"jump _label%d\n",endlabel);
+    }
+    fprintf(fp,"_label%d\n",endlabel);
 }
+void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in temporary number depth _inttmp0
+{
+    if(depth>=TEMPORARY_COUNTER)
+    {
+        TEMPORARY_COUNTER=depth;
+    }
+    int flt1,flt2,flt3;
+    Type type,type2;
+    int label;
+    switch(root->tag)
+    {
+        case BOOL_NODE:
+            fprintf(fp,"    mov qword [_booltmp%d],%d\n",depth,root->node.boolNode.value);
+            break;
+        case NUM_NODE:
+            fprintf(fp,"    mov qword [_inttmp%d],%d\n",depth,root->node.numNode.num);
+            break;
+        case RNUM_NODE:
+            int flt1=createFloatConstant(root->node.rnumNode.rnum);
+            fprintf(fp,"    movsd   xmm0,qword [_flt%d]\n",flt1);
+            fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+            break;
+        case ID_NODE:
+            if(root->node.idNode.index==NULL){
+                switch(root->localTableEntry->type.type)
+                {
+                    case DT_INTEGER:
+                        getValue(RAX,root);
+                        fprintf(fp,"    mov qword [_inttmp%d],rax\n",depth);
+                        break;
+                    case DT_REAL:
+                        getFloatValue(XMM0,root);
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                        break;
+                    case DT_BOOLEAN:
+                        getValue(RAX,root);
+                        fprintf(fp,"    mov qword [_booltmp%d],rax\n",depth);
+                        break;
+                }
+            }else{
+                getLow(RSI,root);
+                getHigh(RDI,root);
+                getIndex(RAX,root->node.idNode.index);
+                CMP(RAX,RSI);
+                fprintf(fp,"    jl      _indexerrorlabel_\n");
+                CMP(RDI,RAX);
+                fprintf(fp,"    jg      _indexerrorlabel_\n");
+                SUB(RAX,RSI);
+                getValue(RSI,root);
+                switch(root->localTableEntry->type.type){
+                    case DT_INTEGER:
+                        fprintf(fp,"mov    rax,[rsi-rax*16]\n");
+                        fprintf(fp,"mov    qword [_inttmp%d],rax\n",depth);
+                        break;
+                    case DT_REAL:
+                        fprintf(fp,"movsd    xmm0,[rsi-rax*32]\n");
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                        break;
+                    case DT_BOOLEAN:
+                        fprintf(fp,"mov    rax,[rsi-rax*8]\n");
+                        fprintf(fp,"    mov qword [_booltmp%d],rax\n",depth);
+                        break;
+                }            
+            }
+            break;
+        case UNARY_NODE:
+            generateExpressionCode(depth+1,root->node.unaryNode.expr);
+            if(root->node.unaryNode.type==DT_INTEGER)
+            {
+                fprintf(fp,"    mov rax,-1\n");
+                fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+1);
+                fprintf(fp,"    mul rax,rbx\n");
+                fprintf(fp,"    mov [_inttmp%d],rax\n",depth);
+            }
+            else
+            {
+                fprintf(fp,"    movsd xmm0,qword [_flt0]\n");
+                fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+1);
+                fprintf(fp,"    mulsd xmm0,xmm1\n");
+                fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+            }
+            break;
+        case BINARY_NODE:
+            generateExpressionCode(depth+1,root->node.binaryNode.expr1);
+            generateExpressionCode(depth+2,root->node.binaryNode.expr2);
+            switch(root->node.binaryNode.op) //enum Operator{OP_PLUS,OP_MINUS,OP_MUL,OP_DIV,OP_AND,OP_OR,OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
+            {
+                case OP_PLUS: 
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    add rax,rbx\n");
+                        fprintf(fp,"    mov [_inttmp%d],rax\n",depth);                        
+                        
+                    }else{
+                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"    addsd xmm0,xmm1\n");
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                    }
+                    break;
+                case OP_MINUS:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    sub rax,rbx\n");
+                        fprintf(fp,"    mov [_inttmp%d],rax\n",depth);
+                    }else{
+                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"    subsd xmm0,xmm1\n");
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                    }
+                    break; 
+                case OP_MUL:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mul rbx\n");
+                        fprintf(fp,"    mov [_inttmp%d],rax\n",depth);
+                    }else{
+                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"    mulsd xmm0,xmm1\n");
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                    }
+                    break; 
+                case OP_DIV:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rdx,0\n");
+                        fprintf(fp,"    div rbx\n");
+                        fprintf(fp,"    mov [_inttmp%d],rax\n",depth);
+                    }else{
+                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"    divsd xmm0,xmm1\n");
+                        fprintf(fp,"    movsd qword [_flttmp%d],xmm0\n",depth);
+                    }
+                    break;
+                case OP_AND:
+                    fprintf(fp,"    mov rax,[_booltmp%d]\n",depth+1);
+                    fprintf(fp,"    mov rbx,[_booltmp%d]\n",depth+2);
+                    fprintf(fp,"    and rax,rbx\n");
+                    fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                    break;
+                case OP_OR:
+                    fprintf(fp,"    mov rax,[_booltmp%d]\n",depth+1);
+                    fprintf(fp,"    mov rbx,[_booltmp%d]\n",depth+2);
+                    fprintf(fp,"    or rax,rbx\n");
+                    fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                    break;
+                case OP_LT:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jge _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                    }else{
+                        fprintf(fp,"    mov rax,[_booltmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_booltmp%d]\n",depth+2);
+                        
+                    }
+                    break;
+                case OP_LE:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jg _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                    }else{
+                        
+                    }
+                    break;
+                case OP_GT:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jle _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                    }else{
+                        
+                    }
+                    break;
+                case OP_GE:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jl _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                    }else{
+                        
+                    }
+                    break;                    
+                case OP_EQ:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                        fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jnz _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                    }else{
+                        
+                    }
+                    break;
+                case OP_NE:
+                    if(root->node.binaryNode.childType==DT_INTEGER){
+                       fprintf(fp,"    mov rax,[_inttmp%d]\n",depth+1);
+                        fprintf(fp,"    mov rbx,[_inttmp%d]\n",depth+2);
+                        fprintf(fp,"    mov rcx,0");
+                        fprintf(fp,"    cmp rax,rbx");
+                        label=createLabel();
+                        fprintf(fp,"    jz _label%d",label);
+                        fprintf(fp,"    mov rcx,1");
+                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth); 
+                    }else{
+                        
+                    }
+                    break;
+                   
+            }
+            
+            break;
+    }
+}
+
 void generateAssignmentCode(struct ASTNode* root)
 {
-	VariableEntry *varptr;
-	varptr=root->localTableEntry;
-	if(varptr->type.arrayFlag==1)
-	{
-		getValueRAX(varptr);
-		getValueRAX(varptr);
-		
-	}
+    VariableEntry *varptr;
+    varptr=root->localTableEntry;
+    struct ASTNode *right;
+    right=root->node.assignNode.expr;
+    VariableEntry *varptr2;
+    varptr2=right->localTableEntry;
+    if(varptr->type.arrayFlag==1)
+    {
+        if(root->node.assignNode.index==NULL)
+        {
+            if(ptr->type.isStatic==0||varptr->type.isStatic==0)
+            {
+                // Compare low and high for equality
+                getLow(RSI,root);
+                getLow(RDI,right);
+                CMP(RSI,RDI);
+                fprintf(fp,"    jnz     _boundserrorlabel_\n");
+                getHigh(RSI,root);
+                getHigh(RDI,right);
+                CMP(RSI,RDI);
+                fprintf(fp,"    jnz     _boundserrorlabel_\n");
+
+            }
+            getValue(RAX,right);
+            setValue(RAX,root);
+            return;
+        }
+        getLow(RSI,root);
+        getHigh(RDI,root);
+        getIndex(RAX,root->node.assignNode.index);
+        CMP(RAX,RSI);
+        fprintf(fp,"    jl      _indexerrorlabel_\n");
+        CMP(RDI,RAX);
+        fprintf(fp,"    jg      _indexerrorlabel_\n");
+        SUB(RAX,RSI);
+        getValue(RSI,root);
+        generateExpressionCode(0,right);
+        switch(varptr->type.type)
+        {
+            case DT_INTEGER:
+                fprintf(fp,"    mov rbx,[_inttmp0]\n");
+                fprintf(fp,"    mov [rsi-rax*16],rbx\n");
+                break;
+            case DT_BOOLEAN:
+                fprintf(fp,"    mov rbx,[_booltmp0]\n");
+                fprintf(fp,"    mov [rsi-rax*8],rbx\n");
+                break;
+            case DT_REAL:
+                fprintf(fp,"    movsd xmm0,[_flttmp0]\n");
+                fprintf(fp,"    mov qword [rsi-rax*32],xmm0\n");
+                break;
+        }
+        return;
+    }
+    generateExpressionCode(0,right);
+    switch(varptr->type.type)
+    {
+        case DT_INTEGER:
+            fprintf(fp,"    mov rbx,[_inttmp0]\n");
+            setValue(RBX,root);
+            break;
+        case DT_BOOLEAN:
+            fprintf(fp,"    mov rbx,[_booltmp0]\n");
+            setValue(RBX,root);
+            break;
+        case DT_REAL:
+            fprintf(fp,"    movsd xmm0,[_flttmp0]\n");
+            fprintf(fp,"    mov qword [rbp-8-%d],xmm0\n",varptr->offset);
+            break;
+    }
+
 }
+
+void pushReverse(Struct ASTNode *root){
+    if(root==NULL){
+        return;
+    }
+    pushReverse(root->node.idListNode.next);
+    VariableEntry *ptr;
+    ptr=root->localTableEntry;
+    if(ptr.arrayFlag==1){
+        getHigh(RAX,root);
+        PUSH(RAX);
+        PUSH(RAX);
+        getLow(RAX,root);
+        PUSH(RAX);
+        PUSH(RAX);
+        getValue(RAX,root);
+        PUSH(RAX);
+    }else
+    {
+        switch(ptr->type.type){
+            case DT_BOOLEAN:
+                getValue(RAX,root);
+                PUSH(RAX);
+                break;
+            case DT_INTEGER:
+                getValue(RAX,root);
+                PUSH(RAX);
+                PUSH(RAX);
+                break;
+            case DT_REAL:
+                getValue(RAX,root);
+                PUSH(RAX);
+                PUSH(RAX);
+                PUSH(RAX);
+                PUSH(RAX);                       
+        }
+    }
+}
+
+
+void generateModuleReuseCode(struct ASTNode *root){
+    struct ASTNode *nodeptr;
+    fprintf(fp,"push    rbp\n");
+    fprintf(fp,"mov    rbp,rsp\n");
+    nodeptr=root->node.moduleReuseNode.optional;
+    pushReverse(nodeptr);
+    nodeptr=root->node.moduleReuseNode.idList;
+    pushReverse(nodeptr);
+    fprintf(fp,"call %s\n",root->node.moduleReuseNode.id);
+    nodeptr=root->node.moduleReuseNode.idList;
+    while(nodeptr!=NULL){
+        VariableEntry *ptr;
+        ptr=nodeptr->localTableEntry;
+        if(ptr.arrayFlag==1){
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+        }else
+        {
+            switch(ptr->type.type){
+                case DT_BOOLEAN:
+                    POP(RAX);
+                    break;
+                case DT_INTEGER:
+                    POP(RAX);
+                    POP(RAX);
+                    break;
+                case DT_REAL:
+                    POP(RAX);
+                    POP(RAX);
+                    POP(RAX);
+                    POP(RAX);
+                    break;                       
+            }
+        }
+        
+        nodeptr=nodeptr->node.idListNode.next;
+    }
+    nodeptr=root->node.moduleReuseNode.optional;
+    while(nodeptr!=NULL){
+        VariableEntry *ptr;
+        ptr=nodeptr->localTableEntry;
+        if(ptr.arrayFlag==1){
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+            POP(RAX);
+        }else
+        {
+            switch(ptr->type.type){
+                case DT_BOOLEAN:
+                    POP(RAX);
+                    setValue(RAX,nodeptr);
+                    break;
+                case DT_INTEGER:
+                    POP(RAX);
+                    setValue(RAX,nodeptr);
+                    POP(RAX);
+                    break;
+                case DT_REAL:
+                    POP(RAX);
+                    setValue(RAX,nodeptr);
+                    POP(RAX);
+                    POP(RAX);
+                    POP(RAX);  
+                    break;                     
+            }
+        }
+        
+        nodeptr=nodeptr->node.idListNode.next;
+    }
+    fprintf(fp,"mov     rsp,rbp\n");
+    fprintf(fp,"pop     rbp\n");
+}
+
 
 void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
 {
@@ -707,7 +1245,7 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
 				
 				generateExpressionCode(0,root->node.whileNode.expr);   // This will generate output of a Expression and store it in rax or xmm0
 				
-				fprintf(fp,"    movsx   rax,byte [_booltmp0_]\n");
+				fprintf(fp,"    movsx   rax,byte [_booltmp0]\n");
 				fprintf(fp,"    cmp     rax,0\n");
 				fprintf(fp,"    jz      _label%d\n",label2);
 				
@@ -822,6 +1360,7 @@ void  generateErrorHandlingCode()
 void generateDataCode()
 {
 	// printTemporaries
+	// printFloatConstants of type _flt0,_flt1, till NUM_FLOAT_CONSTANTS-1 with _flt<i>: dq floatConstants[i]
 	fprintf(fp,"_formatIntArray:\n");
 	fprintf(fp,"        db  \"Enter %hd numbers for integer array from %hi to %hi \", 10, 0\n");
 	fprintf(fp,"\n");
@@ -849,6 +1388,8 @@ void generateDataCode()
 	fprintf(fp,"_formatRealOutput:\n");
 	fprintf(fp,"        db  \"%lf\",10,\n");
 } 
+
+
 void generateModuleCode(struct ASTNode *root)
 {
 	assert(MODULE_NODE,root->tag);
@@ -857,7 +1398,7 @@ void generateModuleCode(struct ASTNode *root)
 	fprintf(fp,"%s:\n",root->node.moduleNode.moduleName);
 	fprintf(fp,"        push    rbp\n");
 	fprintf(fp,"        mov     rbp,rsp\n");
-	fprintf(fp,"        sub 	rsp,%d\n",activationRecordSize);
+	fprintf(fp,"        sub 	rsp,%d\n",8*activationRecordSize);
 	generateScopeCode(root->body);
 	fprintf(fp,"        mov     rsp,rbp\n");
 	fprintf(fp,"        pop     rbp\n");
@@ -873,6 +1414,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	fp=fopen(filename,"w+");
 	initLabelGenerator();
 	TEMPORARY_COUNTER=0;
+	createFloatConstant(-1);
 	printStartingCode();
 
 	Code finalCode=generateModuleCode(root->node.programNode.driverModule);
