@@ -14,6 +14,83 @@ int createLabel()// 37  _label37
 	LABEL_COUNTER++;
 	return LABEL_COUNTER;
 }
+
+enum Register{RAX,RBX,RCX,RDX,RSI,RDI};
+char* regMap={"rax","rbx","rcx","rdx","rsi","rdi"};
+int ARRAY_POINTER_WIDTH=8;
+int BOOLEAN_WIDTH=8;
+int INT_WIDTH=16;
+int FLOAT_WIDTH=32;
+
+void getValue(enum Register reg,struct ASTNode *root)
+{
+	assertNodeType(root->tag,ID_NODE);
+	VariableEntry *varptr=root->localTableEntry;
+	if(varptr->isParameter==1)
+	{
+		fprintf("		mov 	%s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
+	}
+	else
+	{
+		fprintf("		mov 	%s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
+	}
+}
+void getAddress(enum Register reg,struct ASTNode *root)
+{
+	assertNodeType(root->tag,ID_NODE);
+	VariableEntry *varptr=root->localTableEntry;
+	if(varptr->isParameter==1)
+	{
+		fprintf("		lea 	%s,qword [rbp+16+%d\n]",regMap[reg],varptr->offset);
+	}
+	else
+	{
+		fprintf("		lea 	%s,qword [rbp-8-%d\n]",regMap[reg],varptr->offset);
+	}
+}
+void getLow(enum Register reg,struct ASTNode *root)
+{
+	assertNodeType(root->tag,ID_NODE);
+	VariableEntry *varptr=root->localTableEntry;
+	VariableEntry *ptr;
+	if(varptr->isParameter==1)
+	{
+		fprintf("		mov 	%s,qword [rbp+16+%d\n]",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH);
+	}
+	else
+	{
+		if(varptr->type.tagLow==0)
+			fprintf("		mov 	%s,%d\n",regMap[reg],varptr->type.low.bound);
+		else
+		{
+			ptr=root->node.idNode.Range->node.rangeNode.Range1->localTableEntry;
+			getValue(reg,ptr);
+			fprintf("		mov 	%s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
+		}
+	}
+}
+void getHigh(enum Register reg,struct ASTNode* root)
+{
+	assertNodeType(root->tag,ID_NODE);
+	VariableEntry *varptr=root->localTableEntry;
+	VariableEntry *ptr;
+	if(varptr->isParameter==1)
+	{
+		fprintf("		mov 	%s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH+INT_WIDTH);
+	}
+	else
+	{
+		if(varptr->type.tagLow==0)
+			fprintf("		mov 	%s,%d\n",regMap[reg],varptr->type.high.bound);
+		else
+		{
+			ptr=root->node.idNode.Range->node.rangeNode.Range1->localTableEntry;
+			getValue(reg,ptr);
+			fprintf("		mov 	%s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
+		}
+	}
+}
+
 void generateInputCode(struct ASTNode *root)
 {
     VariableEntry *ptr=root->localTableEntry;
@@ -284,7 +361,6 @@ void generateInputCode(struct ASTNode *root)
         }
     }
 }
-
 void generateOutputCode(struct ASTNode *root){
     if(root->tag==BOOL_NODE){
         fprintf(fp,"mov   rax,%d",root->node.boolNode.value);
@@ -296,18 +372,15 @@ void generateOutputCode(struct ASTNode *root){
         fprintf(fp,"jz _label%d",label);
         fprintf(fp,"mov     rdi,_formatBooleanTrue");
         fprintf(fp,"jmp     _label%d",label2);
-        fprintf(fp,"_label%d",label1);
+        fprintf(fp,"_label%d",label);
         fprintf(fp,"mov     rdi,_formatBooleanFalse");
         fprintf(fp,"_label%d:",label2);
         fprintf(fp,"mov     rax,0");
-
-        
-
         fprintf(fp,"call    printf");
     }else
     if(root->tag==NUM_NODE){
-        frpintf(fp,"mov    rdi, _formatIntOutput");
-        fprintf(fp,"mov    rsi,%d,root->node.numNode.num",root->node.numNode.num);
+        fprintf(fp,"mov    rdi, _formatIntOutput");
+        fprintf(fp,"mov    rsi,%d",root->node.numNode.num);
         fprintf(fp,"mov    rax,0");
         fprintf("call printf");
     }else
@@ -322,47 +395,268 @@ void generateOutputCode(struct ASTNode *root){
         if(ptr->type.arrayFlag==1){
             if(root->node.idNode.index==NULL){
                 if(ptr->type.type==DT_BOOLEAN){
-                    
+                    fprintf(fp,"mov    rbx,0");
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rbx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    rsi,[rbp-8-%d]",ptr->offset);
+                    int label,label1,label2;
+                    label=createLabel();
+                    label1=createLabel();
+                    label2=createLabel();
+                    fprintf(fp,"_label%d:",label);
+                    fprintf(fp,"push    rbp");
+                    fprintf(fp,"push    rax");
+                    fprintf(fp,"push    rcx");
+                    fprintf(fp,"push    rbx");
+                    fprintf(fp,"push    rsi");
+                    fprintf(fp,"movsx   rax,byte [rsi-rbx*1]");    //Change???????
+                    fprintf(fp,"cmp    rax,0");
+                    fprintf(fp,"jz _label%d",label1);
+                    fprintf(fp,"mov    rdi,_formatBooleanTrue");
+                    fprintf(fp,"jmp    _label%d",label2);
+                    fprintf(fp,"_label%d",label1);
+                    fprintf(fp,"mov    rdi_formatBooleanFalse");
+                    fprintf(fp,"_label%d:",label2);
+                    fprintf(fp,"mov    rax,0");
+                    fprintf(fp,"call    printf");
+                    fprintf(fp,"pop    rsi");
+                    fprintf(fp,"pop    rbx");
+                    fprintf(fp,"pop    rcx");
+                    fprintf(fp,"pop    rax");
+                    fprintf(fp,"pop    rbp");
+                    fprintf(fp,"inc rbx");
+                    fprintf(fp,"inc rcx");
+                    fprintf(fp,"cmp    rcx,rbx");
+                    fprintf(fp,"jnz    _label%d",label);
                 }else
                 if(ptr->type.type==DT_INTEGER){
-                    
+                    fprintf(fp,"mov    rax,0");
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rbx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    int label;
+                    label=createLabel();
+                    fprintf(fp,"_label%d:",label);
+                    fprintf(fp,"push    rbp");
+                    fprintf(fp,"push    rax");
+                    fprintf(fp,"push    rcx");
+                    fprintf(fp,"push    rbx");
+                    fprintf(fp,"push    r8");
+                    fprintf(fp,"mov    rdi, _formatIntOutput");
+                    fprintf(fp,"movsx    rsi,word [r8-rax*2]");    //Change????
+                    fprintf(fp,"mov    rax,0");
+                    fprintf("call printf");
+                    fprintf(fp,"pop    r8");
+                    fprintf(fp,"pop    rbx");
+                    fprintf(fp,"pop    rcx");
+                    fprintf(fp,"pop    rax");
+                    fprintf(fp,"pop    rbp");
+                    fprintf(fp,"inc rax");
+                    fprintf(fp,"inc rcx");
+                    fprintf(fp,"cmp    rcx,rbx");
+                    fprintf(fp,"jnz    _label%d",label);
                 }else
                 {
-                    
+                    fprintf(fp,"mov    rax,0");
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rbx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    int label;
+                    label=createLabel();
+                    fprintf(fp,"_label%d:",label);
+                    fprintf(fp,"push    rbp");
+                    fprintf(fp,"push    rax");
+                    fprintf(fp,"push    rcx");
+                    fprintf(fp,"push    rbx");
+                    fprintf(fp,"push    r8");
+                    fprintf(fp,"mov    rdi, _formatRealOutput");
+                    fprintf(fp,"movss   xmm0,qword [r8-rax*4]");    //Change????
+                    fprintf(fp,"mov    rax,1");
+                    fprintf("call printf");
+                    fprintf(fp,"pop    r8");
+                    fprintf(fp,"pop    rbx");
+                    fprintf(fp,"pop    rcx");
+                    fprintf(fp,"pop    rax");
+                    fprintf(fp,"pop    rbp");
+                    fprintf(fp,"inc rax");
+                    fprintf(fp,"inc rcx");
+                    fprintf(fp,"cmp    rcx,rbx");
+                    fprintf(fp,"jnz    _label%d",label);
                 }
             }else
-            if(root->node.idNode.index==NUM_NODE){
+            if(root->node.idNode.index->tag==NUM_NODE){
                 if(ptr->type.type==DT_BOOLEAN){
-                    
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"cmp    rdx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movsx   rax,byte [r8-rsi]");
+                    int label,label2;
+                    label=createLabel();
+                    label2=createLabel();
+                    fprintf(fp,"cmp rax,0");
+                    fprintf(fp,"jz _label%d",label);
+                    fprintf(fp,"mov     rdi,_formatBooleanTrue");
+                    fprintf(fp,"jmp     _label%d",label2);
+                    fprintf(fp,"_label%d",label);
+                    fprintf(fp,"mov     rdi,_formatBooleanFalse");
+                    fprintf(fp,"_label%d:",label2);
+                    fprintf(fp,"mov     rax,0");
+                    fprintf(fp,"call    printf");
                 }else
                 if(ptr->type.type==DT_INTEGER){
-                    
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"cmp    rdx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"mov    rdi, _formatIntOutput");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movsx   rsi,word [r8-rsi*2]");
+                    fprintf(fp,"mov    rax,0");
+                    fprintf("call printf");
                 }else
                 {
-                    
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"cmp    rdx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,%d",root->node.idNode.index->node.numNode.num);
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"mov    rdi, _formatRealOutput");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movss   xmm0,qword [r8-rsi*4]");
+                    fprintf(fp,"mov    rax,1");
+                    fprintf("call printf");
                 }
             }else
             {
-                if(ptr->type.type==DT_BOOLEAN){
-                    
-                }else
-                if(ptr->type.type==DT_INTEGER){
-                    
-                }else
+                VariableEntry *indexptr;
+                indexptr=root->node.idNode.index->localTableEntry;
+                if (ptr->type.type==DT_BOOLEAN)
                 {
-                    
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,word [rbp-8-%d]",indexptr->offset);
+                    fprintf(fp,"cmp    rdx,rsi");
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,rsi");
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movsx   rax,byte [r8-rsi]");
+                    int label,label2;
+                    label=createLabel();
+                    label2=createLabel();
+                    fprintf(fp,"cmp rax,0");
+                    fprintf(fp,"jz _label%d",label);
+                    fprintf(fp,"mov     rdi,_formatBooleanTrue");
+                    fprintf(fp,"jmp     _label%d",label2);
+                    fprintf(fp,"_label%d",label);
+                    fprintf(fp,"mov     rdi,_formatBooleanFalse");
+                    fprintf(fp,"_label%d:",label2);
+                    fprintf(fp,"mov     rax,0");
+                    fprintf(fp,"call    printf");
+                }else
+                if (ptr->type.type == DT_INTEGER)
+                {
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,word [rbp-8-%d]",indexptr->offset);
+                    fprintf(fp,"cmp    rdx,rsi");
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,rsi");
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"mov    rdi, _formatIntOutput");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movsx   rsi,word [r8-rsi*2]");
+                    fprintf(fp,"mov    rax,0");
+                    fprintf("call printf");
+                }else{
+                    fprintf(fp,"mov    rdx,[rbp-8-%d-8]",ptr->offset);
+                    fprintf(fp,"mov    rcx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d]",ptr->offset);
+                    fprintf(fp,"mov    rsi,word [rbp-8-%d]",indexptr->offset);
+                    fprintf(fp,"cmp    rdx,rsi");
+                    fprintf(fp,"jg    _arrayerrorlabel_");
+                    fprintf(fp,"cmp    rcx,rsi");
+                    fprintf(fp,"jl    _arrayerrorlabel_");
+                    fprintf(fp,"mov    rdi, _formatRealOutput");
+                    fprintf(fp,"sub    rsi,rdx");
+                    fprintf(fp,"movss   xmm0,qword [r8-rsi*4]");
+                    fprintf(fp,"mov    rax,1");
+                    fprintf("call printf");
                 }
+            }
+        }else
+        {
+            if(ptr->type.type==DT_BOOLEAN){
+                fprintf(fp,"movsx   rax,byte [rbp-8-%d]",ptr->offset);
+                int label,label2;
+                label=createLabel();
+                label2=createLabel();
+                fprintf(fp,"cmp rax,0");
+                fprintf(fp,"jz _label%d",label);
+                fprintf(fp,"mov     rdi,_formatBooleanTrue");
+                fprintf(fp,"jmp     _label%d",label2);
+                fprintf(fp,"_label%d",label);
+                fprintf(fp,"mov     rdi,_formatBooleanFalse");
+                fprintf(fp,"_label%d:",label2);
+                fprintf(fp,"mov     rax,0");
+                fprintf(fp,"call    printf");
+            }else
+            if(ptr->type.type==DT_INTEGER){
+                fprintf(fp,"mov    rdi, _formatIntOutput");
+                fprintf(fp,"movsx    rsi,word [rbp-8-%d]",ptr->offset);
+                fprintf(fp,"mov    rax,0");
+                fprintf("call printf");
+            }else
+            {
+                fprintf(fp,"mov    rdi,_formatRealOutput");
+                fprintf(fp,"movss    xmm0,qword [rbp-8-%d]",ptr->offset);
+                fprintf(fp,"mov rax,1");
+                fprintf(fp,"call printf");
             }
         }
     }
 }
 
-void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
+void getValueRAX(VariableEntry *varptr)
+{
+
+}
+void generateAssignmentCode(struct ASTNode* root)
+{
+	VariableEntry *varptr;
+	varptr=root->localTableEntry;
+	if(varptr->type.arrayFlag==1)
+	{
+		getValueRAX(varptr);
+		getValueRAX(varptr);
+		
+	}
+}
+
+void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
 {
     VariableEntry *varptr;
     struct ASTNode *currVar;
     int allocatedSpace;
-    fprintf(fp, "mov 	rdx,0");
+    int label1,label2,label3;
+    int num1,num2;
+    fprintf(fp,"	push 	rdx\n");
+    fprintf(fp,"	mov 	rdx,0\n");
     while(root!=NULL)
     {
     	switch(root->tag)
@@ -389,9 +683,38 @@ void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 	            root=root->node.caseNode.next;
 	            break;
 	        case FOR_NODE:
-	            root=root->node.forNode.next;
+	        	varptr=root->localTableEntry;
+	        	num1=root->node.forNode.Range->node.rangeNode.Range1->node.numNode.num;
+	        	num2=root->node.forNode.Range->node.rangeNode.Range2->node.numNode.num;
+	            fprintf(fp,"    mov     rcx,%d\n",num1);
+	            label1=createLabel();
+				fprintf(fp,"_label%d:\n",label1);
+				fprintf(fp,"    push    rcx\n");
+				fprintf(fp,"    push    rbx\n");
+				fprintf(fp,"    mov     qword [rbp-8-%d],rcx\n",varptr->offset);
+				generateScopeCode(root->node.forNode.stmts);
+				fprintf(fp,"    pop     rbx\n");
+				fprintf(fp,"    pop     rcx\n");
+				fprintf(fp,"    inc     rcx\n");
+				fprintf(fp,"    cmp     rcx,%d\n",num2+1);
+				fprintf(fp,"    jnz     _label%d\n",label1);
+				root=root->node.forNode.next;
 	            break;
 	        case WHILE_NODE:
+	        	label1=createLabel();
+	        	label2=createLabel();
+	        	fprintf(fp,"_label%d:\n",label1);
+				
+				generateExpressionCode(0,root->node.whileNode.expr);   // This will generate output of a Expression and store it in rax or xmm0
+				
+				fprintf(fp,"    movsx   rax,byte [_booltmp0_]\n");
+				fprintf(fp,"    cmp     rax,0\n");
+				fprintf(fp,"    jz      _label%d\n",label2);
+				
+				generateScopeCode(root->node.whileNode.stmts);
+				
+				fprintf(fp,"    jmp     _label%d\n",label1);
+				fprintf(fp,"_label%d:\n",label2);
 	            root=root->node.whileNode.next;
 	            break;
 	        case DECLARE_NODE:
@@ -401,27 +724,25 @@ void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 	        	{
 	        		if(varptr->type.tagLow==0)
 	        		{
-	        			mov 	rsi,varptr->type.low.bound
+	        			fprintf(fp,"mov 	rsi,%d\n",varptr->type.low.bound);
 	        		}
 	        		else
 	        		{
-	        			mov 	rsi,
+	        			fprintf(fp,"mov 	rsi,[rbp-8-%d]\n",varptr->offset);
 	        		}
 	        		if(varptr->type.tagHigh==0)
 	        		{
-	        			mov 	rdi,varptr->type.high.bound
+	        			fprintf(fp,"mov 	rdi,%d\n",varptr->type.high.bound);
 	        		}
 	        		else
 	        		{
-	        			
+	        			fprintf(fp,"mov 	rsi,[rbp-8-%d]\n",varptr->offset);
 	        		}
-	        		mov 	rsi,start
-	        		mov 	rdi,end
 
-	        		mov 	rcx,rdi
-	        		sub		rcx,rsi
-	        		inc 	rcx
-	        		mul     rcx,8
+	        		fprintf(fp,"mov 	rcx,rdi\n");
+	        		fprintf(fp,"sub		rcx,rsi\n");
+	        		fprintf(fp,"inc 	rcx\n");
+	        		fprintf(fp,"mul     rcx,8\n");
 	        	}
 	        	while(currVar!=NULL)
 	        	{
@@ -430,20 +751,20 @@ void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 	        		{
 	        			if(varptr->type.isStatic==1)
 	        			{
-	        				lea 	rax,[ebp-8-(varptr->offset+24)]
-	        				mov 	qword [ebp-8-varptr->offset],rax
+	        				fprintf(fp,"lea 	rax,[ebp-8-(varptr->offset+24)]\n");
+	        				fprintf(fp,"mov 	qword [ebp-8-varptr->offset],rax\n");
 	        			}
 	        			else
 	        			{
-	        				sub		rsp,rcx
-	        				add		rdx,rcx
+	        				fprintf(fp,"sub		rsp,rcx\n");
+	        				fprintf(fp,"add		rdx,rcx\n");
 
-	        				mov 	rax,rsp
-	        				add		rax,8
-	        				mov 	qword [ebp-8-varptr->offset],rax
+	        				fprintf(fp,"mov 	rax,rsp\n");
+	        				fprintf(fp,"add		rax,8\n");
+	        				fprintf(fp,"mov 	qword [ebp-8-varptr->offset],rax\n");
 	        			}
-	        			mov 	qword [ebp-8-(varptr->offset+8)],rsi
-	        			mov 	qword [ebp-8-(varptr->offset+16)],rdi
+	        			fprintf(fp,"mov 	qword [ebp-8-(varptr->offset+8)],rsi\n");
+	        			fprintf(fp,"mov 	qword [ebp-8-(varptr->offset+16)],rdi\n");
 	        		}
 	        		currVar=currVar->next;
 	        	}
@@ -452,7 +773,8 @@ void generateScopeCode(LabelGenerator *lg,struct ASTNode *root)
 	        default:break;
 	    }
     }
-    fprintf(fp, "add 	rsp,rdx");
+    fprintf(fp, "add 	rsp,rdx\n");
+    fprintf(fp, "pop 	rdx\n");
     return;
 }
 void printStartingCode()
@@ -495,7 +817,7 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"        db  \"                    \",10\n");
 	fprintf(fp,"_errorString2:\n");
 	fprintf(fp,"        db  \" Index %d was out of bounds %d and %d\",10,0\n");
-fprintf(fp,"\n");
+	fprintf(fp,"\n");
 }
 void generateDataCode()
 {
@@ -527,19 +849,20 @@ void generateDataCode()
 	fprintf(fp,"_formatRealOutput:\n");
 	fprintf(fp,"        db  \"%lf\",10,\n");
 } 
-void generateModuleCode(LabelGenerator *lg,struct ASTNode *root)
+void generateModuleCode(struct ASTNode *root)
 {
 	assert(MODULE_NODE,root->tag);
-	Code finalCode=newEmptyCode();
-	Code temp;
-
-	temp=newCode(newCustomLabelLine(root->node.moduleNode.moduleName));
-	finalCode=mergeCode(finalCode,temp);
-
-	temp=generateScopeCode(lg,root->body);
-	finalCode=mergeCode(finalCode,temp);
-
-	return finalCode;
+	//int activationRecordSize=?;
+	//activationRecordSize+=16-(activationRecordSize%16);
+	fprintf(fp,"%s:\n",root->node.moduleNode.moduleName);
+	fprintf(fp,"        push    rbp\n");
+	fprintf(fp,"        mov     rbp,rsp\n");
+	fprintf(fp,"        sub 	rsp,%d\n",activationRecordSize);
+	generateScopeCode(root->body);
+	fprintf(fp,"        mov     rsp,rbp\n");
+	fprintf(fp,"        pop     rbp\n");
+	fprintf(fp,"	ret\n\n");
+	return;
 }
 
 void generateProgramCode(struct ASTNode *root,char *filename)
@@ -552,7 +875,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	TEMPORARY_COUNTER=0;
 	printStartingCode();
 
-	Code finalCode=generateModuleCode(lg,root->node.programNode.driverModule);
+	Code finalCode=generateModuleCode(root->node.programNode.driverModule);
 	
 	Code temp=newEmptyCode();
 
@@ -560,8 +883,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 
 	while(ASTptr!=NULL)
 	{
-		temp=generateModuleCode(lg,ASTptr);
-		finalCode=mergeCode(finalCode,temp);
+		generateModuleCode(ASTptr);
 		ASTptr=ASTptr->node.moduleNode.next;
 	}
 
@@ -569,8 +891,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 
 	while(ASTptr!=NULL)
 	{
-		temp=generateModuleCode(lg,ASTptr);
-		finalCode=mergeCode(finalCode,temp);
+		generateModuleCode(lg,ASTptr);
 		ASTptr=ASTptr->node.moduleNode.next;
 	}
 	generateErrorHandlingCode();
