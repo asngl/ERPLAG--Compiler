@@ -203,6 +203,7 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 				initNode->type.tagLow=1;
 				strcpy(initNode->type.low.lexeme,root->node.declareNode.Range->node.rangeNode.Range1->node.idNode.varName);
 				varptr=checkDeclarationBeforeUse(context,localTable,initNode->type.low.lexeme,root->lineNumber);
+				initNode->type.lowPtr=varptr;
 				if(varptr!=NULL)
 				{
 					if(varptr->type.type!=DT_INTEGER)
@@ -223,11 +224,13 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 			}else{
 				initNode->type.tagLow=0;
 				initNode->type.low.bound=root->node.declareNode.Range->node.rangeNode.Range1->node.numNode.num;
+				initNode->type.lowPtr=NULL;
 			}
 			if(root->node.declareNode.Range->node.rangeNode.Range2->tag == ID_NODE){
 				initNode->type.tagHigh=1;
 				strcpy(initNode->type.high.lexeme,root->node.declareNode.Range->node.rangeNode.Range2->node.idNode.varName);
 				varptr=checkDeclarationBeforeUse(context,localTable,initNode->type.high.lexeme,root->lineNumber);
+				initNode->type.highPtr=varptr;
 				if(varptr!=NULL)
 				{
 					if(varptr->type.type!=DT_INTEGER)
@@ -247,6 +250,7 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 			}else{
 				initNode->type.tagHigh=0;
 				initNode->type.high.bound=root->node.declareNode.Range->node.rangeNode.Range2->node.numNode.num;
+				initNode->type.highPtr=NULL;
 			}
 			if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
 				initNode->type.isStatic =1;

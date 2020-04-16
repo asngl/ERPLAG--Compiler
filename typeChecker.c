@@ -122,6 +122,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			return type;
 		case UNARY_NODE:
 			type=validateExpression(context,parent,root->node.unaryNode.expr);
+            root->node.unaryNode.type=type.type;
 			if(type.type==DT_ERROR)return type;
 			if(type.type == DT_BOOLEAN){
 				printf("Error on line number:%d, unary operations cannot be applied on Boolean expressions",root->lineNumber);
@@ -139,6 +140,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 		case BINARY_NODE:
 			type=validateExpression(context,parent,root->node.binaryNode.expr1);
 			type2=validateExpression(context,parent,root->node.binaryNode.expr2);
+            root->node.binaryNode.childType=type.type;
 			if(type.type==DT_ERROR || type2.type==DT_ERROR)
 			{
 				type.type=DT_ERROR;
@@ -156,41 +158,57 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
 			            printf("Semantic error on line %d: Cannot perform arithmetic operation on boolean type operands.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
 			        else if(type.type!=type2.type)
 			        {
 			            printf("Semantic error on line %d: Cannot perform arithmetic operation with one int and one real operand.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
+                    root->node.binaryNode.type=type.type;
 			        return type;
 			    case OP_AND:case OP_OR:
 			        if(type.type!=DT_BOOLEAN || type2.type!=DT_BOOLEAN)
 			        {
 			            printf("Semantic error on line %d: Cannot perform logical operation on non-boolean type operands.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
+                    root->node.binaryNode.type=type.type;
 			        return type;
 			    case OP_LT:case OP_LE:case OP_GT:case OP_GE:
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
 			            printf("Semantic error on line %d: Cannot perform inequality operations on boolean type operands.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
 			        else if(type.type!=type2.type)
 			        {
 			            printf("Semantic error on line %d: Cannot perform relational operations with one int and one real operand.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
 			        type.type=DT_BOOLEAN;
+                    root->node.binaryNode.type=type.type;
 			        return type;
 			    case OP_EQ:case OP_NE:
 			        if(type.type!=type2.type)
 			        {
 			            printf("Semantic error on line %d: Cannot perform equality operations with differing datatype operands.\n",root->lineNumber);
+                        type.type=DT_ERROR;
+                        type.arrayFlag=0;
 			            return type;
 			        }
 			        type.type=DT_BOOLEAN;
+                    root->node.binaryNode.type=type.type;
 			        return type;
 			            
 			}  

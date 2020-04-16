@@ -17,8 +17,10 @@ typedef struct Type
 	int arrayFlag;		//1 if variable is an array
 	ArrayBound low;	//Lower bound for Array type
 	int tagLow;		//0 for num, 1 for ID
+	struct VariableEntry *lowPtr;
 	ArrayBound high;
 	int tagHigh;
+	struct VariableEntry *highPtr;
 	int isStatic;	//1 for Static, 0 for Dynamic
 }Type;
 
