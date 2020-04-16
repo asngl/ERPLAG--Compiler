@@ -397,7 +397,7 @@ void generateOutputCode(struct ASTNode *root){
                 if(ptr->type.type==DT_BOOLEAN){
                     fprintf(fp,"mov    rbx,0");
                     fprintf(fp,"mov    rcx,[rbp-8-%d-8]",ptr->offset);
-                    fprintf(fp,"mov    rbx,[rbp-8-%d-16]",ptr->offset);
+                    fprintf(fp,"mov    r8,[rbp-8-%d-16]",ptr->offset);
                     fprintf(fp,"mov    rsi,[rbp-8-%d]",ptr->offset);
                     int label,label1,label2;
                     label=createLabel();
@@ -426,8 +426,8 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"pop    rbp");
                     fprintf(fp,"inc rbx");
                     fprintf(fp,"inc rcx");
-                    fprintf(fp,"cmp    rcx,rbx");
-                    fprintf(fp,"jnz    _label%d",label);
+                    fprintf(fp,"cmp    rcx,r8");
+                    fprintf(fp,"jle    _label%d",label);
                 }else
                 if(ptr->type.type==DT_INTEGER){
                     fprintf(fp,"mov    rax,0");
@@ -454,7 +454,7 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"inc rax");
                     fprintf(fp,"inc rcx");
                     fprintf(fp,"cmp    rcx,rbx");
-                    fprintf(fp,"jnz    _label%d",label);
+                    fprintf(fp,"jle    _label%d",label);
                 }else
                 {
                     fprintf(fp,"mov    rax,0");
@@ -481,7 +481,7 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"inc rax");
                     fprintf(fp,"inc rcx");
                     fprintf(fp,"cmp    rcx,rbx");
-                    fprintf(fp,"jnz    _label%d",label);
+                    fprintf(fp,"jle    _label%d",label);
                 }
             }else
             if(root->node.idNode.index->tag==NUM_NODE){
