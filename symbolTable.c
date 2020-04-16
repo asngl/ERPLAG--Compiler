@@ -1217,7 +1217,7 @@ void printRecordWidth(SymbolTable *symbolTable)
 
 void printType(Type type)
 {
-    printf("%-10s",type.arrayFlag?"1":"0");
+    printf("%-10s",type.arrayFlag?"yes":"no");
     if(type.arrayFlag==1)
     {
     	char s[25];
