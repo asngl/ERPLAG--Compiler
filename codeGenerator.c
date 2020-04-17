@@ -1,3 +1,15 @@
+#ifndef _CODEGENERATORC
+#define _CODEGENERATORC
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include "symbolTable.h"
+#include "symbolTableDef.h"
+#include "typeChecker.h"
+#include "ASTNodeDef.h"
+#include "codeGeneratorDef.h"
+
 #define MAX_NUM_FLOAT_CONSTANTS 1000
 void assertNodeType(enum NodeType a,enum NodeType b)
 {
@@ -1413,3 +1425,4 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	generateDataCode();
 	return;
 }
+#endif
