@@ -225,7 +225,9 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        push    rbx\n");
             fprintf(fp,"        push    rcx\n");
             fprintf(fp,"        mov     rdi,_formatBooleanInput\n");
-            fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",BOOLEAN_WIDTH);
+            fprintf(fp,"        imul    rbx,rbx,%d\n",BOOLEAN_WIDTH);
+            SUB(RBP,RBX);
+            fprintf(fp,"        lea     rsi,[rbp]\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        push    rbp\n");
@@ -255,7 +257,9 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        push    rbx\n");
             fprintf(fp,"        push    rcx\n");
             fprintf(fp,"        mov     rdi,_formatIntInput\n");
-            fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",INT_WIDTH);
+            fprintf(fp,"        imul    rbx,rbx,%d\n",INT_WIDTH);
+            SUB(RBP,RBX);
+            fprintf(fp,"        lea     rsi,[rbp]\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        push    rbp\n");
@@ -285,7 +289,9 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        push    rbx\n");
             fprintf(fp,"        push    rcx\n");
             fprintf(fp,"        mov     rdi,_formatRealInput\n");
-            fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",FLOAT_WIDTH);
+            fprintf(fp,"        imul    rbx,rbx,%d\n",FLOAT_WIDTH);
+            SUB(RBP,RBX);
+            fprintf(fp,"        lea     rsi, [rbp]\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        push    rbp\n");
@@ -444,7 +450,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        push    rbx\n");
                     fprintf(fp,"        push    r8\n");
                     fprintf(fp,"        mov    rdi, _formatIntOutput\n");
-                    fprintf(fp,"        mov    rsi,qword [r8-rax*%d]\n",INT_WIDTH);    //Change????
+                    fprintf(fp,"        imul    rax,rax,%d\n",INT_WIDTH);
+                    SUB(R8,RAX);
+                    fprintf(fp,"        mov    rsi,qword [r8]\n");    //Change????
                     fprintf(fp,"        mov    rax,0\n");
                     fprintf(fp,"        call    printf\n");
                     fprintf(fp,"        pop    r8\n");
@@ -471,7 +479,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        push    rbx\n");
                     fprintf(fp,"        push    r8\n");
                     fprintf(fp,"        mov    rdi, _formatRealOutput\n");
-                    fprintf(fp,"        movsd    xmm0,qword [r8-rax*%d]\n",FLOAT_WIDTH);    
+                    fprintf(fp,"        imul    rax,rax,%d\n",FLOAT_WIDTH);
+                    SUB(R8,RAX);
+                    fprintf(fp,"        movsd    xmm0,qword [r8]\n");    
                     fprintf(fp,"        mov    rax,1\n");
                     fprintf(fp,"        push    rbp\n");
                     fprintf(fp,"        mov     rbp,rsp\n");
@@ -501,7 +511,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        cmp    rcx,%d\n",root->node.idNode.index->node.numNode.num);
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        mov   rax,qword [r8-rsi*%d]\n",BOOLEAN_WIDTH);
+                    fprintf(fp,"        imul    rsi,rsi,%d\n",BOOLEAN_WIDTH);
+                    SUB(R8,RSI);
+                    fprintf(fp,"        mov   rax,qword [r8]\n");
                     int label,label2;
                     label=createLabel();
                     label2=createLabel();
@@ -526,7 +538,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatIntOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        mov   rsi,qword [r8-rsi*%d]\n",INT_WIDTH);
+                    fprintf(fp,"        imul    rsi,rsi,%d\n",INT_WIDTH);
+                    SUB(R8,RSI);
+                    fprintf(fp,"        mov   rsi,qword [r8]\n");
                     fprintf(fp,"        mov    rax,0\n");
                     fprintf(fp,"        call    printf\n");
                 }else
@@ -541,7 +555,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatRealOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        movsd   xmm0,qword [r8-rsi*%d]\n",FLOAT_WIDTH);
+                    fprintf(fp,"        imul    rsi,rsi,%d\n",FLOAT_WIDTH);
+                    SUB(R8,RSI);
+                    fprintf(fp,"        movsd   xmm0,qword [r8]\n");
                     fprintf(fp,"        mov    rax,1\n");
                     fprintf(fp,"        push    rbp\n");
                     fprintf(fp,"        mov     rbp,rsp\n");
@@ -591,7 +607,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatIntOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        mov   rsi,qword [r8-rsi*%d]\n",INT_WIDTH);
+                    fprintf(fp,"        imul    rsi,rsi,%d\n",INT_WIDTH);
+                    SUB(R8,RSI);
+                    fprintf(fp,"        mov   rsi,qword [r8]\n");
                     fprintf(fp,"        mov    rax,0\n");
                     fprintf(fp,"        call    printf\n");
                 }else{
@@ -605,7 +623,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatRealOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        movsd   xmm0,qword [r8-rsi*%d]\n",FLOAT_WIDTH);
+                    fprintf(fp,"        imul    rsi,rsi,%d\n",FLOAT_WIDTH);
+                    SUB(R8,RSI);
+                    fprintf(fp,"        movsd   xmm0,qword [r8]\n");
                     fprintf(fp,"        mov    rax,1\n");
                     fprintf(fp,"        push    rbp\n");
                     fprintf(fp,"        mov     rbp,rsp\n");
@@ -755,15 +775,19 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                 getValue(RSI,root);
                 switch(root->localTableEntry->type.type){
                     case DT_INTEGER:
-                        fprintf(fp,"        mov    rax,qword [rsi-rax*16]\n");
+                        fprintf(fp,"        imul    rax,rax,16\n");
+                        SUB(RSI,RAX);
+                        fprintf(fp,"        mov    rax,qword [rsi]\n");
                         fprintf(fp,"        mov    qword [_inttmp%d],rax\n",depth);
                         break;
                     case DT_REAL:
-                        fprintf(fp,"        movsd    xmm0,qword [rsi-rax*32]\n");
+                        fprintf(fp,"        imul    rax,rax,16\n");
+                        fprintf(fp,"        movsd    xmm0,qword [rsi]\n");
                         fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
                         break;
                     case DT_BOOLEAN:
-                        fprintf(fp,"        mov    rax,qword [rsi-rax*8]\n");
+                        fprintf(fp,"        imul    rax,rax,16\n");
+                        fprintf(fp,"        mov    rax,qword [rsi]\n");
                         fprintf(fp,"        mov     qword [_booltmp%d],rax\n",depth);
                         break;
                 }            
@@ -1032,15 +1056,21 @@ void generateAssignmentCode(struct ASTNode* root)
         {
             case DT_INTEGER:
                 fprintf(fp,"        mov     rbx,qword [_inttmp0]\n");
-                fprintf(fp,"        mov     [rsi-rax*16],rbx\n");
+                fprintf(fp,"        imul    rax,rax,16\n");
+                SUB(RSI,RAX);
+                fprintf(fp,"        mov     [rsi],rbx\n");
                 break;
             case DT_BOOLEAN:
                 fprintf(fp,"        mov     rbx,qword [_booltmp0]\n");
-                fprintf(fp,"        mov     [rsi-rax*8],rbx\n");
+                fprintf(fp,"        imul    rax,rax,8\n");
+                SUB(RSI,RAX);
+                fprintf(fp,"        mov     [rsi],rbx\n");
                 break;
             case DT_REAL:
                 fprintf(fp,"        movsd   xmm0,qword [_flttmp0]\n");
-                fprintf(fp,"        mov     qword [rsi-rax*32],xmm0\n");
+                fprintf(fp,"        imul    rax,rax,32\n");
+                SUB(RSI,RAX);
+                fprintf(fp,"        mov     qword [rsi],xmm0\n");
                 break;
         }
         return;
