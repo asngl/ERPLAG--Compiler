@@ -8,7 +8,6 @@
 #include "symbolTableDef.h"
 #include "typeChecker.h"
 #include "ASTNodeDef.h"
-#include "codeGeneratorDef.h"
 
 #define MAX_NUM_FLOAT_CONSTANTS 1000
 void assertNodeType(enum NodeType a,enum NodeType b)
@@ -20,6 +19,7 @@ int LABEL_COUNTER;
 int TEMPORARY_COUNTER;
 int NUM_FLOAT_CONSTANTS;
 double floatConstants[MAX_NUM_FLOAT_CONSTANTS];
+FILE *fp;
 void initLabelGenerator()
 {
 	LABEL_COUNTER=0;
@@ -35,8 +35,8 @@ int createFloatConstant(double t)
 	return NUM_FLOAT_CONSTANTS++;
 }
 
-enum Register{RAX,RBX,RCX,RDX,RSI,RDI,R8};
-char* regMap[]={"rax","rbx","rcx","rdx","rsi","rdi","r8"};
+enum Register{RAX,RBX,RCX,RDX,RSI,RDI,RBP,RSP,R8};
+char* regMap[]={"rax","rbx","rcx","rdx","rsi","rdi","rbp","rsp","r8"};
 int ARRAY_POINTER_WIDTH=8;
 int BOOLEAN_WIDTH=8;
 int INT_WIDTH=16;
@@ -44,6 +44,7 @@ int FLOAT_WIDTH=32;
 enum FloatRegister{XMM0,XMM1,XMM2,XMM3};
 char *floatRegMap[]={"xmm0","xmm1","xmm2","xmm3"};
 
+void generateScopeCode(struct ASTNode *root);
 void getFloatValue(enum FloatRegister reg,struct ASTNode *root)
 {
     VariableEntry *varptr=root->localTableEntry;
@@ -154,7 +155,14 @@ void getLow(enum Register reg,struct ASTNode *root)
         else
         {
             ptr=varptr->type.lowPtr;
-            getValue(reg,ptr);
+            if(ptr->isParameter==1)
+            {
+                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset,regMap[reg]);
+            }
+            else
+            {
+                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset,regMap[reg]);
+            }
             fprintf(fp,"       mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
     }
@@ -175,7 +183,14 @@ void getHigh(enum Register reg,struct ASTNode* root)
         else
         {
             ptr=varptr->type.highPtr;
-            getValue(reg,ptr);
+            if(ptr->isParameter==1)
+            {
+                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset,regMap[reg]);
+            }
+            else
+            {
+                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset,regMap[reg]);
+            }
             fprintf(fp,"        mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
     }
@@ -260,7 +275,7 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        push    rbx\n");
             fprintf(fp,"        push    rcx\n");
             fprintf(fp,"        mov     rdi,_formatRealInput\n");
-            fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",REAL_WIDTH);
+            fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",FLOAT_WIDTH);
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        call    scanf\n");
@@ -607,14 +622,14 @@ void generateOutputCode(struct ASTNode *root){
         }
     }
 }
-void generateConditionCode(struct AST * root){ 
+void generateConditionCode(struct ASTNode * root){ 
     VariableEntry *ptr;
     ptr=root->localTableEntry;
     struct ASTNode * cases = root->node.conditionNode.Case;
     int endlabel = createLabel(); 
     if(root->node.conditionNode.presentDefault == 0){ //BOOLEAN 
         while(cases != NULL){   
-            int labe11 = createLabel();
+            int label1 = createLabel();
             int label2 = createLabel();
             fprintf(fp,"        push    rbp\n");
             fprintf(fp,"        push    rax\n");
@@ -635,7 +650,7 @@ void generateConditionCode(struct AST * root){
     else{   //INTEGER
         int defaultlabel =  createLabel();
         while(cases != NULL){   
-            int labe11 = createLabel();
+            int label1 = createLabel();
             int label2 = createLabel();
             fprintf(fp,"        push    rbp\n");
             fprintf(fp,"        push    rax\n");
@@ -652,7 +667,7 @@ void generateConditionCode(struct AST * root){
         }
         
         fprintf(fp,"        _label%d:\n",defaultlabel);
-        generateScopeCode(cases->node.caseNode.default);
+        generateScopeCode(root->node.conditionNode.Default);
         fprintf(fp,"        jump    _label%d\n",endlabel);
     }
     fprintf(fp,"        _label%d:\n",endlabel);
@@ -677,7 +692,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
             fprintf(fp,"        mov qword [_inttmp%d],%d\n",depth,root->node.numNode.num);
             break;
         case RNUM_NODE:
-            int flt1=createFloatConstant(root->node.rnumNode.rnum);
+            flt1=createFloatConstant(root->node.rNumNode.rnum);
             fprintf(fp,"        movsd   xmm0,qword [_flt%d]\n",flt1);
             fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
             break;
@@ -821,7 +836,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jge _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -842,7 +857,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jg _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -863,7 +878,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jle _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -884,7 +899,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jl _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -905,7 +920,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jnz _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -926,7 +941,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"    jz _label%d",label);
                         fprintf(fp,"    mov rcx,1");
-                        fprintff(fp,"    _label%d",label);
+                        fprintf(fp,"    _label%d",label);
                         fprintf(fp,"    mov [_booltmp%d],rcx\n",depth); 
                     }else{
                         fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
@@ -956,7 +971,7 @@ void generateAssignmentCode(struct ASTNode* root)
     {
         if(root->node.assignNode.index==NULL)
         {
-            if(ptr->type.isStatic==0||varptr->type.isStatic==0)
+            if(varptr->type.isStatic==0||varptr2->type.isStatic==0)
             {
                 // Compare low and high for equality
                 getLow(RSI,root);
@@ -1018,14 +1033,14 @@ void generateAssignmentCode(struct ASTNode* root)
     }
 }
 
-void pushReverse(Struct ASTNode *root){
+void pushReverseParameters(struct ASTNode *root){
     if(root==NULL){
         return;
     }
-    pushReverse(root->node.idListNode.next);
+    pushReverseParameters(root->node.idListNode.next);
     VariableEntry *ptr;
     ptr=root->localTableEntry;
-    if(ptr.arrayFlag==1){
+    if(ptr->type.arrayFlag==1){
         getHigh(RAX,root);
         PUSH(RAX);
         PUSH(RAX);
@@ -1062,15 +1077,15 @@ void generateModuleReuseCode(struct ASTNode *root){
     fprintf(fp,"push    rbp\n");
     fprintf(fp,"mov    rbp,rsp\n");
     nodeptr=root->node.moduleReuseNode.optional;
-    pushReverse(nodeptr);
+    pushReverseParameters(nodeptr);
     nodeptr=root->node.moduleReuseNode.idList;
-    pushReverse(nodeptr);
+    pushReverseParameters(nodeptr);
     fprintf(fp,"call %s\n",root->node.moduleReuseNode.id);
     nodeptr=root->node.moduleReuseNode.idList;
     while(nodeptr!=NULL){
         VariableEntry *ptr;
         ptr=nodeptr->localTableEntry;
-        if(ptr.arrayFlag==1){
+        if(ptr->type.arrayFlag==1){
             POP(RAX);
             POP(RAX);
             POP(RAX);
@@ -1101,7 +1116,7 @@ void generateModuleReuseCode(struct ASTNode *root){
     while(nodeptr!=NULL){
         VariableEntry *ptr;
         ptr=nodeptr->localTableEntry;
-        if(ptr.arrayFlag==1){
+        if(ptr->type.arrayFlag==1){
             POP(RAX);
             POP(RAX);
             POP(RAX);
@@ -1181,8 +1196,8 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 break;
             case FOR_NODE:
                 varptr=root->localTableEntry;
-                num1=root->node.forNode.Range->node.rangeNode.Range1->node.numNode.num;
-                num2=root->node.forNode.Range->node.rangeNode.Range2->node.numNode.num;
+                num1=root->node.forNode.range->node.rangeNode.Range1->node.numNode.num;
+                num2=root->node.forNode.range->node.rangeNode.Range2->node.numNode.num;
                 PUSH(RBP);PUSH(RDX);
                 fprintf(fp,"    mov     rcx,%d\n",num1);
                 label1=createLabel();
@@ -1190,7 +1205,7 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 fprintf(fp,"    push    rcx\n");
                 fprintf(fp,"    push    rbx\n");
                 setValue(RCX,root);
-                generateScopeCode(root->node.forNode.stmts);
+                generateScopeCode(root->node.forNode.stmt);
                 fprintf(fp,"    pop     rbx\n");
                 fprintf(fp,"    pop     rcx\n");
                 fprintf(fp,"    inc     rcx\n");
@@ -1211,7 +1226,7 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 fprintf(fp,"    cmp     rax,0\n");
                 fprintf(fp,"    jz      _label%d\n",label2);
                 
-                generateScopeCode(root->node.whileNode.stmts);
+                generateScopeCode(root->node.whileNode.stmt);
                 
                 fprintf(fp,"    jmp     _label%d\n",label1);
                 fprintf(fp,"_label%d:\n",label2);
@@ -1247,7 +1262,7 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 while(currVar!=NULL)
                 {
                     varptr=currVar->localTableEntry;
-                    if(varptr->type.isArrayFlag==1)
+                    if(varptr->type.arrayFlag==1)
                     {
                         if(varptr->type.isStatic==1)
                         {
@@ -1265,7 +1280,7 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                             fprintf(fp,"add     rdx,rcx\n");
                         }
                     }
-                    currVar=currVar->next;
+                    currVar=currVar->node.idListNode.next;
                 }
                 root=root->node.declareNode.next;
                 break;
@@ -1344,46 +1359,46 @@ void generateDataCode()
         fprintf(fp,"        dq %lf\n",floatConstants[i]);
     }
 	fprintf(fp,"_formatIntArray:\n");
-	fprintf(fp,"        db  \"Enter %hd numbers for integer array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"        db  \"Enter %%ld numbers for integer array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanArray:\n");
-	fprintf(fp,"        db  \"Enter %hi numbers for boolean array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"        db  \"Enter %%ld numbers for boolean array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealArray:\n");
-	fprintf(fp,"        db  \"Enter %hi numbers for real array from %hi to %hi \", 10, 0\n");
+	fprintf(fp,"        db  \"Enter %%ld numbers for real array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatIntInput:\n");
-	fprintf(fp,"        db  \"%d\",0\n");
+	fprintf(fp,"        db  \"%%ld\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatIntOutput:\n");
-	fprintf(fp,"        db  \"%d\",10,0\n");
+	fprintf(fp,"        db  \"%%ld\",10,0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanInput:\n");
-	fprintf(fp,"        db  \"%d\",0\n");
+	fprintf(fp,"        db  \"%%ld\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanTrue:\n");
 	fprintf(fp,"        db  \"True\",10,0\n");
-    printf(fp,"_formatBooleanFalse:\n");
+    fprintf(fp,"_formatBooleanFalse:\n");
     fprintf(fp,"        db  \"False\",10,0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealInput:\n");
-	fprintf(fp,"        db  \"%lf\",0\n");
+	fprintf(fp,"        db  \"%%lf\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealOutput:\n");
-	fprintf(fp,"        db  \"%lf\",10,\n");
+	fprintf(fp,"        db  \"%%lf\",10,\n");
 } 
 
 
 void generateModuleCode(struct ASTNode *root)
 {
-	assert(MODULE_NODE,root->tag);
+	assertNodeType(MODULE_NODE,root->tag);
 	int activationRecordSize=root->node.moduleNode.localVariablesSize;
 	//activationRecordSize+=16-(activationRecordSize%16);
 	fprintf(fp,"%s:\n",root->node.moduleNode.moduleName);
 	fprintf(fp,"        push    rbp\n");
 	fprintf(fp,"        mov     rbp,rsp\n");
 	fprintf(fp,"        sub 	rsp,%d\n",8*activationRecordSize);
-	generateScopeCode(root->body);
+	generateScopeCode(root->node.moduleNode.body);
 	fprintf(fp,"        mov     rsp,rbp\n");
 	fprintf(fp,"        pop     rbp\n");
 	fprintf(fp,"	ret\n\n");
@@ -1402,9 +1417,8 @@ void generateProgramCode(struct ASTNode *root,char *filename)
     fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out",filename);
 	printStartingCode();
 
-	Code finalCode=generateModuleCode(root->node.programNode.driverModule);
+	generateModuleCode(root->node.programNode.driverModule);
 	
-	Code temp=newEmptyCode();
 
 	ASTptr=root->node.programNode.otherModules1;
 
@@ -1418,11 +1432,12 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 
 	while(ASTptr!=NULL)
 	{
-		generateModuleCode(lg,ASTptr);
+		generateModuleCode(ASTptr);
 		ASTptr=ASTptr->node.moduleNode.next;
 	}
 	generateErrorHandlingCode();
 	generateDataCode();
+    fclose(fp);
 	return;
 }
 #endif

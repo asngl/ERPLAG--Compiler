@@ -9,6 +9,7 @@
 #include "astGenerator.h"
 #include "symbolTable.h"
 #include "typeChecker.h"
+#include "codeGenerator.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
 				break;
 			case 8:
 				start_time = clock();
-			    	root=parseInputSourceCode(argv[1]);
+			    root=parseInputSourceCode(argv[1]);
 				AST_root=createAST(root);
 				mainTable=populateSymbolTable(AST_root);
 				end_time = clock();
@@ -93,7 +94,9 @@ int main(int argc, char *argv[])
 			    printf("Total CPU time = %F\n",total_CPU_time);
 				printf("Total CPU time in seconds = %F\n", total_CPU_time_in_seconds);
 				break;
-
+			case 9:
+				generateProgramCode(AST_root,argv[2]);
+				printf("Code generated.\n");
 			default:
 				break;
 		}
