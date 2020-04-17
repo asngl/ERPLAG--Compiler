@@ -27,6 +27,7 @@ struct ModuleNode{
 	struct ASTNode *next;
 	struct ASTNode *ret;
 	struct ASTNode *body;
+	int localVariablesSize;
 	int startLine;
 	int endLine;
 };
@@ -113,11 +114,14 @@ struct WhileNode{
 struct UnaryNode{
 	enum Operator op;
 	struct ASTNode *expr;
+	enum Datatype type;
 };
 struct BinaryNode{
 	enum Operator op;
 	struct ASTNode *expr1;
 	struct ASTNode *expr2;
+	enum Datatype type;
+	enum Datatype childType;
 };
 
 union untaggedASTNode{

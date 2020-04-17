@@ -962,6 +962,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
 		ptr->activationRecordSize = ptr->localTable->size;
+		root->node.moduleNode.localVariablesSize= ptr->localTable->size;
 		return ptr;
 	}
 	else{

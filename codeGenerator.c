@@ -440,9 +440,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     fprintf(fp,"        mov    rsi,%d\n",root->node.idNode.index->node.numNode.num);
                     fprintf(fp,"        cmp    rdx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        mov   rax,qword [r8-rsi*%d]\n",BOOLEAN_WIDTH);
                     int label,label2;
@@ -464,9 +464,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     fprintf(fp,"        mov    rsi,%d\n",root->node.idNode.index->node.numNode.num);
                     fprintf(fp,"        cmp    rdx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatIntOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        mov   rsi,qword [r8-rsi*%d]\n",INT_WIDTH);
@@ -479,9 +479,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     fprintf(fp,"        mov    rsi,%d\n",root->node.idNode.index->node.numNode.num);
                     fprintf(fp,"        cmp    rdx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,%d\n",root->node.idNode.index->node.numNode.num);
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatRealOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        movsd   xmm0,qword [r8-rsi*%d]\n",FLOAT_WIDTH);
@@ -504,9 +504,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     getValue(RSI,root->node.idNode.index);
                     fprintf(fp,"        cmp    rdx,rsi\n");
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,rsi\n");
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        mov   rax,qword [r8-rsi*%d]\n",BOOLEAN_WIDTH);
                     int label,label2;
@@ -529,9 +529,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     getValue(RSI,root->node.idNode.index);
                     fprintf(fp,"        cmp    rdx,rsi\n");
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,rsi\n");
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatIntOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        mov   rsi,qword [r8-rsi*%d]\n",INT_WIDTH);
@@ -543,9 +543,9 @@ void generateOutputCode(struct ASTNode *root){
                     getValue(R8,root);
                     getValue(RSI,root->node.idNode.index);
                     fprintf(fp,"        cmp    rdx,rsi\n");
-                    fprintf(fp,"        jg    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jg    _indexerrorlabel_\n");
                     fprintf(fp,"        cmp    rcx,rsi\n");
-                    fprintf(fp,"        jl    _arrayerrorlabel_\n");
+                    fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        mov    rdi, _formatRealOutput\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
                     fprintf(fp,"        movsd   xmm0,qword [r8-rsi*%d]\n",FLOAT_WIDTH);
@@ -1290,8 +1290,8 @@ void printStartingCode()
 }
 void  generateErrorHandlingCode()
 {
-	fprintf(fp,"_arrayerrorlabel_:\n");
-	fprintf(fp,"        and     rsp,0xfffffff0\n");
+	fprintf(fp,"_indexerrorlabel_:\n");
+	fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
 	fprintf(fp,"        mov     rdi,_errorString\n");
 	fprintf(fp,"        mov     rax,0\n");
 	fprintf(fp,"        call    printf\n");
@@ -1299,18 +1299,38 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"        ret\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_errorString:\n");
-	fprintf(fp,"        db  \"Array Index Out of Bounds \"\n");
-	fprintf(fp,"_errorArray:\n");
-	fprintf(fp,"        db  \"                    \",10\n");
-	fprintf(fp,"_errorString2:\n");
-	fprintf(fp,"        db  \" Index %d was out of bounds %d and %d\",10,0\n");
+	fprintf(fp,"        db  \"Array Index Out of Bounds \",10\n");
 	fprintf(fp,"\n");
+    fprintf(fp,"_boundserrorlabel_:\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        mov     rdi,_errorString2\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rax,1\n");
+    fprintf(fp,"        ret\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"_errorString2:\n");
+    fprintf(fp,"        db  \"Array Bounds do not match in assignment statement.\",10\n");
+    fprintf(fp,"\n");
 }
 void generateDataCode()
 {
 	fprintf(fp,"	SECTION .data\n");
-	// printTemporaries
+	for(int i=0;i<TEMPORARY_COUNTER;i++)
+    {
+        fprintf(fp,"_booltmp%d:\n",i);
+        fprintf(fp,"        dq 0\n");
+        fprintf(fp,"_inttmp%d:\n",i);
+        fprintf(fp,"        dq 0\n");
+        fprintf(fp,"_flttmp%d:\n",i);
+        fprintf(fp,"        dq 0.0\n");
+    }
 	// printFloatConstants of type _flt0,_flt1, till NUM_FLOAT_CONSTANTS-1 with _flt<i>: dq floatConstants[i]
+    for(int i=0;i<NUM_FLOAT_CONSTANTS;i++)
+    {
+        fprintf(fp,"_flt%d:\n",i);
+        fprintf(fp,"        dq %lf\n",floatConstants[i]);
+    }
 	fprintf(fp,"_formatIntArray:\n");
 	fprintf(fp,"        db  \"Enter %hd numbers for integer array from %hi to %hi \", 10, 0\n");
 	fprintf(fp,"\n");
@@ -1329,8 +1349,10 @@ void generateDataCode()
 	fprintf(fp,"_formatBooleanInput:\n");
 	fprintf(fp,"        db  \"%d\",0\n");
 	fprintf(fp,"\n");
-	fprintf(fp,"_formatBooleanOutput:\n");
-	fprintf(fp,"        db  \"%s\",10,0\n");
+	fprintf(fp,"_formatBooleanTrue:\n");
+	fprintf(fp,"        db  \"True\",10,0\n");
+    printf(fp,"_formatBooleanFalse:\n");
+    fprintf(fp,"        db  \"False\",10,0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealInput:\n");
 	fprintf(fp,"        db  \"%lf\",0\n");
@@ -1343,7 +1365,7 @@ void generateDataCode()
 void generateModuleCode(struct ASTNode *root)
 {
 	assert(MODULE_NODE,root->tag);
-	//int activationRecordSize=?;
+	int activationRecordSize=root->node.moduleNode.localVariablesSize;
 	//activationRecordSize+=16-(activationRecordSize%16);
 	fprintf(fp,"%s:\n",root->node.moduleNode.moduleName);
 	fprintf(fp,"        push    rbp\n");
@@ -1365,6 +1387,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	initLabelGenerator();
 	TEMPORARY_COUNTER=0;
 	createFloatConstant(-1);
+    fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out");
 	printStartingCode();
 
 	Code finalCode=generateModuleCode(root->node.programNode.driverModule);
