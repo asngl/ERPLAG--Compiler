@@ -50,11 +50,11 @@ void getFloatValue(enum FloatRegister reg,struct ASTNode *root)
     VariableEntry *varptr=root->localTableEntry;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        movsd     %s,qword [rbp+16+%d]\n",floatRegMap[reg],varptr->offset);
+        fprintf(fp,"        movsd     %s,qword [rbp+16+%d]\n",floatRegMap[reg],varptr->offset*8);
     }
     else
     {
-        fprintf(fp,"        movsd     %s,qword [rbp-8-%d]\n",floatRegMap[reg],varptr->offset);
+        fprintf(fp,"        movsd     %s,qword [rbp-8-%d]\n",floatRegMap[reg],varptr->offset*8);
     }
 }
 
@@ -63,11 +63,11 @@ void setFloatValue(enum FloatRegister reg,struct ASTNode *root)
     VariableEntry *varptr=root->localTableEntry;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        movsd     qword [rbp+16+%d],%s\n",varptr->offset,floatRegMap[reg]);
+        fprintf(fp,"        movsd     qword [rbp+16+%d],%s\n",varptr->offset*8,floatRegMap[reg]);
     }
     else
     {
-        fprintf(fp,"        movsd     qword [rbp-8-%d],%s\n",varptr->offset,floatRegMap[reg]);
+        fprintf(fp,"        movsd     qword [rbp-8-%d],%s\n",varptr->offset*8,floatRegMap[reg]);
     }
 }
 
@@ -93,11 +93,11 @@ void getValue(enum Register reg,struct ASTNode *root)
     VariableEntry *varptr=root->localTableEntry;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
+        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset*8);
     }
     else
     {
-        fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
+        fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset*8);
     }
 }
 void getIndex(enum Register reg,struct ASTNode *root)
@@ -119,11 +119,11 @@ void setValue(enum Register reg,struct ASTNode *root)
     VariableEntry *varptr=root->localTableEntry;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",varptr->offset,regMap[reg]);
+        fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",varptr->offset*8,regMap[reg]);
     }
     else
     {
-        fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",varptr->offset,regMap[reg]);
+        fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",varptr->offset*8,regMap[reg]);
     }
 }
 void getAddress(enum Register reg,struct ASTNode *root)
@@ -132,11 +132,11 @@ void getAddress(enum Register reg,struct ASTNode *root)
     VariableEntry *varptr=root->localTableEntry;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        lea     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset);
+        fprintf(fp,"        lea     %s,[rbp+16+%d]\n",regMap[reg],varptr->offset*8);
     }
     else
     {
-        fprintf(fp,"        lea     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset);
+        fprintf(fp,"        lea     %s,[rbp-8-%d]\n",regMap[reg],varptr->offset*8);
     }
 }
 void getLow(enum Register reg,struct ASTNode *root)
@@ -146,7 +146,7 @@ void getLow(enum Register reg,struct ASTNode *root)
     VariableEntry *ptr;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"       mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH);
+        fprintf(fp,"       mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset*8+ARRAY_POINTER_WIDTH);
     }
     else
     {
@@ -157,11 +157,11 @@ void getLow(enum Register reg,struct ASTNode *root)
             ptr=varptr->type.lowPtr;
             if(ptr->isParameter==1)
             {
-                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset,regMap[reg]);
+                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset*8,regMap[reg]);
             }
             else
             {
-                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset,regMap[reg]);
+                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset*8,regMap[reg]);
             }
             fprintf(fp,"       mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
@@ -174,7 +174,7 @@ void getHigh(enum Register reg,struct ASTNode* root)
     VariableEntry *ptr;
     if(varptr->isParameter==1)
     {
-        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset+ARRAY_POINTER_WIDTH+2*INT_WIDTH);
+        fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],varptr->offset*8+ARRAY_POINTER_WIDTH+INT_WIDTH);
     }
     else
     {
@@ -185,11 +185,11 @@ void getHigh(enum Register reg,struct ASTNode* root)
             ptr=varptr->type.highPtr;
             if(ptr->isParameter==1)
             {
-                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset,regMap[reg]);
+                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset*8,regMap[reg]);
             }
             else
             {
-                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset,regMap[reg]);
+                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset*8,regMap[reg]);
             }
             fprintf(fp,"        mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
@@ -228,7 +228,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",BOOLEAN_WIDTH);
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
             fprintf(fp,"        pop     rcx\n");
             fprintf(fp,"        pop     rbx\n");
             fprintf(fp,"        pop     rbp\n");
@@ -253,7 +258,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",INT_WIDTH);
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
             fprintf(fp,"        pop     rcx\n");
             fprintf(fp,"        pop     rbx\n");
             fprintf(fp,"        pop     rbp\n");
@@ -278,7 +288,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        lea     rsi,qword [rbp-rbx*%d]\n",FLOAT_WIDTH);
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
             fprintf(fp,"        pop     rcx\n");
             fprintf(fp,"        pop     rbx\n");
             fprintf(fp,"        pop     rbp\n");
@@ -299,7 +314,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        mov     rdi,_formatBooleanInput\n");
             getAddress(RSI,root);
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
 
         }
         else if(ptr->type.type == DT_INTEGER)
@@ -311,7 +331,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        mov     rdi,_formatIntInput\n");
             getAddress(RSI,root);
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
         }
         else
         {
@@ -322,7 +347,12 @@ void generateInputCode(struct ASTNode *root)
             fprintf(fp,"        mov     rdi,_formatRealInput\n");
             getAddress(RSI,root);
             fprintf(fp,"        mov     rax,0\n");
+            fprintf(fp,"        push    rbp\n");
+            fprintf(fp,"        mov     rbp,rsp\n");
+            fprintf(fp,"        and     rsp,0xFFFFFFFFFFFFFFF0\n");
             fprintf(fp,"        call    scanf\n");
+            fprintf(fp,"        mov     rsp,rbp\n");
+            fprintf(fp,"        pop     rbp\n");
         }
     }
 }
@@ -745,7 +775,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
             {
                 fprintf(fp,"        mov     rax,-1\n");
                 fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+1);
-                fprintf(fp,"        mul     rax,rbx\n");
+                fprintf(fp,"        mul     rbx\n");
                 fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);
             }
             else
@@ -1286,21 +1316,22 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 break;
             default:break;
         }
+        fprintf(fp,"\n");
     }
-    fprintf(fp, "       add    rsp,rdx\n");
-    fprintf(fp, "       pop    rdx\n");
+    fprintf(fp,"        add     rsp,rdx\n");
+    fprintf(fp,"        pop     rdx\n");
     return;
 }
 void printStartingCode()
 {
-	fprintf(fp,"global  main ;nasm -felf64 sample.asm && gcc -no-pie sample.o && ./a.out\n");
+	fprintf(fp,"        global  main\n");
 	fprintf(fp,"        extern  printf\n");
 	fprintf(fp,"        extern  scanf\n");
 	fprintf(fp,"        SECTION .text\n");
 	fprintf(fp,"main:\n");
 	fprintf(fp,"        push    rbp\n");
 	fprintf(fp,"        mov     rbp,rsp\n");
-	fprintf(fp,"        and     rsp,0xfffffff0\n");
+	fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"        ;PUSH PARAMETERS NOW\n");
 	fprintf(fp,"\n");
@@ -1326,7 +1357,7 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"        ret\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_errorString:\n");
-	fprintf(fp,"        db  \"Array Index Out of Bounds \",10\n");
+	fprintf(fp,"        db  \"Array Index Out of Bounds \",10,0\n");
 	fprintf(fp,"\n");
     fprintf(fp,"_boundserrorlabel_:\n");
     fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
@@ -1337,13 +1368,72 @@ void  generateErrorHandlingCode()
     fprintf(fp,"        ret\n");
     fprintf(fp,"\n");
     fprintf(fp,"_errorString2:\n");
-    fprintf(fp,"        db  \"Array Bounds do not match in assignment statement.\",10\n");
+    fprintf(fp,"        db  \"Array Bounds do not match in assignment statement.\",10,0\n");
     fprintf(fp,"\n");
+}
+void generateDebuggerCode()
+{
+    fprintf(fp,"_debugger:; use as call _debugger\n");
+    fprintf(fp,"        push    rax\n");
+    fprintf(fp,"        push    rbx\n");
+    fprintf(fp,"        push    rcx\n");
+    fprintf(fp,"        push    rdx\n");
+    fprintf(fp,"        push    rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        mov     rdi,_debugOutput1\n");
+    fprintf(fp,"        mov     rsi,rax\n");
+    fprintf(fp,"        mov     r8,rdx\n");
+    fprintf(fp,"        mov     rdx,rbx\n");
+    fprintf(fp,"        mov     r10,rcx\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        mov     rbp,rsp\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        pop     rbp\n");
+    fprintf(fp,"        pop     rdx\n");
+    fprintf(fp,"        pop     rcx\n");
+    fprintf(fp,"        pop     rbx\n");
+    fprintf(fp,"        pop     rax\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        mov     rsi,rsp\n");
+    fprintf(fp,"        add     rsi,8\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        push    rax\n");
+    fprintf(fp,"        push    rbx\n");
+    fprintf(fp,"        push    rcx\n");
+    fprintf(fp,"        push    rdx\n");
+    fprintf(fp,"        push    rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        mov     rdx,rbp\n");
+    fprintf(fp,"        mov     rdi,_debugOutput2\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        mov     rbp,rsp\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        pop     rbp\n");
+    fprintf(fp,"        pop     rdx\n");
+    fprintf(fp,"        pop     rcx\n");
+    fprintf(fp,"        pop     rbx\n");
+    fprintf(fp,"        pop     rax\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        ret\n");
+    fprintf(fp,"_debugOutput1:\n");
+    fprintf(fp,"        db  10,\"rabcdx= %%ld : %%ld : %%ld : %%ld \",10,0\n");
+    fprintf(fp,"_debugOutput2:\n");
+    fprintf(fp,"        db  \"rsp= %%ld , rbp = %%ld \",10,0\n");
+
 }
 void generateDataCode()
 {
 	fprintf(fp,"	SECTION .data\n");
-	for(int i=0;i<TEMPORARY_COUNTER;i++)
+	for(int i=0;i<=TEMPORARY_COUNTER;i++)
     {
         fprintf(fp,"_booltmp%d:\n",i);
         fprintf(fp,"        dq 0\n");
@@ -1367,6 +1457,15 @@ void generateDataCode()
 	fprintf(fp,"_formatRealArray:\n");
 	fprintf(fp,"        db  \"Enter %%ld numbers for real array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
+    fprintf(fp,"_formatIntSingle:\n");
+    fprintf(fp,"        db  \"Enter an integer value\", 10, 0\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"_formatBooleanSingle:\n");
+    fprintf(fp,"        db  \"Enter a boolean value\", 10, 0\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"_formatRealSingle:\n");
+    fprintf(fp,"        db  \"Enter a real value\", 10, 0\n");
+    fprintf(fp,"\n");
 	fprintf(fp,"_formatIntInput:\n");
 	fprintf(fp,"        db  \"%%ld\",0\n");
 	fprintf(fp,"\n");
@@ -1385,7 +1484,7 @@ void generateDataCode()
 	fprintf(fp,"        db  \"%%lf\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealOutput:\n");
-	fprintf(fp,"        db  \"%%lf\",10,\n");
+	fprintf(fp,"        db  \"%%lf\",10,0\n");
 } 
 
 
@@ -1436,6 +1535,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 		ASTptr=ASTptr->node.moduleNode.next;
 	}
 	generateErrorHandlingCode();
+    generateDebuggerCode();
 	generateDataCode();
     fclose(fp);
 	return;

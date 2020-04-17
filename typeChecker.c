@@ -57,6 +57,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			return type;
 		case ID_NODE:
 			varptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
+            root->localTableEntry=varptr;
 			if(varptr==NULL)
 			{
 				type.type=DT_ERROR;
