@@ -73,19 +73,19 @@ void setFloatValue(enum FloatRegister reg,struct ASTNode *root)
 
 void PUSH(enum Register reg)
 {
-    fprintf(fp,"        push %s\n",regMap[reg]);
+    fprintf(fp,"        push    %s\n",regMap[reg]);
 }
 void POP(enum Register reg)
 {
-    fprintf(fp,"        pop %s\n",regMap[reg]);
+    fprintf(fp,"        pop     %s\n",regMap[reg]);
 }
 void CMP(enum Register reg1,enum Register reg2)
 {
-    fprintf(fp,"        cmp %s,%s\n",regMap[reg1],regMap[reg2]);
+    fprintf(fp,"        cmp     %s,%s\n",regMap[reg1],regMap[reg2]);
 }
 void SUB(enum Register reg1,enum Register reg2)
 {
-    fprintf(fp,"        sub %s,%s\n",regMap[reg1],regMap[reg2]);
+    fprintf(fp,"        sub     %s,%s\n",regMap[reg1],regMap[reg2]);
 }
 void getValue(enum Register reg,struct ASTNode *root)
 {
@@ -686,15 +686,15 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
     switch(root->tag)
     {
         case BOOL_NODE:
-            fprintf(fp,"        mov qword [_booltmp%d],%d\n",depth,root->node.boolNode.value);
+            fprintf(fp,"        mov     qword [_booltmp%d],%d\n",depth,root->node.boolNode.value);
             break;
         case NUM_NODE:
-            fprintf(fp,"        mov qword [_inttmp%d],%d\n",depth,root->node.numNode.num);
+            fprintf(fp,"        mov     qword [_inttmp%d],%d\n",depth,root->node.numNode.num);
             break;
         case RNUM_NODE:
             flt1=createFloatConstant(root->node.rNumNode.rnum);
             fprintf(fp,"        movsd   xmm0,qword [_flt%d]\n",flt1);
-            fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+            fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
             break;
         case ID_NODE:
             if(root->node.idNode.index==NULL){
@@ -702,15 +702,15 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                 {
                     case DT_INTEGER:
                         getValue(RAX,root);
-                        fprintf(fp,"        mov qword [_inttmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     qword [_inttmp%d],rax\n",depth);
                         break;
                     case DT_REAL:
                         getFloatValue(XMM0,root);
-                        fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                        fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
                         break;
                     case DT_BOOLEAN:
                         getValue(RAX,root);
-                        fprintf(fp,"        mov qword [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     qword [_booltmp%d],rax\n",depth);
                         break;
                 }
             }else{
@@ -734,7 +734,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         break;
                     case DT_BOOLEAN:
                         fprintf(fp,"        mov    rax,qword [rsi-rax*8]\n");
-                        fprintf(fp,"        mov qword [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     qword [_booltmp%d],rax\n",depth);
                         break;
                 }            
             }
@@ -743,17 +743,17 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
             generateExpressionCode(depth+1,root->node.unaryNode.expr);
             if(root->node.unaryNode.type==DT_INTEGER)
             {
-                fprintf(fp,"        mov rax,-1\n");
-                fprintf(fp,"        mov rbx,qword [_inttmp%d]\n",depth+1);
-                fprintf(fp,"        mul rax,rbx\n");
-                fprintf(fp,"        mov [_inttmp%d],rax\n",depth);
+                fprintf(fp,"        mov     rax,-1\n");
+                fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+1);
+                fprintf(fp,"        mul     rax,rbx\n");
+                fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);
             }
             else
             {
-                fprintf(fp,"        movsd xmm0,qword [_flt0]\n");
-                fprintf(fp,"        movsd xmm1,qword [_flttmp%d]\n",depth+1);
-                fprintf(fp,"        mulsd xmm0,xmm1\n");
-                fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                fprintf(fp,"        movsd   xmm0,qword [_flt0]\n");
+                fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+1);
+                fprintf(fp,"        mulsd   xmm0,xmm1\n");
+                fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
             }
             break;
         case BINARY_NODE:
@@ -763,194 +763,194 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
             {
                 case OP_PLUS: 
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"        mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"        mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"        add rax,rbx\n");
-                        fprintf(fp,"        mov [_inttmp%d],rax\n",depth);                        
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        add     rax,rbx\n");
+                        fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);                        
                         
                     }else{
-                        fprintf(fp,"        movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"        movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"        addsd xmm0,xmm1\n");
-                        fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        addsd   xmm0,xmm1\n");
+                        fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
                     }
                     break;
                 case OP_MINUS:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"        mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"        mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"        sub rax,rbx\n");
-                        fprintf(fp,"        mov [_inttmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        sub     rax,rbx\n");
+                        fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);
                     }else{
-                        fprintf(fp,"        movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"        movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"        subsd xmm0,xmm1\n");
-                        fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        subsd   xmm0,xmm1\n");
+                        fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
                     }
                     break; 
                 case OP_MUL:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"        mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"        mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"        mul rbx\n");
-                        fprintf(fp,"        mov [_inttmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);
                     }else{
-                        fprintf(fp,"        movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"        movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"        mulsd xmm0,xmm1\n");
-                        fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        mulsd   xmm0,xmm1\n");
+                        fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
                     }
                     break; 
                 case OP_DIV:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"        mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"        mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"        mov rdx,0\n");
-                        fprintf(fp,"        div rbx\n");
-                        fprintf(fp,"        mov [_inttmp%d],rax\n",depth);
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rdx,0\n");
+                        fprintf(fp,"        div     rbx\n");
+                        fprintf(fp,"        mov     [_inttmp%d],rax\n",depth);
                     }else{
-                        fprintf(fp,"        movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"        movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"        divsd xmm0,xmm1\n");
-                        fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        divsd   xmm0,xmm1\n");
+                        fprintf(fp,"        movsd   qword [_flttmp%d],xmm0\n",depth);
                     }
                     break;
                 case OP_AND:
-                    fprintf(fp,"    mov rax,qword [_booltmp%d]\n",depth+1);
-                    fprintf(fp,"    mov rbx,qword [_booltmp%d]\n",depth+2);
-                    fprintf(fp,"    and rax,rbx\n");
-                    fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                    fprintf(fp,"        mov     rax,qword [_booltmp%d]\n",depth+1);
+                    fprintf(fp,"        mov     rbx,qword [_booltmp%d]\n",depth+2);
+                    fprintf(fp,"        and     rax,rbx\n");
+                    fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     break;
                 case OP_OR:
-                    fprintf(fp,"    mov rax,qword [_booltmp%d]\n",depth+1);
-                    fprintf(fp,"    mov rbx,qword [_booltmp%d]\n",depth+2);
-                    fprintf(fp,"    or rax,rbx\n");
-                    fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                    fprintf(fp,"        mov     rax,qword [_booltmp%d]\n",depth+1);
+                    fprintf(fp,"        mov     rbx,qword [_booltmp%d]\n",depth+2);
+                    fprintf(fp,"        or      rax,rbx\n");
+                    fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     break;
                 case OP_LT:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jge _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                        fprintf(fp,"        jge     _label%d\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmpltsd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmpltsd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;
                 case OP_LE:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jg _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                        fprintf(fp,"        jg      _label%d\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov [_booltmp%d],rcx\n",depth);
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmplesd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmplesd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;
                 case OP_GT:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jle _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                        fprintf(fp,"        jle     _label%d\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmpnlesd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmpnlesd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;
                 case OP_GE:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jl _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                        fprintf(fp,"        jl      _label%d",label);
+                        fprintf(fp,"        mov     rcx,1");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmpnltsd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmpnltsd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;                    
                 case OP_EQ:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                        fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                        fprintf(fp,"        mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jnz _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth);
+                        fprintf(fp,"        jnz     _label%d",label);
+                        fprintf(fp,"        mov     rcx,1");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmpeqsd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmpeqsd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;
                 case OP_NE:
                     if(root->node.binaryNode.childType==DT_INTEGER){
-                       fprintf(fp,"    mov rax,qword [_inttmp%d]\n",depth+1);
-                        fprintf(fp,"    mov rbx,qword [_inttmp%d]\n",depth+2);
-                        fprintf(fp,"    mov rcx,0");
-                        fprintf(fp,"    cmp rax,rbx");
+                       fprintf(fp,"         mov     rax,qword [_inttmp%d]\n",depth+1);
+                        fprintf(fp,"        mov     rbx,qword [_inttmp%d]\n",depth+2);
+                        fprintf(fp,"        mov     rcx,0\n");
+                        fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"    jz _label%d",label);
-                        fprintf(fp,"    mov rcx,1");
-                        fprintf(fp,"    _label%d",label);
-                        fprintf(fp,"    mov [_booltmp%d],rcx\n",depth); 
+                        fprintf(fp,"        jz      _label%d\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth); 
                     }else{
-                        fprintf(fp,"    movsd xmm0,qword [_flttmp%d]\n",depth+1);
-                        fprintf(fp,"    movsd xmm1,qword [_flttmp%d]\n",depth+2);
-                        fprintf(fp,"    cmpnesd xmm0,xmm1\n");
-                        fprintf(fp,"    movq    rax,xmm0\n");
-                        fprintf(fp,"    mov     rbx,-1\n");
-                        fprintf(fp,"    mul     rbx\n");
-                        fprintf(fp,"    mov [_booltmp%d],rax\n",depth);
+                        fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
+                        fprintf(fp,"        movsd   xmm1,qword [_flttmp%d]\n",depth+2);
+                        fprintf(fp,"        cmpnesd xmm0,xmm1\n");
+                        fprintf(fp,"        movq    rax,xmm0\n");
+                        fprintf(fp,"        mov     rbx,-1\n");
+                        fprintf(fp,"        mul     rbx\n");
+                        fprintf(fp,"        mov     [_booltmp%d],rax\n",depth);
                     }
                     break;
                    
@@ -977,11 +977,11 @@ void generateAssignmentCode(struct ASTNode* root)
                 getLow(RSI,root);
                 getLow(RDI,right);
                 CMP(RSI,RDI);
-                fprintf(fp,"    jnz     _boundserrorlabel_\n");
+                fprintf(fp,"        jnz     _boundserrorlabel_\n");
                 getHigh(RSI,root);
                 getHigh(RDI,right);
                 CMP(RSI,RDI);
-                fprintf(fp,"    jnz     _boundserrorlabel_\n");
+                fprintf(fp,"        jnz     _boundserrorlabel_\n");
 
             }
             getValue(RAX,right);
@@ -992,25 +992,25 @@ void generateAssignmentCode(struct ASTNode* root)
         getHigh(RDI,root);
         getIndex(RAX,root->node.assignNode.index);
         CMP(RAX,RSI);
-        fprintf(fp,"    jl      _indexerrorlabel_\n");
+        fprintf(fp,"        jl      _indexerrorlabel_\n");
         CMP(RDI,RAX);
-        fprintf(fp,"    jg      _indexerrorlabel_\n");
+        fprintf(fp,"        jg      _indexerrorlabel_\n");
         SUB(RAX,RSI);
         getValue(RSI,root);
         generateExpressionCode(0,right);
         switch(varptr->type.type)
         {
             case DT_INTEGER:
-                fprintf(fp,"    mov rbx,qword [_inttmp0]\n");
-                fprintf(fp,"    mov [rsi-rax*16],rbx\n");
+                fprintf(fp,"        mov     rbx,qword [_inttmp0]\n");
+                fprintf(fp,"        mov     [rsi-rax*16],rbx\n");
                 break;
             case DT_BOOLEAN:
-                fprintf(fp,"    mov rbx,qword [_booltmp0]\n");
-                fprintf(fp,"    mov [rsi-rax*8],rbx\n");
+                fprintf(fp,"        mov     rbx,qword [_booltmp0]\n");
+                fprintf(fp,"        mov     [rsi-rax*8],rbx\n");
                 break;
             case DT_REAL:
-                fprintf(fp,"    movsd xmm0,qword [_flttmp0]\n");
-                fprintf(fp,"    mov qword [rsi-rax*32],xmm0\n");
+                fprintf(fp,"        movsd   xmm0,qword [_flttmp0]\n");
+                fprintf(fp,"        mov     qword [rsi-rax*32],xmm0\n");
                 break;
         }
         return;
@@ -1019,15 +1019,15 @@ void generateAssignmentCode(struct ASTNode* root)
     switch(varptr->type.type)
     {
         case DT_INTEGER:
-            fprintf(fp,"    mov rbx,qword [_inttmp0]\n");
+            fprintf(fp,"        mov     rbx,qword [_inttmp0]\n");
             setValue(RBX,root);
             break;
         case DT_BOOLEAN:
-            fprintf(fp,"    mov rbx,qword [_booltmp0]\n");
+            fprintf(fp,"        mov     rbx,qword [_booltmp0]\n");
             setValue(RBX,root);
             break;
         case DT_REAL:
-            fprintf(fp,"    movsd xmm0,qword [_flttmp0]\n");
+            fprintf(fp,"        movsd   xmm0,qword [_flttmp0]\n");
             setFloatValue(RBX,root);
             break;
     }
@@ -1074,13 +1074,13 @@ void pushReverseParameters(struct ASTNode *root){
 
 void generateModuleReuseCode(struct ASTNode *root){
     struct ASTNode *nodeptr;
-    fprintf(fp,"push    rbp\n");
-    fprintf(fp,"mov    rbp,rsp\n");
+    fprintf(fp,"        push    rbp\n");
+    fprintf(fp,"        mov    rbp,rsp\n");
     nodeptr=root->node.moduleReuseNode.optional;
     pushReverseParameters(nodeptr);
     nodeptr=root->node.moduleReuseNode.idList;
     pushReverseParameters(nodeptr);
-    fprintf(fp,"call %s\n",root->node.moduleReuseNode.id);
+    fprintf(fp,"        call %s\n",root->node.moduleReuseNode.id);
     nodeptr=root->node.moduleReuseNode.idList;
     while(nodeptr!=NULL){
         VariableEntry *ptr;
@@ -1146,8 +1146,8 @@ void generateModuleReuseCode(struct ASTNode *root){
         
         nodeptr=nodeptr->node.idListNode.next;
     }
-    fprintf(fp,"mov     rsp,rbp\n");
-    fprintf(fp,"pop     rbp\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    fprintf(fp,"        pop     rbp\n");
 }
 
 
@@ -1158,8 +1158,8 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
     int allocatedSpace;
     int label1,label2,label3;
     int num1,num2;
-    fprintf(fp,"    push    rdx\n");
-    fprintf(fp,"    mov     rdx,0\n");
+    fprintf(fp,"        push    rdx\n");
+    fprintf(fp,"        mov     rdx,0\n");
     while(root!=NULL)
     {
         switch(root->tag)
@@ -1199,18 +1199,18 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 num1=root->node.forNode.range->node.rangeNode.Range1->node.numNode.num;
                 num2=root->node.forNode.range->node.rangeNode.Range2->node.numNode.num;
                 PUSH(RBP);PUSH(RDX);
-                fprintf(fp,"    mov     rcx,%d\n",num1);
+                fprintf(fp,"        mov     rcx,%d\n",num1);
                 label1=createLabel();
                 fprintf(fp,"_label%d:\n",label1);
-                fprintf(fp,"    push    rcx\n");
-                fprintf(fp,"    push    rbx\n");
+                fprintf(fp,"        push    rcx\n");
+                fprintf(fp,"        push    rbx\n");
                 setValue(RCX,root);
                 generateScopeCode(root->node.forNode.stmt);
-                fprintf(fp,"    pop     rbx\n");
-                fprintf(fp,"    pop     rcx\n");
-                fprintf(fp,"    inc     rcx\n");
-                fprintf(fp,"    cmp     rcx,%d\n",num2+1);
-                fprintf(fp,"    jnz     _label%d\n",label1);
+                fprintf(fp,"        pop     rbx\n");
+                fprintf(fp,"        pop     rcx\n");
+                fprintf(fp,"        inc     rcx\n");
+                fprintf(fp,"        cmp     rcx,%d\n",num2+1);
+                fprintf(fp,"        jnz     _label%d\n",label1);
                 root=root->node.forNode.next;
                 POP(RDX);POP(RBP);
                 break;
@@ -1222,13 +1222,13 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 
                 generateExpressionCode(0,root->node.whileNode.expr);   // This will generate output of a Expression and store it in rax or xmm0
                 
-                fprintf(fp,"    mov   rax,qword [_booltmp0]\n");
-                fprintf(fp,"    cmp     rax,0\n");
-                fprintf(fp,"    jz      _label%d\n",label2);
+                fprintf(fp,"        mov   rax,qword [_booltmp0]\n");
+                fprintf(fp,"        cmp     rax,0\n");
+                fprintf(fp,"        jz      _label%d\n",label2);
                 
                 generateScopeCode(root->node.whileNode.stmt);
                 
-                fprintf(fp,"    jmp     _label%d\n",label1);
+                fprintf(fp,"        jmp     _label%d\n",label1);
                 fprintf(fp,"_label%d:\n",label2);
                 POP(RDX);POP(RBP);
                 root=root->node.whileNode.next;
@@ -1241,23 +1241,23 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                     getLow(RSI,currVar);
                     getHigh(RDI,currVar);
 
-                    fprintf(fp,"mov     rcx,rdi\n");
-                    fprintf(fp,"sub     rcx,rsi\n");
-                    fprintf(fp,"inc     rcx\n");
+                    fprintf(fp,"        mov     rcx,rdi\n");
+                    fprintf(fp,"        sub     rcx,rsi\n");
+                    fprintf(fp,"        inc     rcx\n");
                     switch(varptr->type.type)
                     {
                         case DT_BOOLEAN:
-                            fprintf(fp,"mov     rax,8\n");
+                            fprintf(fp,"        mov     rax,8\n");
                             break;
                         case DT_INTEGER:
-                            fprintf(fp,"mov     rax,16\n");
+                            fprintf(fp,"        mov     rax,16\n");
                             break;
                         case DT_REAL:
-                            fprintf(fp,"mov     rax,32\n");
+                            fprintf(fp,"        mov     rax,32\n");
                             break;
                     }
-                    fprintf(fp,"mul     rcx\n");
-                    fprintf(fp,"mov     rcx,rax\n");
+                    fprintf(fp,"        mul     rcx\n");
+                    fprintf(fp,"        mov     rcx,rax\n");
                 }
                 while(currVar!=NULL)
                 {
@@ -1267,17 +1267,17 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                         if(varptr->type.isStatic==1)
                         {
                             getAddress(RAX,currVar);
-                            fprintf(fp,"add     rax,%d\n",ARRAY_POINTER_WIDTH);
+                            fprintf(fp,"        add     rax,%d\n",ARRAY_POINTER_WIDTH);
                             setValue(RAX,currVar);
                         }
                         else
                         {
-                            fprintf(fp,"mov     rax,rsp\n");
-                            fprintf(fp,"add     rax,8\n");
+                            fprintf(fp,"        mov     rax,rsp\n");
+                            fprintf(fp,"        add     rax,8\n");
                             setValue(RAX,currVar);
 
-                            fprintf(fp,"sub     rsp,rcx\n");  // ALLOCATING DYNAMIC MEMORY 
-                            fprintf(fp,"add     rdx,rcx\n");
+                            fprintf(fp,"        sub     rsp,rcx\n");  // ALLOCATING DYNAMIC MEMORY 
+                            fprintf(fp,"        add     rdx,rcx\n");
                         }
                     }
                     currVar=currVar->node.idListNode.next;
@@ -1287,8 +1287,8 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
             default:break;
         }
     }
-    fprintf(fp, "add    rsp,rdx\n");
-    fprintf(fp, "pop    rdx\n");
+    fprintf(fp, "       add    rsp,rdx\n");
+    fprintf(fp, "       pop    rdx\n");
     return;
 }
 void printStartingCode()
@@ -1401,7 +1401,7 @@ void generateModuleCode(struct ASTNode *root)
 	generateScopeCode(root->node.moduleNode.body);
 	fprintf(fp,"        mov     rsp,rbp\n");
 	fprintf(fp,"        pop     rbp\n");
-	fprintf(fp,"	ret\n\n");
+	fprintf(fp,"	    ret\n\n");
 	return;
 }
 
@@ -1414,7 +1414,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	initLabelGenerator();
 	TEMPORARY_COUNTER=0;
 	createFloatConstant(-1);
-    fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out",filename);
+    fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out\n",filename);
 	printStartingCode();
 
 	generateModuleCode(root->node.programNode.driverModule);
