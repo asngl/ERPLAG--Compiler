@@ -643,7 +643,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        result->node.rangeNode.Range1->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
 
 	        result->node.rangeNode.Range2=createASTNode(NUM_NODE);
-	        result->node.rangeNode.Range2->node.numNode.num=getNthChild(root,2)->token_info.value.value.num;
+	        result->node.rangeNode.Range2->node.numNode.num=getNthChild(root,3)->token_info.value.value.num;
 	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
     }
