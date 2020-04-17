@@ -1387,7 +1387,7 @@ void generateProgramCode(struct ASTNode *root,char *filename)
 	initLabelGenerator();
 	TEMPORARY_COUNTER=0;
 	createFloatConstant(-1);
-    fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out");
+    fprintf(fp,"        ;nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out",filename);
 	printStartingCode();
 
 	Code finalCode=generateModuleCode(root->node.programNode.driverModule);
