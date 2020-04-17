@@ -1060,7 +1060,9 @@ void generateAssignmentCode(struct ASTNode* root)
         fprintf(fp,"        jl      _indexerrorlabel_\n");
         SUB(RAX,RSI);
         getValue(RSI,root);
+        PUSH(RAX);PUSH(RSI);
         generateExpressionCode(0,right);
+        POP(RSI);POP(RAX);
         switch(varptr->type.type)
         {
             case DT_INTEGER:
