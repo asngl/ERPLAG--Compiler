@@ -781,12 +781,14 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         fprintf(fp,"        mov    qword [_inttmp%d],rax\n",depth);
                         break;
                     case DT_REAL:
-                        fprintf(fp,"        imul    rax,rax,16\n");
+                        fprintf(fp,"        imul    rax,rax,32\n");
+                        SUB(RSI,RAX);
                         fprintf(fp,"        movsd    xmm0,qword [rsi]\n");
                         fprintf(fp,"        movsd qword [_flttmp%d],xmm0\n",depth);
                         break;
                     case DT_BOOLEAN:
-                        fprintf(fp,"        imul    rax,rax,16\n");
+                        fprintf(fp,"        imul    rax,rax,8\n");
+                        SUB(RSI,RAX);
                         fprintf(fp,"        mov    rax,qword [rsi]\n");
                         fprintf(fp,"        mov     qword [_booltmp%d],rax\n",depth);
                         break;
