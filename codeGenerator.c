@@ -212,10 +212,11 @@ void generateInputCode(struct ASTNode *root)
         
         if(ptr->type.type==DT_BOOLEAN)
         {
-            
+            PUSH(RAX);PUSH(RSI);
             fprintf(fp,"        mov     rdi,_formatBooleanArray\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        call    printf\n");
+            POP(RSI);POP(RAX);
             fprintf(fp,"        mov     rbp,rax\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rcx,rsi\n");
@@ -245,9 +246,11 @@ void generateInputCode(struct ASTNode *root)
         }
         else if(ptr->type.type == DT_INTEGER)
         {
+            PUSH(RAX);PUSH(RSI);
             fprintf(fp,"        mov     rdi,_formatIntArray\n");
             fprintf(fp,"        mov     rax,0\n");
             fprintf(fp,"        call    printf\n");
+            POP(RSI);POP(RAX);
             fprintf(fp,"        mov     rbp,rax\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rcx,rsi\n");
@@ -277,9 +280,11 @@ void generateInputCode(struct ASTNode *root)
         }
         else
         {
+            PUSH(RAX);PUSH(RSI);
             fprintf(fp,"        mov     rdi,_formatRealArray\n");
             fprintf(fp,"        mov     rax,0\n");
-            fprintf(fp,"        call    printf\n");
+            POP(RSI);fprintf(fp,"        call    printf\n");
+            POP(RAX);
             fprintf(fp,"        mov     rbp,rax\n");
             fprintf(fp,"        mov     rbx,0\n");
             fprintf(fp,"        mov     rcx,rsi\n");
@@ -363,6 +368,7 @@ void generateInputCode(struct ASTNode *root)
     }
 }
 void generateOutputCode(struct ASTNode *root){
+    fprintf(fp,"        call    _output_\n");
     if(root->tag==BOOL_NODE){
         fprintf(fp,"        mov   rax,%d\n",root->node.boolNode.value);
         int label,label2;
@@ -671,6 +677,7 @@ void generateOutputCode(struct ASTNode *root){
             }
         }
     }
+    fprintf(fp,"        call    _newline_\n");
 }
 void generateConditionCode(struct ASTNode * root){ 
     VariableEntry *ptr;
@@ -770,7 +777,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                 CMP(RAX,RSI);
                 fprintf(fp,"        jl      _indexerrorlabel_\n");
                 CMP(RDI,RAX);
-                fprintf(fp,"        jg      _indexerrorlabel_\n");
+                fprintf(fp,"        jl      _indexerrorlabel_\n");
                 SUB(RAX,RSI);
                 getValue(RSI,root);
                 switch(root->localTableEntry->type.type){
@@ -1050,7 +1057,7 @@ void generateAssignmentCode(struct ASTNode* root)
         CMP(RAX,RSI);
         fprintf(fp,"        jl      _indexerrorlabel_\n");
         CMP(RDI,RAX);
-        fprintf(fp,"        jg      _indexerrorlabel_\n");
+        fprintf(fp,"        jl      _indexerrorlabel_\n");
         SUB(RAX,RSI);
         getValue(RSI,root);
         generateExpressionCode(0,right);
@@ -1380,6 +1387,27 @@ void printStartingCode()
 }
 void  generateErrorHandlingCode()
 {
+    fprintf(fp,"_output_:\n");
+    PUSH(RDI);PUSH(RAX);PUSH(RBP);
+    fprintf(fp,"        mov     rdi,_output\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"        mov     rbp,rsp\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    POP(RBP);POP(RAX);POP(RDI);
+    fprintf(fp,"        ret\n");
+    fprintf(fp,"_newline_:\n");
+    PUSH(RDI);PUSH(RAX);PUSH(RBP);
+    fprintf(fp,"        mov     rdi,_line\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"        mov     rbp,rsp\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    POP(RBP);POP(RAX);POP(RDI);
+    fprintf(fp,"        ret\n");
+
 	fprintf(fp,"_indexerrorlabel_:\n");
 	fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
 	fprintf(fp,"        mov     rdi,_errorString\n");
@@ -1391,6 +1419,7 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"_errorString:\n");
 	fprintf(fp,"        db  \"Array Index Out of Bounds \",10,0\n");
 	fprintf(fp,"\n");
+    
     fprintf(fp,"_boundserrorlabel_:\n");
     fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
     fprintf(fp,"        mov     rdi,_errorString2\n");
@@ -1406,6 +1435,8 @@ void  generateErrorHandlingCode()
 void generateDebuggerCode()
 {
     fprintf(fp,"_debugger:; use as call _debugger\n");
+    fprintf(fp,"                push    rsi\n");
+    fprintf(fp,"                push    rdi\n");
     fprintf(fp,"        push    rax\n");
     fprintf(fp,"        push    rbx\n");
     fprintf(fp,"        push    rcx\n");
@@ -1429,6 +1460,32 @@ void generateDebuggerCode()
     fprintf(fp,"        pop     rcx\n");
     fprintf(fp,"        pop     rbx\n");
     fprintf(fp,"        pop     rax\n");
+    fprintf(fp,"        pop     rdi\n");
+    fprintf(fp,"        pop     rsi\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        push    rsi\n");
+    fprintf(fp,"        push    rdi\n");
+    fprintf(fp,"        push    rax\n");
+    fprintf(fp,"        push    rdx\n");
+    fprintf(fp,"        push    rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        mov     rdx,rdi\n");
+    fprintf(fp,"        mov     rdi,_debugOutput3\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        mov     rbp,rsp\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rsp,rbp\n");
+    fprintf(fp,"        \n");
+    fprintf(fp,"        pop     rbp\n");
+    fprintf(fp,"        pop     rdx\n");
+    fprintf(fp,"        pop     rax\n");
+    fprintf(fp,"        pop     rdi\n");
+    fprintf(fp,"        pop     rsi\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"        push    rsi\n");
+    fprintf(fp,"                push    rdi\n");
     fprintf(fp,"\n");
     fprintf(fp,"        mov     rsi,rsp\n");
     fprintf(fp,"        add     rsi,8\n");
@@ -1455,11 +1512,15 @@ void generateDebuggerCode()
     fprintf(fp,"        pop     rbx\n");
     fprintf(fp,"        pop     rax\n");
     fprintf(fp,"\n");
+    fprintf(fp,"        pop     rdi\n");
+    fprintf(fp,"        pop     rsi\n");
     fprintf(fp,"        ret\n");
     fprintf(fp,"_debugOutput1:\n");
     fprintf(fp,"        db  10,\"rabcdx= %%ld : %%ld : %%ld : %%ld \",10,0\n");
     fprintf(fp,"_debugOutput2:\n");
     fprintf(fp,"        db  \"rsp= %%ld , rbp = %%ld \",10,0\n");
+    fprintf(fp,"_debugOutput3:\n");
+    fprintf(fp,"        db  \"rsi= %%ld , rdi = %%ld \",10,0\n");
 
 }
 void generateDataCode()
@@ -1481,42 +1542,46 @@ void generateDataCode()
         fprintf(fp,"        dq %lf\n",floatConstants[i]);
     }
 	fprintf(fp,"_formatIntArray:\n");
-	fprintf(fp,"        db  \"Enter %%ld numbers for integer array from %%ld to %%ld \", 10, 0\n");
+	fprintf(fp,"        db  \"Input: Enter %%ld numbers for integer array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanArray:\n");
-	fprintf(fp,"        db  \"Enter %%ld numbers for boolean array from %%ld to %%ld \", 10, 0\n");
+	fprintf(fp,"        db  \"Input: Enter %%ld numbers for boolean array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealArray:\n");
-	fprintf(fp,"        db  \"Enter %%ld numbers for real array from %%ld to %%ld \", 10, 0\n");
+	fprintf(fp,"        db  \"Input: Enter %%ld numbers for real array from %%ld to %%ld \", 10, 0\n");
 	fprintf(fp,"\n");
     fprintf(fp,"_formatIntSingle:\n");
-    fprintf(fp,"        db  \"Enter an integer value\", 10, 0\n");
+    fprintf(fp,"        db  \"Input: Enter an integer value\", 10, 0\n");
     fprintf(fp,"\n");
     fprintf(fp,"_formatBooleanSingle:\n");
-    fprintf(fp,"        db  \"Enter a boolean value\", 10, 0\n");
+    fprintf(fp,"        db  \"Input: Enter a boolean value\", 10, 0\n");
     fprintf(fp,"\n");
     fprintf(fp,"_formatRealSingle:\n");
-    fprintf(fp,"        db  \"Enter a real value\", 10, 0\n");
+    fprintf(fp,"        db  \"Input: Enter a real value\", 10, 0\n");
     fprintf(fp,"\n");
 	fprintf(fp,"_formatIntInput:\n");
 	fprintf(fp,"        db  \"%%ld\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatIntOutput:\n");
-	fprintf(fp,"        db  \"%%ld\",10,0\n");
+	fprintf(fp,"        db  \"%%ld \",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanInput:\n");
 	fprintf(fp,"        db  \"%%ld\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatBooleanTrue:\n");
-	fprintf(fp,"        db  \"True\",10,0\n");
+	fprintf(fp,"        db  \"True \",0\n");
     fprintf(fp,"_formatBooleanFalse:\n");
-    fprintf(fp,"        db  \"False\",10,0\n");
+    fprintf(fp,"        db  \"False \",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealInput:\n");
 	fprintf(fp,"        db  \"%%lf\",0\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_formatRealOutput:\n");
-	fprintf(fp,"        db  \"%%lf\",10,0\n");
+	fprintf(fp,"        db  \"%%lf \",0\n");
+    fprintf(fp,"_line:\n");
+    fprintf(fp,"        db 10,0\n");
+    fprintf(fp,"_output:\n");
+    fprintf(fp,"        db \"Output: \",0\n");
 } 
 
 
