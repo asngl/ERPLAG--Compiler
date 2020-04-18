@@ -15,7 +15,7 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
     {
         if(strcmp(ptr->varName,name)==0)
         {
-            printf("Semantic Error on  line %d: Attempt to modify variable %s used in a for loop at line %d\n",lineNumber,name,ptr->lineNumber);
+            printf("Line %d : Attempt to modify variable %s used in a for loop at line %d\n",lineNumber,name,ptr->lineNumber);
             correct=0;
         }
         ptr=ptr->next;
@@ -67,7 +67,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			leftType=varptr->type;
 			if(root->node.idNode.index!=NULL){
 			    if(leftType.arrayFlag==0){
-			        printf("Semantic Error on line %d: Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
+			        printf("Line %d : Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
 			        type.type=DT_ERROR;
 					type.arrayFlag=0;
 					return type;
@@ -76,14 +76,14 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    {
 			        if(leftType.low.bound > root->node.idNode.index->node.numNode.num)
 			        {
-			            printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 				        type.type=DT_ERROR;
 						type.arrayFlag=0;
 						return type;
 			        }
 			        if(leftType.high.bound < root->node.idNode.index->node.numNode.num)
 			        {
-			            printf("Error on line number:%d, index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
 			            type.type=DT_ERROR;
 						type.arrayFlag=0;
 						return type;
@@ -98,15 +98,15 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
                     {
                         if(varptr->type.type!=DT_INTEGER)
                         {
-                            printf("Error on line number %d: Index Variable %s is not of Integer type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                            printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                         }
                         else if(varptr->type.arrayFlag==1)
                         {
-                            printf("Error on line number %d: Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                            printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                         }
                         else if(varptr->initFlag==0)
                         {
-                            printf("Error on line number %d: Index Variable %s not initialised\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                            printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
                         }
                     }
                 }
@@ -126,13 +126,13 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
             root->node.unaryNode.type=type.type;
 			if(type.type==DT_ERROR)return type;
 			if(type.type == DT_BOOLEAN){
-				printf("Error on line number:%d, unary operations cannot be applied on Boolean expressions",root->lineNumber);
+				printf("Line %d : unary operations cannot be applied on Boolean expressions",root->lineNumber);
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
 			}
 			if(type.arrayFlag==1){
-				printf("Error on line number:%d, unary operations cannot be applied on an array",root->lineNumber);
+				printf("Line %d : unary operations cannot be applied on an array",root->lineNumber);
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
@@ -150,7 +150,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			}
 			if(type.arrayFlag==1 || type2.arrayFlag==1 )
 			{
-			    printf("Error on line number:%d, binary operations cannot be applied on an array",root->lineNumber);
+			    printf("Line %d : binary operations cannot be applied on an array",root->lineNumber);
 			    return type;
 			}
 			switch(root->node.binaryNode.op) //enum Operator{OP_PLUS,OP_MINUS,OP_MUL,OP_DIV,OP_AND,OP_OR,OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
@@ -158,14 +158,14 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    case OP_PLUS: case OP_MINUS: case OP_MUL: case OP_DIV:
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
-			            printf("Semantic error on line %d: Cannot perform arithmetic operation on boolean type operands.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform arithmetic operation on boolean type operands.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
 			        }
 			        else if(type.type!=type2.type)
 			        {
-			            printf("Semantic error on line %d: Cannot perform arithmetic operation with one int and one real operand.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform arithmetic operation with one int and one real operand.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -175,7 +175,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    case OP_AND:case OP_OR:
 			        if(type.type!=DT_BOOLEAN || type2.type!=DT_BOOLEAN)
 			        {
-			            printf("Semantic error on line %d: Cannot perform logical operation on non-boolean type operands.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform logical operation on non-boolean type operands.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -185,14 +185,14 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    case OP_LT:case OP_LE:case OP_GT:case OP_GE:
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
-			            printf("Semantic error on line %d: Cannot perform inequality operations on boolean type operands.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform inequality operations on boolean type operands.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
 			        }
 			        else if(type.type!=type2.type)
 			        {
-			            printf("Semantic error on line %d: Cannot perform relational operations with one int and one real operand.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform relational operations with one int and one real operand.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -203,7 +203,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			    case OP_EQ:case OP_NE:
 			        if(type.type!=type2.type)
 			        {
-			            printf("Semantic error on line %d: Cannot perform equality operations with differing datatype operands.\n",root->lineNumber);
+			            printf("Line %d : Cannot perform equality operations with differing datatype operands.\n",root->lineNumber);
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -279,7 +279,7 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
         currVar=currVar->next;
     }
     if(parent->parent==NULL){
-        printf("Error: No declaration of variable:%s used on line number:%d found\n",name,lineNumber);
+        printf("Line %d : Variable %s is not declared\n",lineNumber,name);
         return NULL;
     }
     return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);
@@ -376,16 +376,16 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
                 	continue;
                 }
                 if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
-                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
+                    printf("Line %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
             }
             if(ptr!=NULL){
-                printf("Error on line number:%d, more input variables used in the statement than actual needed\n",root->lineNumber);
+                printf("Line %d : more input variables used in the statement than actual needed\n",root->lineNumber);
             } 
             if(paraptr!=NULL){
-                printf("Error on line number:%d, less input variables used in the statement than actual needed\n",root->lineNumber);
+                printf("Line %d : less input variables used in the statement than actual needed\n",root->lineNumber);
             }      
             ptr = root->node.moduleReuseNode.optional;
             paraptr = funcptr->outputParaList;
@@ -396,16 +396,16 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
                 	continue;
                 }
                 if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
-                    printf("Error on line number:%d , type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
+                    printf("Line number %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
             }
             if(ptr!=NULL){
-                printf("Error on line number:%d, more output variables used in the statement than actual needed\n",root->lineNumber);
+                printf("Line %d : more output variables used in the statement than actual needed\n",root->lineNumber);
             } 
             if(paraptr!=NULL){
-                printf("Error on line number:%d, less output variables used in the statement than actual needed\n",root->lineNumber);
+                printf("Line %d : less output variables used in the statement than actual needed\n",root->lineNumber);
             }
             secondPass(root->node.moduleReuseNode.next,symbolTable,funcName);
             break;
