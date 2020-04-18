@@ -1,0 +1,105 @@
+
+
+<<<driver program>>>
+start
+	declare  m, n :integer;
+	declare s1, s2, s3:integer;
+	get_value(m);
+	get_value(n);
+	declare array_A: array[10..14] of integer;
+	declare array_B: array[m..n] of real;
+	get_value(array_A);
+	get_value(array_B);
+	**[s1, s2, s3]:= use module array_parameter_demo with parameters array_A, array_B;**	
+**formal parameter C of the callee function array_parameter_demo receives the range values from the actual parameter array_B**		
+	print(array_A);
+	print(array_B);
+	
+end
+
+** On the console                                                 Following Notes are for reference and are not supposed be printed on the console
+
+Input: Enter an integer value                                     [Note: Reading values of m and n in driver as 3 and 8 respectively]
+3
+Input: Enter an integer value  
+8
+Input: Enter 5 array elements of integer type for range 10 to 14
+-10
+16
+12
+-8
+4
+Input: Enter 6 array elements of integer type for range 3 to 8
+55
+-17
+12
+105
+-87
+10
+Output: -10 16 12 -8 4
+Output:  55 -17 12 105 -87 10
+Input: Enter an integer value                                     [Note: Reading values of p and q in array_parameter_demo as 3 and 8 respectively]
+3
+Input: Enter an integer value  
+8
+Input: Enter 5 array elements of integer type for range 10 to 14     [reading array A]
+2
+6
+8
+-15
+12
+Input: Enter 6 array elements of integer type for range 3 to 8     [reading array E]
+1
+2
+3
+4
+5
+6
+Output: 2 6 8 -15 12                                              [printing A]
+Output: 2							  [printing values while in for loop of scope 28-32]
+Output: 2
+Output: 6
+Output: 8
+Output: 8
+Output: 16
+Output: -15
+Output: 1 
+Output: 12
+Output: 13
+Output: 2 6 8 -15 12                                              [printing A]
+Output: 13
+Output: 1 2 9 4 5 6                                               [printing E after an element was modified at line 37]
+Output: -10 16 12 -8 4 						  [printing D after D:=B at line 42]
+Output: 10							  [printing values while in for loop of scope 45-49]
+Output: -10
+Output: 16
+Output: 6
+Output: 12
+Output: 18
+Output: -8
+Output: 10
+Output: 4
+Output: 14
+Output: -10 16 12 -8 4 						  [printing D]
+Output: 14
+Output: 55 -17 12 105 -87 10 					  [printing C at line 55 - input formal parameter receiving values of actual parameter array_B]
+
+Input: Enter an integer value                                     [Note: Reading values of index in 4 iterations and computing sum3]
+4
+Output: -17                                                       [sum3 computed as sum3+C[4]]
+Input: Enter an integer value  
+8
+Output: -7                                                       [sum3 computed as sum3+C[8]]
+Input: Enter an integer value                                      
+6
+Output: 98                                                       [sum3 computed as sum3+C[6]]
+Input: Enter an integer value  
+7
+Output: 11                                                      [sum3 computed as sum3+C[7]]
+Output: 11 
+Output: 13							[in driver printing values of return parameters s1, s2, s3]
+Output: 14
+Output: 11
+
+Similarly run the generated assembly code for other input values and verify.
+**

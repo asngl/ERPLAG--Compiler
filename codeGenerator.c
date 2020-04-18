@@ -281,7 +281,8 @@ void generateInputCode(struct ASTNode *root)
             PUSH(RAX);PUSH(RSI);
             fprintf(fp,"        mov     rdi,_formatRealArray\n");
             fprintf(fp,"        mov     rax,0\n");
-            POP(RSI);fprintf(fp,"        call    printf\n");
+            fprintf(fp,"        call    printf\n");
+            POP(RSI);
             POP(RAX);
             fprintf(fp,"        mov     rbp,rax\n");
             fprintf(fp,"        mov     rbx,0\n");
