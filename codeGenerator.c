@@ -1325,13 +1325,13 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                         if(varptr->type.isStatic==1)
                         {
                             getAddress(RAX,currVar);
-                            fprintf(fp,"        add     rax,%d\n",ARRAY_POINTER_WIDTH);
+                            fprintf(fp,"        sub     rax,%d\n",ARRAY_POINTER_WIDTH);
                             setValue(RAX,currVar);
                         }
                         else
                         {
                             fprintf(fp,"        mov     rax,rsp\n");
-                            fprintf(fp,"        add     rax,8\n");
+                            fprintf(fp,"        sub     rax,8\n");
                             setValue(RAX,currVar);
 
                             fprintf(fp,"        sub     rsp,rcx\n");  // ALLOCATING DYNAMIC MEMORY 
