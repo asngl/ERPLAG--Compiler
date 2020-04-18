@@ -157,13 +157,12 @@ void getLow(enum Register reg,struct ASTNode *root)
             ptr=varptr->type.lowPtr;
             if(ptr->isParameter==1)
             {
-                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset*8,regMap[reg]);
+                fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],ptr->offset*8);
             }
             else
             {
-                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset*8,regMap[reg]);
+                fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],ptr->offset*8);
             }
-            fprintf(fp,"       mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
     }
 }
@@ -185,13 +184,12 @@ void getHigh(enum Register reg,struct ASTNode* root)
             ptr=varptr->type.highPtr;
             if(ptr->isParameter==1)
             {
-                fprintf(fp,"        mov     qword [rbp+16+%d], %s\n",ptr->offset*8,regMap[reg]);
+                fprintf(fp,"        mov     %s,qword [rbp+16+%d]\n",regMap[reg],ptr->offset*8);
             }
             else
             {
-                fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",ptr->offset*8,regMap[reg]);
+                fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],ptr->offset*8);
             }
-            fprintf(fp,"        mov     %s,qword [rbp-8-%s]\n",regMap[reg],regMap[reg]);
         }
     }
 }
@@ -683,51 +681,40 @@ void generateConditionCode(struct ASTNode * root){
     VariableEntry *ptr;
     ptr=root->localTableEntry;
     struct ASTNode * cases = root->node.conditionNode.Case;
+    int label;;
     int endlabel = createLabel(); 
     if(root->node.conditionNode.presentDefault == 0){ //BOOLEAN 
+        getValue(RAX,root);
         while(cases != NULL){   
-            int label1 = createLabel();
-            int label2 = createLabel();
-            fprintf(fp,"        push    rbp\n");
-            fprintf(fp,"        push    rax\n");
-            getValue(RAX,root);
+            label = createLabel();
             fprintf(fp,"        cmp    rax,%d\n",cases->node.caseNode.value->node.boolNode.value);
-            fprintf(fp,"        jz    _label%d\n",label1);
-            fprintf(fp,"        pop    rax\n");
-            fprintf(fp,"        pop    rbp\n");
-            fprintf(fp,"        jump    _label%d\n",label2);
-            fprintf(fp,"        _label%d:\n",label1);
+            fprintf(fp,"        jnz    _label%d\n",label);
+            PUSH(RAX);
             generateScopeCode(cases->node.caseNode.stmt);
-            fprintf(fp,"        jump    _label%d\n",endlabel);
-            fprintf(fp,"        _label%d:\n",label2);
+            POP(RAX);
+            fprintf(fp,"        jmp    _label%d\n",endlabel);
+            fprintf(fp,"_label%d:\n",label);
             cases = cases->node.caseNode.next;
         }
     }
     
     else{   //INTEGER
-        int defaultlabel =  createLabel();
+        getValue(RAX,root);
         while(cases != NULL){   
-            int label1 = createLabel();
-            int label2 = createLabel();
-            fprintf(fp,"        push    rbp\n");
-            fprintf(fp,"        push    rax\n");
+            label= createLabel();
             fprintf(fp,"        cmp    rax,%d\n",cases->node.caseNode.value->node.numNode.num);
-            fprintf(fp,"        jz    _label%d\n",label1);
-            fprintf(fp,"        push    rbp\n");
-            fprintf(fp,"        push    rax\n");
-            fprintf(fp,"        jump    _label%d\n",label2);
-            fprintf(fp,"        _label%d:\n",label1);
+            fprintf(fp,"        jnz    _label%d\n",label);
+            PUSH(RAX);
             generateScopeCode(cases->node.caseNode.stmt);
-            fprintf(fp,"        jump    _label%d\n",endlabel);
-            fprintf(fp,"        _label%d:\n",label2);
-            cases = cases->node.caseNode.next;                  
+            POP(RAX);
+            fprintf(fp,"        jmp    _label%d\n",endlabel);
+            fprintf(fp,"_label%d:\n",label);
+            cases = cases->node.caseNode.next;
         }
-        
-        fprintf(fp,"        _label%d:\n",defaultlabel);
+        fprintf(fp,"       ;DEFAULT CASE\n");
         generateScopeCode(root->node.conditionNode.Default);
-        fprintf(fp,"        jump    _label%d\n",endlabel);
     }
-    fprintf(fp,"        _label%d:\n",endlabel);
+    fprintf(fp,"_label%d:\n",endlabel);
 }
 
 
@@ -1416,10 +1403,10 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"        mov     rax,0\n");
 	fprintf(fp,"        call    printf\n");
 	fprintf(fp,"        mov     rax,1\n");
-	fprintf(fp,"        ret\n");
+	fprintf(fp,"        jmp     _exit\n");
 	fprintf(fp,"\n");
 	fprintf(fp,"_errorString:\n");
-	fprintf(fp,"        db  \"Array Index Out of Bounds \",10,0\n");
+	fprintf(fp,"        db  \"RUN TIME ERROR:  Array index out of bound \",10,0\n");
 	fprintf(fp,"\n");
     
     fprintf(fp,"_boundserrorlabel_:\n");
@@ -1428,11 +1415,24 @@ void  generateErrorHandlingCode()
     fprintf(fp,"        mov     rax,0\n");
     fprintf(fp,"        call    printf\n");
     fprintf(fp,"        mov     rax,1\n");
+    fprintf(fp,"        jmp     _exit\n");
     fprintf(fp,"        ret\n");
     fprintf(fp,"\n");
     fprintf(fp,"_errorString2:\n");
     fprintf(fp,"        db  \"Array Bounds do not match in assignment statement.\",10,0\n");
     fprintf(fp,"\n");
+    fprintf(fp,"_exit:\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        mov     rdi,_errorString3\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rax,0x02000001\n");
+    fprintf(fp,"        xor     rdi,rdi\n");
+    fprintf(fp,"        syscall\n");
+    fprintf(fp,"        ret\n");
+    fprintf(fp, "\n" );
+    fprintf(fp,"_errorString3:\n");
+    fprintf(fp,"        db  \"Aborting Execution\",10,0\n");
 }
 void generateDebuggerCode()
 {

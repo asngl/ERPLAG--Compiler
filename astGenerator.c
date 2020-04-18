@@ -599,7 +599,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	        break;
 	    case 94:
 	        result=createASTNode(NUM_NODE);
-	        result->node.numNode.num=atoi(root->token_info.lexeme);
+	        result->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
 	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
 	        break;
 	    case 95:
