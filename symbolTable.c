@@ -954,7 +954,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		{
 			if(varptr->initFlag==0)
 			{
-				printf("Line %d : Output paramter %s of function %s is not assigned any value inside function definition.\n",varptr->lineNumber,varptr->varName,context.funcName);
+				printf("Line %d : Output paramter %s of function %s is not assigned any value inside function definition.\n",ptr->scope.endLine,varptr->varName,context.funcName);
 			}
 			varptr=varptr->next;
 		}

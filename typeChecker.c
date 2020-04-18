@@ -126,13 +126,13 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
             root->node.unaryNode.type=type.type;
 			if(type.type==DT_ERROR)return type;
 			if(type.type == DT_BOOLEAN){
-				printf("Line %d : unary operations cannot be applied on Boolean expressions",root->lineNumber);
+				printf("Line %d : unary operations cannot be applied on Boolean expressions\n",root->lineNumber);
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
 			}
 			if(type.arrayFlag==1){
-				printf("Line %d : unary operations cannot be applied on an array",root->lineNumber);
+				printf("Line %d : unary operations cannot be applied on an array\n",root->lineNumber);
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
@@ -150,7 +150,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			}
 			if(type.arrayFlag==1 || type2.arrayFlag==1 )
 			{
-			    printf("Line %d : binary operations cannot be applied on an array",root->lineNumber);
+			    printf("Line %d : binary operations cannot be applied on an array\n",root->lineNumber);
 			    return type;
 			}
 			switch(root->node.binaryNode.op) //enum Operator{OP_PLUS,OP_MINUS,OP_MUL,OP_DIV,OP_AND,OP_OR,OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
@@ -397,7 +397,7 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             if(funcptr==NULL)
                 return;
             if(funcptr->defineFlag!=1){
-                printf("Error on line number: %d, Function : %s is declared but not defined",root->lineNumber,root->node.moduleReuseNode.id);
+                printf("Error on line number: %d, Function : %s is declared but not defined\n",root->lineNumber,root->node.moduleReuseNode.id);
                 return;
             }
             ptr = root->node.moduleReuseNode.idList;
