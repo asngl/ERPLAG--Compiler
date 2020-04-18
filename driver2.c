@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 	SymbolTable *mainTable;
 	clock_t start_time, end_time;
 	double total_CPU_time, total_CPU_time_in_seconds;
+	int symbolTablePopulated=0;
 	while(flag){
 		printf("Choose option: ");
 		scanf("%d",&input);
@@ -67,22 +68,34 @@ int main(int argc, char *argv[])
 				break;
 			case 5:
 				//populate Symbol Table and print
-				mainTable=populateSymbolTable(AST_root);
+				if(!symbolTablePopulated)
+				{
+					mainTable=populateSymbolTable(AST_root);
+					symbolTablePopulated=1;	
+				}
 				printSymbolTable(mainTable);
 				break;
 			case 6:
 				//Print activation records and their width
-				mainTable=populateSymbolTable(AST_root);
+				if(!symbolTablePopulated)
+				{
+					mainTable=populateSymbolTable(AST_root);
+					symbolTablePopulated=1;	
+				}
 				printRecordWidth(mainTable);	
 				break;
 			case 7:
 				//Print array variables and their info
-				mainTable=populateSymbolTable(AST_root);
+				if(!symbolTablePopulated)
+				{
+					mainTable=populateSymbolTable(AST_root);
+					symbolTablePopulated=1;	
+				}
 				printArrayVariables(mainTable);
 				break;
 			case 8:
 				start_time = clock();
-			    root=parseInputSourceCode(argv[1]);
+			    	root=parseInputSourceCode(argv[1]);
 				AST_root=createAST(root);
 				mainTable=populateSymbolTable(AST_root);
 				end_time = clock();
@@ -90,8 +103,8 @@ int main(int argc, char *argv[])
 			   	total_CPU_time  =  (double) (end_time - start_time);
 			    	total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
 
-			    // Print both total_CPU_time and total_CPU_time_in_seconds 
-			    printf("Total CPU time = %F\n",total_CPU_time);
+			  	// Print both total_CPU_time and total_CPU_time_in_seconds 
+			   	printf("Total CPU time = %F\n",total_CPU_time);
 				printf("Total CPU time in seconds = %F\n", total_CPU_time_in_seconds);
 				break;
 			case 9:

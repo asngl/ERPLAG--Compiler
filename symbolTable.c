@@ -1047,7 +1047,8 @@ void printArrayVar(VariableEntryTable varTable, char *funcName,Scope scope)
 		{
 			if(ptr->type.arrayFlag)
 			{
-				printf("\t%-21s%d-%d\t%-21s%-20s\t",funcName,scope.startLine,scope.endLine,ptr->varName,ptr->type.isStatic?"static array":"dynamic array");
+				char scope_string[25];
+				printf("\t%-21s%-25s%-21s%-20s",funcName,scopeToString(scope_string,scope.startLine,scope.endLine),ptr->varName,ptr->type.isStatic?"static array":"dynamic array");
 				char s[25];
 				s[0]='[';
 				s[1]='\0';
@@ -1107,7 +1108,8 @@ void printArrayPL(ParameterList *list,char *funcName,Scope scope)
 	{
 		if(list->type.arrayFlag)
 		{
-			printf("\t%-21s%d-%d\t%-21s%-20s\t",funcName,scope.startLine,scope.endLine,list->varName,"static array");
+			char scope_string[25];
+			printf("\t%-21s%-25s%-21s%-20s",funcName,scopeToString(scope_string,scope.startLine,scope.endLine),list->varName,"static array");
 			char s[25];
 			char int1[10],int2[10];
 			s[0]='[';
@@ -1136,7 +1138,6 @@ void printArrayPL(ParameterList *list,char *funcName,Scope scope)
 		
 	}
 }
-	
 
 
 void printArrayFT(FunctionTable *table)
@@ -1149,6 +1150,8 @@ void printArrayFT(FunctionTable *table)
 
 void printArrayVariables(SymbolTable *symbolTable)
 {
+	printf("\nPRINTING ARRAY VARIABLES:\n");
+	printf("\t%-21s%-25s%-21s%-20s%-30s%-20s\n","Scope(module_name)","Scope(line_numbers)","Array name","Static/Dynamic","Range","Type");
 	for(int i=0;i<MOD;i++)
 	{
 		FunctionTable* funTable=(*symbolTable)[i].pointer;
@@ -1160,62 +1163,16 @@ void printArrayVariables(SymbolTable *symbolTable)
 	}
 }
 
-int widthVariableEntryTable(VariableEntryTable table)
-{
-	int w=0;
-	VariableEntry *ptr;
-	for(int i=0;i<MOD;i++)
-	{
-		ptr=table[i];
-		while(ptr!=NULL)
-		{
-			w+=ptr->width;
-			ptr=ptr->next;
-		}
-	}
-	return w;
-}
-
-int widthLocalTable(LocalTable *table)
-{
-	int w=widthVariableEntryTable(table->variableTable);
-	table=table->leftChild;
-	while(table!=NULL)
-	{
-		w+=widthLocalTable(table);
-		table=table->rightSibling;
-	}
-	return w;
-}
-
-int widthParameterList(ParameterList *list)
-{
-	int w=0;
-	while(list!=NULL)
-	{
-		w+=list->width;
-		list=list->next;
-	}
-	return w;	
-}
-
-int calculateWidth(FunctionTable *fun)
-{
-	int w=widthParameterList(fun->inputParaList);
-	w+=widthParameterList(fun->outputParaList);
-	w+=widthLocalTable(fun->localTable);
-	return w;
-}
-
 void printRecordWidth(SymbolTable *symbolTable)
 {
+	printf("\nPRINTING ACTIVATION RECORD WIDTHS:\n");
+	printf("\t%-25s%s\n","Activation record","Width");
 	for(int i=0;i<MOD;i++)
 	{
 		FunctionTable *funTable=(*symbolTable)[i].pointer;
 		while(funTable!=NULL)
 		{
-			int w=calculateWidth(funTable);
-			printf("\t%-25s%d\n",funTable->funcName,w);
+			printf("\t%-25s%d\n",funTable->funcName,funTable->activationRecordSize);
 			funTable=funTable->next;
 		}
 	}	
@@ -1336,7 +1293,8 @@ void printFunctionTable(FunctionTable *funTable)
 
 void printSymbolTable(SymbolTable *symbolTable)
 {
-    printf("\n\nPRINTING SYMBOL TABLE:\n");
+    printf("\nPRINTING SYMBOL TABLE:\n");
+    printf("\t%-21s%-21s%-25s%-10s%-10s%-15s%-30s%-20s%-11s%-11s\n", "variable_name","scope(module_name)","scope(line_numbers)","width","isArray", "static/dynamic", "range_lexemes","type_of_element", "offset","nesting_level");
     for(int i=0;i<MOD;i++)
     {
         FunctionTable* funTable=(*symbolTable)[i].pointer;
