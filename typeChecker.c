@@ -218,13 +218,46 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
     return type;
 }
 
+VariableEntry *getVariableEntry(Context context,LocalTable *parent, char name[], int lineNumber){
+    VariableEntry *currVar;
+    currVar=context.outputList;
+    while(currVar!=NULL){
+        //printf("%s",currVar->varName);
+        if(strcmp(currVar->varName,name)==0){
+            return currVar;
+        }
+        currVar=currVar->next;
+    }
+    for(int i=0;i<MOD;i++){
+        currVar=(parent->variableTable)[i];
+        while(currVar!=NULL){
+            if(strcmp(currVar->varName,name)==0){
+                return currVar;
+            }
+            currVar=currVar->next;
+        }
+    }
+    currVar=context.inputList;
+    while(currVar!=NULL){
+        if(strcmp(currVar->varName,name)==0){
+            return currVar;
+        }
+        currVar=currVar->next;
+    }
+    if(parent->parent==NULL){
+        
+        return NULL;
+    }
+    return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);
+    
+}
           
 int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit){
     if(root->tag==NUM_NODE || root->tag==RNUM_NODE || root->tag==BOOL_NODE)
         return 0;
     if(root->tag==ID_NODE){
         VariableEntry *ptr;
-        ptr=checkDeclarationBeforeUse(context,parent,root->node.idNode.varName,root->lineNumber);
+        ptr=getVariableEntry(context,parent,root->node.idNode.varName,root->lineNumber);
         if(ptr==NULL)
             return 0;
         if(bit == 0){
