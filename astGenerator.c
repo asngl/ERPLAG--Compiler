@@ -115,6 +115,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 {
     struct ASTNode *result;
     struct ASTNode *tempAST;
+    struct ASTNode *ASTptr;
     struct ParseTreeNode *typeNode;
     enum Datatype dt;
     int tmp;
@@ -450,23 +451,33 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	    case 61:
 			result=createAST(getNthChild(root,2));
 			if(result==NULL)
+			{
 				result=createAST(getNthChild(root,1));
+			}
 			else	
-				result->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			{
+				tempAST=result;
+				while(tempAST->node.binaryNode.expr1!=NULL)tempAST=tempAST->node.binaryNode.expr1;
+				tempAST->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			}
 			break;
 	    case 62:
-			result=createASTNode(BINARY_NODE);
-			result->node.binaryNode.op=getOperator(getNthChild(root,1));
-	    	result->node.binaryNode.expr2=createAST(getNthChild(root,3));
-	    	if(result->node.binaryNode.expr2==NULL)
-	    	{
-	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	}
-	    	else
-	    	{
-	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
-	    	}
-	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+			tempAST=createASTNode(BINARY_NODE);
+			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
+			tempAST->node.binaryNode.expr1=NULL;
+			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	result=createAST(getNthChild(root,3));
+	    	if(result==NULL)
+			{
+				result=tempAST;
+			}
+			else	
+			{
+				ASTptr=result;
+				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
+				ASTptr->node.binaryNode.expr1=tempAST;
+			}
+	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	    	break;
 	    case 63:
 			result=NULL;
@@ -499,48 +510,68 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			break;
 	    case 69:
 	        result=createAST(getNthChild(root,2));
-	        if(result==NULL)
+			if(result==NULL)
+			{
 				result=createAST(getNthChild(root,1));
+			}
 			else	
-				result->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			{
+				tempAST=result;
+				while(tempAST->node.binaryNode.expr1!=NULL)tempAST=tempAST->node.binaryNode.expr1;
+				tempAST->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			}
 	        break;
 	    case 70:
-	        result=createASTNode(BINARY_NODE);
-	        result->node.binaryNode.op=getOperator(getNthChild(root,1));
-	        result->node.binaryNode.expr2=createAST(getNthChild(root,3));
-	        if(result->node.binaryNode.expr2==NULL)
-	    	{
-	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	}
-	    	else
-	    	{
-	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
-	    	}
-	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+	        tempAST=createASTNode(BINARY_NODE);
+			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
+			tempAST->node.binaryNode.expr1=NULL;
+			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	result=createAST(getNthChild(root,3));
+	    	if(result==NULL)
+			{
+				result=tempAST;
+			}
+			else	
+			{
+				ASTptr=result;
+				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
+				ASTptr->node.binaryNode.expr1=tempAST;
+			}
+	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	        break;
 	    case 71:
 	        result=NULL;
 	        break;
 	    case 72:
 	        result=createAST(getNthChild(root,2));
-	        if(result==NULL)
+			if(result==NULL)
+			{
 				result=createAST(getNthChild(root,1));
+			}
 			else	
-				result->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			{
+				tempAST=result;
+				while(tempAST->node.binaryNode.expr1!=NULL)tempAST=tempAST->node.binaryNode.expr1;
+				tempAST->node.binaryNode.expr1=createAST(getNthChild(root,1));
+			}
 	        break;
 	    case 73:
-	        result=createASTNode(BINARY_NODE);
-	        result->node.binaryNode.op=getOperator(getNthChild(root,1));
-	        result->node.binaryNode.expr2=createAST(getNthChild(root,3));
-	        if(result->node.binaryNode.expr2==NULL)
-	    	{
-	    		result->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	}
-	    	else
-	    	{
-	    		result->node.binaryNode.expr2->node.binaryNode.expr1=createAST(getNthChild(root,2));
-	    	}
-	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+	        tempAST=createASTNode(BINARY_NODE);
+			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
+			tempAST->node.binaryNode.expr1=NULL;
+			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
+	    	result=createAST(getNthChild(root,3));
+	    	if(result==NULL)
+			{
+				result=tempAST;
+			}
+			else	
+			{
+				ASTptr=result;
+				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
+				ASTptr->node.binaryNode.expr1=tempAST;
+			}
+	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
 	        break;
 	    case 74:
 	        result=NULL;
