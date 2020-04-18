@@ -444,13 +444,13 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                //Set use flag
 	                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
 	                {
-	                    printf("Line %d : Recursion attempt on function %s\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
 	                    root=root->node.moduleReuseNode.next;
 	                    break;
 	                }
 	                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
 	                if(funcptr==NULL){                   
-	                    printf("Line %d : Function %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
 	                    root=root->node.moduleReuseNode.next;
 	                    break;
 	                }
@@ -493,10 +493,10 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                                ptr=ptr->node.caseNode.next;
 	                            }
 	                            if(root->node.conditionNode.Default==NULL)
-	                                printf("Line %d : Default not declared for integer switch \n",root->lineNumber);
+	                                printf("Line %d : Default not declared for integer switch \n",root->node.conditionNode.endLine);
 	                            break;
 	                        case DT_REAL:
-	                            printf("Line %d : value inside switch is of type real",root->lineNumber);
+	                            printf("Line %d : value inside switch is of type real\n",root->lineNumber);
 	                            break;
 	                        case DT_BOOLEAN:
 	                            ptr=root->node.conditionNode.Case;
@@ -507,7 +507,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                                ptr=ptr->node.caseNode.next;
 	                            }
 	                            if(root->node.conditionNode.Default!=NULL)
-	                                printf("Line %d : Default not declared for boolean switch \n",root->lineNumber);
+	                                printf("Line %d : Default declared for boolean switch \n",root->node.conditionNode.Default->lineNumber);
 	                    }
 	                }
 	                child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
@@ -728,13 +728,13 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 //Set use flag
                 if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
                 {
-                    printf("Line %d : Recursion attempt on function %s\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
                     root=root->node.moduleReuseNode.next;
                     break;
                 }
                 funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
                 if(funcptr==NULL){                   
-                    printf("Line %d : Function %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
                     root=root->node.moduleReuseNode.next;
                     break;
                 }
@@ -777,10 +777,10 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                                 ptr=ptr->node.caseNode.next;
                             }
                             if(root->node.conditionNode.Default==NULL)
-                                printf("Line %d : Default not declared for integer switch \n",root->lineNumber);
+                                printf("Line %d : Default not declared for integer switch \n",root->node.conditionNode.endLine);
                             break;
                         case DT_REAL:
-                            printf("Line %d : value inside switch is of type real",root->lineNumber);
+                            printf("Line %d : value inside switch is of type real\n",root->lineNumber);
                             break;
                         case DT_BOOLEAN:
                             ptr=root->node.conditionNode.Case;
@@ -791,7 +791,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                                 ptr=ptr->node.caseNode.next;
                             }
                             if(root->node.conditionNode.Default!=NULL)
-                                printf("Line %d : Default not declared for boolean switch \n",root->lineNumber);
+                                printf("Line %d : Default declared for boolean switch \n",root->node.conditionNode.Default->lineNumber);
                     }
                 }
                 child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
@@ -909,11 +909,11 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 			symbolTable[hash].pointer=ptr;
 		}
 		if(ptr->defineFlag==1){
-			printf("Line %d : Function %s is already defined on line %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
+			printf("Line %d : Module %s is already defined on line %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
 			return NULL;
 		}
 		if(ptr->declareFlag==1 && ptr->useFlag==-1){
-			printf("Line %d : Function %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
+			printf("Line %d : Module %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
 		}
 		ptr->defineFlag=1;
 		ptr->lineNumberDef=root->lineNumber;
@@ -954,7 +954,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		{
 			if(varptr->initFlag==0)
 			{
-				printf("Line %d : Output paramter %s of function %s is not assigned any value inside function definition.\n",ptr->scope.endLine,varptr->varName,context.funcName);
+				printf("Line %d : Output paramter %s of Module %s is not assigned any value inside function definition.\n",ptr->scope.endLine,varptr->varName,context.funcName);
 			}
 			varptr=varptr->next;
 		}
@@ -997,6 +997,7 @@ SymbolTable *populateSymbolTable(struct ASTNode *root){
         insertSymbolTable(*mainTable,currNode);
         currNode=currNode->node.moduleNode.next;
     }
+    secondPass(root,*mainTable,"");
     return mainTable;
 }
 

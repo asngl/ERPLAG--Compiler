@@ -397,7 +397,7 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             if(funcptr==NULL)
                 return;
             if(funcptr->defineFlag!=1){
-                printf("Error on line number: %d, Function : %s is declared but not defined\n",root->lineNumber,root->node.moduleReuseNode.id);
+                printf("Line %d : Function : %s is declared but not defined\n",root->lineNumber,root->node.moduleReuseNode.id);
                 return;
             }
             ptr = root->node.moduleReuseNode.idList;
@@ -429,7 +429,7 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
                 	continue;
                 }
                 if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
-                    printf("Line number %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
+                    printf("Line %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
