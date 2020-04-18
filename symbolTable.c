@@ -940,7 +940,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 				tmp=tmp->next;
 			offset=tmp->offset+tmp->width;
 		}
-		//offset stores length of fucntion parameters if needed
+		ptr->fsize=offset;//offset stores length of fucntion parameters if needed
 		struct Context context;
 		context.symbolTable=&symbolTable;
 		strcpy(context.funcName, ptr->funcName);
@@ -962,6 +962,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->localTable->scope.startLine=root->node.moduleNode.startLine;
 		ptr->localTable->scope.endLine=root->node.moduleNode.endLine;
 		ptr->activationRecordSize = ptr->localTable->size;
+		ptr->fsize+=ptr->activationRecordSize;
 		root->node.moduleNode.localVariablesSize= ptr->localTable->size;
 		return ptr;
 	}
