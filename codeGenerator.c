@@ -1132,13 +1132,14 @@ void pushReverseParameters(struct ASTNode *root){
 
 void generateModuleReuseCode(struct ASTNode *root){
     struct ASTNode *nodeptr;
-    fprintf(fp,"        push    rbp\n");
-    fprintf(fp,"        mov    rbp,rsp\n");
+    
     nodeptr=root->node.moduleReuseNode.optional;
     pushReverseParameters(nodeptr);
     nodeptr=root->node.moduleReuseNode.idList;
     pushReverseParameters(nodeptr);
+
     fprintf(fp,"        call %s\n",root->node.moduleReuseNode.id);
+
     nodeptr=root->node.moduleReuseNode.idList;
     while(nodeptr!=NULL){
         VariableEntry *ptr;
@@ -1204,8 +1205,7 @@ void generateModuleReuseCode(struct ASTNode *root){
         
         nodeptr=nodeptr->node.idListNode.next;
     }
-    fprintf(fp,"        mov     rsp,rbp\n");
-    fprintf(fp,"        pop     rbp\n");
+    
 }
 
 
