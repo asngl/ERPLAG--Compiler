@@ -1087,7 +1087,7 @@ void generateAssignmentCode(struct ASTNode* root)
             break;
         case DT_REAL:
             fprintf(fp,"        movsd   xmm0,qword [_flttmp0]\n");
-            setFloatValue(RBX,root);
+            setFloatValue(XMM0,root);
             break;
     }
 }
