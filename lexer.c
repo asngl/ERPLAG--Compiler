@@ -399,6 +399,7 @@ struct TOKEN_INFO getNextToken()
 						{	
 							// If we encounter a character for which no transitions are defined from the start state, Throw LEXICAL-ERROR
 							printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+							ERROR_FLAG = 1;
 							lexeme_size=0;
 							token_info.lexeme[0]='\0';
 							token_info.lineno=curr_lineno;
@@ -566,6 +567,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -588,6 +590,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -610,6 +613,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -664,6 +668,7 @@ struct TOKEN_INFO getNextToken()
 				if(lexeme_size>20)
 				{
 					printf("LEXICAL ERROR:Encountered lexeme sequence of too much length.\nLINE NUMBER %d: %s %c\n",curr_lineno,token_info.lexeme,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -728,6 +733,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -793,6 +799,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
@@ -811,6 +818,7 @@ struct TOKEN_INFO getNextToken()
 				else
 				{
 					printf("LEXICAL ERROR:Encountered unexpected character.\n\tLINE NUMBER %d: %c\n",curr_lineno,read_char);
+					ERROR_FLAG = 1;
 					lexeme_size=0;
 					token_info.lexeme[0]='\0';
 					token_info.lineno=curr_lineno;
