@@ -403,19 +403,17 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                {
 	                    printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
 	                    ERROR_FLAG=1;
-	                    root=root->node.moduleReuseNode.next;
-	                    break;
 	                }
-	                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
-	                if(funcptr==NULL){                   
-	                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
-	                    ERROR_FLAG=1;
-	                    root=root->node.moduleReuseNode.next;
-	                    break;
-	                }
-	                
-
-	                funcptr->useFlag=1;
+	                else
+	                {
+		                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
+		                if(funcptr==NULL){                   
+		                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+		                    ERROR_FLAG=1;
+		                }
+		                else
+		                	funcptr->useFlag=1;
+		            }
 	                ptr=root->node.moduleReuseNode.idList;
 	                while(ptr!=NULL)
 	                {
@@ -455,8 +453,8 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                            }
 	                            if(root->node.conditionNode.Default==NULL){
 	                                printf("Line %d : Default not declared for integer switch \n",root->node.conditionNode.endLine);
-	                            	ERROR_FLAG=1;
-                            	}
+	                                ERROR_FLAG=1;
+	                            }
 	                            break;
 	                        case DT_REAL:
 	                            printf("Line %d : value inside switch is of type real\n",root->lineNumber);
@@ -711,19 +709,17 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 {
                     printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
                     ERROR_FLAG=1;
-                    root=root->node.moduleReuseNode.next;
-                    break;
                 }
-                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
-                if(funcptr==NULL){                   
-                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
-                    ERROR_FLAG=1;
-                    root=root->node.moduleReuseNode.next;
-                    break;
-                }
-                
-
-                funcptr->useFlag=1;
+                else
+                {
+	                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
+	                if(funcptr==NULL){                   
+	                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    ERROR_FLAG=1;
+	                }
+	                else
+	                	funcptr->useFlag=1;
+	            }
                 ptr=root->node.moduleReuseNode.idList;
                 while(ptr!=NULL)
                 {

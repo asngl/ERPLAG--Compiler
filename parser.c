@@ -350,6 +350,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 		{
 			if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 			{
+				if(ERROR_FLAG==0)
 				printf("Finished Parsing Successfully.\n");
 				break;
 			}
