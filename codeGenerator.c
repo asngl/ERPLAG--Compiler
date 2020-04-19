@@ -177,7 +177,7 @@ void getHigh(enum Register reg,struct ASTNode* root)
     }
     else
     {
-        if(varptr->type.tagLow==0)
+        if(varptr->type.tagHigh==0)
             fprintf(fp,"        mov     %s,%d\n",regMap[reg],varptr->type.high.bound);
         else
         {
