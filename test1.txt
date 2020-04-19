@@ -1,5 +1,0 @@
-<<<driver program>>>
-start
-	declare result_:integer;
-	result_:=-(6);
-end
