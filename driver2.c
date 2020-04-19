@@ -13,23 +13,33 @@
 #include <stdlib.h>
 #include <time.h>
 
-int ERROR_FLAG;
+int ERROR_FLAG=0;
 
 int main(int argc, char *argv[])
 {	
-	int input, flag=1;
+	printf("\nLEVEL 4 : Symbol table, type Checking, Semantic rules modules work, handled static and dynamic arrays in type checking and code generation along with floating point operations implemented sucessfully\n\n");
+	
 	struct TOKEN_INFO token_info;
-	struct ParseTreeNode *root=parseInputSourceCode(argv[1]);;
-	struct ASTNode *AST_root=createAST(root);
-	int parseNodes=0,astNodes=0;
-	countParseNodes(root,&parseNodes);
-	countASTNodes(AST_root,&astNodes);				    
-	int parseMem=parseNodes*sizeof(struct ParseTreeNode);
-	int astMem=astNodes*sizeof(struct ASTNode);
+	struct ParseTreeNode *root;
+	struct ASTNode *AST_root;
 	SymbolTable *mainTable;
+	
+	root=parseInputSourceCode(argv[1]);
+	AST_root=createAST(root);
+	if(!ERROR_FLAG)
+	{
+		mainTable=populateSymbolTable(AST_root);
+	}
+	if(!ERROR_FLAG)
+	{
+		printf("\nCode compiles succesfully...\n");
+	}
+	
+	int input, flag=1;
+	int parseNodes=0, astNodes=0;
+	int parseMem, astMem;
 	clock_t start_time, end_time;
 	double total_CPU_time, total_CPU_time_in_seconds;
-	int symbolTablePopulated=0;
 	while(flag){
 		printf("Choose option: ");
 		scanf("%d",&input);
@@ -62,6 +72,10 @@ int main(int argc, char *argv[])
 				break;
 			case 4:
 				//Allocated Memory
+				countParseNodes(root,&parseNodes);
+				countASTNodes(AST_root,&astNodes);
+				parseMem=parseNodes*sizeof(struct ParseTreeNode);				    
+				astMem=astNodes*sizeof(struct ASTNode);
 				printf("Parse tree Number of nodes=%d\n",parseNodes);
 				printf("Allocated Memory=%d Bytes\n",parseMem);
 				printf("AST Number of nodes=%d\n",astNodes);
@@ -70,43 +84,47 @@ int main(int argc, char *argv[])
 				break;
 			case 5:
 				//populate Symbol Table and print
-				if(!symbolTablePopulated)
+				if(ERROR_FLAG)
 				{
-					mainTable=populateSymbolTable(AST_root);
-					symbolTablePopulated=1;	
+					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					break; 
 				}
 				printSymbolTable(mainTable);
 				break;
 			case 6:
 				//Print activation records and their width
-				if(!symbolTablePopulated)
+				if(ERROR_FLAG)
 				{
-					mainTable=populateSymbolTable(AST_root);
-					symbolTablePopulated=1;	
+					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					break; 
 				}
 				printRecordWidth(mainTable);	
 				break;
 			case 7:
 				//Print array variables and their info
-				if(!symbolTablePopulated)
+				if(ERROR_FLAG)
 				{
-					mainTable=populateSymbolTable(AST_root);
-					symbolTablePopulated=1;	
+					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					break; 
 				}
 				printArrayVariables(mainTable);
 				break;
 			case 8:
+				// Print both total_CPU_time and total_CPU_time_in_seconds 
 				start_time = clock();
+				ERROR_FLAG=0;
 			    	root=parseInputSourceCode(argv[1]);
-				AST_root=createAST(root);
-				mainTable=populateSymbolTable(AST_root);
+				if(!ERROR_FLAG)
+				{	
+					AST_root=createAST(root);
+					mainTable=populateSymbolTable(AST_root);
+				}
 				end_time = clock();
 			    
 			   	total_CPU_time  =  (double) (end_time - start_time);
 			    	total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
 
-			  	// Print both total_CPU_time and total_CPU_time_in_seconds 
-			   	printf("Total CPU time = %F\n",total_CPU_time);
+			  	printf("\nTotal CPU time = %F\n",total_CPU_time);
 				printf("Total CPU time in seconds = %F\n", total_CPU_time_in_seconds);
 				break;
 			case 9:
