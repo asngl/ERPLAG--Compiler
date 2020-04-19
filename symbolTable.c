@@ -1271,7 +1271,7 @@ void printType(Type type)
 		if(type.tagHigh==0)
 		{
 			char int2[10];
-			strncat(s,to_string(type.low.bound,int2),25);
+			strncat(s,to_string(type.high.bound,int2),25);
 		}
 		else
 			strncat(s,type.high.lexeme,25);
