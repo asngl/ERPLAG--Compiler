@@ -1303,7 +1303,11 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
                 {
                     getLow(RSI,currVar);
                     getHigh(RDI,currVar);
-
+                    if(varptr->type.isStatic)
+                    {
+                        CMP(RSI,RDI);
+                        fprintf(fp,"        jg     _indexordererror_\n");
+                    }
                     fprintf(fp,"        mov     rcx,rdi\n");
                     fprintf(fp,"        sub     rcx,rsi\n");
                     fprintf(fp,"        inc     rcx\n");
@@ -1413,6 +1417,18 @@ void  generateErrorHandlingCode()
 	fprintf(fp,"_errorString:\n");
 	fprintf(fp,"        db  \"RUN TIME ERROR:  Array index out of bound \",10,0\n");
 	fprintf(fp,"\n");
+
+    fprintf(fp,"_indexordererror_:\n");
+    fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
+    fprintf(fp,"        mov     rdi,_errorStringLowHigh\n");
+    fprintf(fp,"        mov     rax,0\n");
+    fprintf(fp,"        call    printf\n");
+    fprintf(fp,"        mov     rax,1\n");
+    fprintf(fp,"        jmp     _exit\n");
+    fprintf(fp,"\n");
+    fprintf(fp,"_errorStringLowHigh:\n");
+    fprintf(fp,"        db  \"RUN TIME ERROR: Lower array index cannot be greater than higher array index. \",10,0\n");
+    fprintf(fp,"\n");
     
     fprintf(fp,"_boundserrorlabel_:\n");
     fprintf(fp,"        and     rsp,0xfffffffffffffff0\n");
