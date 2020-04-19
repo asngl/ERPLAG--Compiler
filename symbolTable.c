@@ -186,6 +186,7 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 		search=searchLocalTable(localTable,currVar->node.idListNode.varName);
 		if(search!=NULL){
 			printf("Line %d : Variable %s is already declared on line %d\n",currVar->lineNumber,currVar->node.idListNode.varName,search->lineNumber);
+			ERROR_FLAG=1;
 			currVar=currVar->node.idListNode.next;
 			continue;
 		}
@@ -209,14 +210,17 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 					if(varptr->type.type!=DT_INTEGER)
 					{
 						printf("Line %d : Lower Bound Variable %s is not of Integer type\n",root->lineNumber,initNode->type.low.lexeme);
+						ERROR_FLAG=1;
 					}
 					else if(varptr->type.arrayFlag==1)
 					{
 						printf("Line %d : Lower Bound Variable %s is of Array type\n",root->lineNumber,initNode->type.low.lexeme);
+						ERROR_FLAG=1;
 					}
 					else if(varptr->initFlag==0)
 					{
 						printf("Line %d : Lower Bound Variable %s not initialised\n",root->lineNumber,initNode->type.low.lexeme);
+						ERROR_FLAG=1;
 					}
 
 				}
@@ -236,14 +240,17 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 					if(varptr->type.type!=DT_INTEGER)
 					{
 						printf("Line %d : Higher Bound Variable %s is not of Integer type\n",root->lineNumber,initNode->type.high.lexeme);
+						ERROR_FLAG=1;
 					}
 					else if(varptr->type.arrayFlag==1)
 					{
 						printf("Line %d : Higher Bound Variable %s is of Array type\n",root->lineNumber,initNode->type.high.lexeme);
+						ERROR_FLAG=1;
 					}
 					else if(varptr->initFlag==0)
 					{
 						printf("Line %d : Higher Bound Variable %s not initialised\n",root->lineNumber,initNode->type.high.lexeme);
+						ERROR_FLAG=1;
 					}
 				}
 				root->node.declareNode.Range->node.rangeNode.Range2->localTableEntry=varptr;
@@ -336,16 +343,19 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 		                	if(ptr->node.idNode.index!=NULL){
 		                	    if(leftType.arrayFlag==0){
 		                	        printf("Line %d : Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
+		                	        ERROR_FLAG=1;
 		                	    }
 		                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
 		                	    {
 		                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
 		                	        {
 		                	              printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+		                	              ERROR_FLAG=1;
 		                	        }
 		                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
 		                	        {
 		                	              printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+		                	              ERROR_FLAG=1;
 		                	        }
 		                	        leftType.arrayFlag=0;
 		                	    }
@@ -358,14 +368,17 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 										if(varptr->type.type!=DT_INTEGER)
 										{
 											printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+											ERROR_FLAG=1;
 										}
 										else if(varptr->type.arrayFlag==1)
 										{
 											printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+											ERROR_FLAG=1;
 										}
 										else if(varptr->initFlag==0)
 										{
 											printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+											ERROR_FLAG=1;
 										}
 									}
 		                	    }
@@ -392,6 +405,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 							if(leftType.arrayFlag==0)
 							{
 								printf("Line %d : Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+								ERROR_FLAG=1;
 								root=root->node.assignNode.next;
 								break;
 							}
@@ -400,12 +414,14 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 								if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 								{
 								  printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  ERROR_FLAG=1;
 								  root=root->node.assignNode.next;
 								  break;
 								}
 								if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 								{
 								  printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+								  ERROR_FLAG=1;
 								  root=root->node.assignNode.next;
 								  break;
 								}
@@ -420,14 +436,17 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 									if(varptr->type.type!=DT_INTEGER)
 									{
 										printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 									else if(varptr->type.arrayFlag==1)
 									{
 										printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 									else if(varptr->initFlag==0)
 									{
 										printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 								}
 			               	}
@@ -436,6 +455,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                    if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
 	                    {
 	                    	printf("Line %d : Types of lhs and rhs of assignment statement do not match (Type Mismatch Error)\n",root->lineNumber);
+	                    	ERROR_FLAG=1;
 	                    }
 	                }
 	                root=root->node.assignNode.next;
@@ -445,12 +465,14 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
 	                {
 	                    printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    ERROR_FLAG=1;
 	                    root=root->node.moduleReuseNode.next;
 	                    break;
 	                }
 	                funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
 	                if(funcptr==NULL){                   
 	                    printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+	                    ERROR_FLAG=1;
 	                    root=root->node.moduleReuseNode.next;
 	                    break;
 	                }
@@ -481,6 +503,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                root->localTableEntry=varptr;
 	                if(varptr->type.arrayFlag==1){
 	                    printf("Line %d : usage of %s is forbidden inside switch as it is an array\n",root->lineNumber,varptr->varName);
+	                    ERROR_FLAG=1;
 	                }
 	                else{
 	                    switch(varptr->type.type){
@@ -489,25 +512,32 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                            while(ptr!=NULL){
 	                                if(ptr->node.caseNode.value->tag!=NUM_NODE){
 	                                    printf("Line %d : Case value defined is not an integer\n",ptr->lineNumber);
+	                                    ERROR_FLAG=1;
 	                                }
 	                                ptr=ptr->node.caseNode.next;
 	                            }
-	                            if(root->node.conditionNode.Default==NULL)
+	                            if(root->node.conditionNode.Default==NULL){
 	                                printf("Line %d : Default not declared for integer switch \n",root->node.conditionNode.endLine);
+	                            	ERROR_FLAG=1;
+                            	}
 	                            break;
 	                        case DT_REAL:
 	                            printf("Line %d : value inside switch is of type real\n",root->lineNumber);
+	                            ERROR_FLAG=1;
 	                            break;
 	                        case DT_BOOLEAN:
 	                            ptr=root->node.conditionNode.Case;
 	                            while(ptr!=NULL){
 	                                if(ptr->node.caseNode.value->tag!=BOOL_NODE){
 	                                    printf("Line %d : Case value defined is not a boolean\n",ptr->lineNumber);
+	                                    ERROR_FLAG=1;
 	                                }
 	                                ptr=ptr->node.caseNode.next;
 	                            }
-	                            if(root->node.conditionNode.Default!=NULL)
+	                            if(root->node.conditionNode.Default!=NULL){
 	                                printf("Line %d : Default declared for boolean switch \n",root->node.conditionNode.Default->lineNumber);
+	                                ERROR_FLAG=1;
+	                            }
 	                    }
 	                }
 	                child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
@@ -556,6 +586,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	                child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
 	                if(setModifyFlagExpression(context,parent,root->node.whileNode.expr,-1)==0){
 	                    printf("Line %d : no variables inside while loop are being modified\n",root->lineNumber);
+	                    ERROR_FLAG=1;
 	                }
 	                child->scope.startLine=root->node.whileNode.startLine;
 	                child->scope.endLine=root->node.whileNode.endLine;              
@@ -620,16 +651,19 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 	                	if(ptr->node.idNode.index!=NULL){
 	                	    if(leftType.arrayFlag==0){
 	                	        printf("Line %d : Cannot index a non-array variable %s\n",ptr->lineNumber,ptr->node.idNode.varName);
+	                	        ERROR_FLAG=1;
 	                	    }
 	                	    if(leftType.isStatic==1&&ptr->node.idNode.index->tag==NUM_NODE)
 	                	    {
 	                	        if(leftType.low.bound > ptr->node.idNode.index->node.numNode.num)
 	                	        {
 	                	              printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	              ERROR_FLAG=1;
 	                	        }
 	                	        if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
 	                	        {
 	                	              printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+	                	              ERROR_FLAG=1;
 	                	        }
 	                	        leftType.arrayFlag=0;
 	                	    }
@@ -642,14 +676,17 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 									if(varptr->type.type!=DT_INTEGER)
 									{
 										printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 									else if(varptr->type.arrayFlag==1)
 									{
 										printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 									else if(varptr->initFlag==0)
 									{
 										printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,ptr->node.idNode.index->node.idNode.varName);
+										ERROR_FLAG=1;
 									}
 								}
 	                	    }
@@ -676,6 +713,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 						if(leftType.arrayFlag==0)
 						{
 							printf("Line %d : Cannot index a non-array variable %s\n",root->lineNumber,root->node.assignNode.LHS);
+							ERROR_FLAG=1;
 							root=root->node.assignNode.next;
 							break;
 						}
@@ -684,12 +722,14 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							if(leftType.low.bound > root->node.assignNode.index->node.numNode.num)
 							{
 							  printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  ERROR_FLAG=1;
 							  root=root->node.assignNode.next;
 							  break;
 							}
 							if(leftType.high.bound < root->node.assignNode.index->node.numNode.num)
 							{
 							  printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.assignNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+							  ERROR_FLAG=1;
 							  root=root->node.assignNode.next;
 							  break;
 							}
@@ -704,14 +744,17 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 								if(varptr->type.type!=DT_INTEGER)
 								{
 									printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									ERROR_FLAG=1;
 								}
 								else if(varptr->type.arrayFlag==1)
 								{
 									printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									ERROR_FLAG=1;
 								}
 								else if(varptr->initFlag==0)
 								{
 									printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,root->node.assignNode.index->node.idNode.varName);
+									ERROR_FLAG=1;
 								}
 							}
 		               	}
@@ -720,6 +763,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                     if(assertTypeEquality(leftType,rightType,root->lineNumber)==0)
                     {
                     	printf("Line %d : Types of lhs and rhs of assignment statement do not match (Type Mismatch Error)\n",root->lineNumber);
+                    	ERROR_FLAG=1;
                     }
                 }
                 root=root->node.assignNode.next;
@@ -729,12 +773,14 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 if(strcmp(root->node.moduleReuseNode.id,context.funcName)==0)
                 {
                     printf("Line %d : Recursion attempt on Module %s\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    ERROR_FLAG=1;
                     root=root->node.moduleReuseNode.next;
                     break;
                 }
                 funcptr=searchSymbolTable(*(context.symbolTable),root->node.moduleReuseNode.id);
                 if(funcptr==NULL){                   
                     printf("Line %d : Module %s not declared\n",root->lineNumber, root->node.moduleReuseNode.id);
+                    ERROR_FLAG=1;
                     root=root->node.moduleReuseNode.next;
                     break;
                 }
@@ -765,6 +811,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 root->localTableEntry=varptr;
                 if(varptr->type.arrayFlag==1){
                     printf("Line %d : usage of %s is forbidden inside switch as it is an array\n",root->lineNumber,varptr->varName);
+                    ERROR_FLAG=1;
                 }
                 else{
                     switch(varptr->type.type){
@@ -773,25 +820,32 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                             while(ptr!=NULL){
                                 if(ptr->node.caseNode.value->tag!=NUM_NODE){
                                     printf("Line %d : Case value defined is not an integer\n",ptr->lineNumber);
+                                    ERROR_FLAG=1;
                                 }
                                 ptr=ptr->node.caseNode.next;
                             }
-                            if(root->node.conditionNode.Default==NULL)
+                            if(root->node.conditionNode.Default==NULL){
                                 printf("Line %d : Default not declared for integer switch \n",root->node.conditionNode.endLine);
+                                ERROR_FLAG=1;
+                            }
                             break;
                         case DT_REAL:
                             printf("Line %d : value inside switch is of type real\n",root->lineNumber);
+                            ERROR_FLAG=1;
                             break;
                         case DT_BOOLEAN:
                             ptr=root->node.conditionNode.Case;
                             while(ptr!=NULL){
                                 if(ptr->node.caseNode.value->tag!=BOOL_NODE){
                                     printf("Line %d : Case value defined is not a boolean\n",ptr->lineNumber);
+                                    ERROR_FLAG=1;
                                 }
                                 ptr=ptr->node.caseNode.next;
                             }
-                            if(root->node.conditionNode.Default!=NULL)
+                            if(root->node.conditionNode.Default!=NULL){
                                 printf("Line %d : Default declared for boolean switch \n",root->node.conditionNode.Default->lineNumber);
+                                ERROR_FLAG=1;
+                            }
                     }
                 }
                 child=populateConditionNodeLocalTable(context,parent,root,baseOffset);
@@ -840,6 +894,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
                 child=populateLocalTable(context,parent,root->node.whileNode.stmt,baseOffset);
                 if(setModifyFlagExpression(context,parent,root->node.whileNode.expr,-1)==0){
                     printf("Line %d : no variables inside while loop are being modified\n",root->lineNumber);
+                    ERROR_FLAG=1;
                 }
                 child->scope.startLine=root->node.whileNode.startLine;
                 child->scope.endLine=root->node.whileNode.endLine;              
@@ -880,6 +935,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr=searchSymbolTable(symbolTable,root->node.moduleDeclareNode.moduleName);
 		if(ptr!=NULL){
 			printf("Line %d : Variable %s is already declared on line %d",root->lineNumber,root->node.moduleDeclareNode.moduleName,ptr->lineNumber);
+			ERROR_FLAG=1;
 			return NULL;
 		}
 		ptr = newFunctionNode(root->node.moduleDeclareNode.moduleName);
@@ -910,10 +966,12 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		}
 		if(ptr->defineFlag==1){
 			printf("Line %d : Module %s is already defined on line %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
+			ERROR_FLAG=1;
 			return NULL;
 		}
 		if(ptr->declareFlag==1 && ptr->useFlag==-1){
 			printf("Line %d : Module %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
+			ERROR_FLAG=1;
 		}
 		ptr->defineFlag=1;
 		ptr->lineNumberDef=root->lineNumber;
@@ -955,6 +1013,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 			if(varptr->initFlag==0)
 			{
 				printf("Line %d : Output paramter %s of Module %s is not assigned any value inside function definition.\n",ptr->scope.endLine,varptr->varName,context.funcName);
+				ERROR_FLAG=1;
 			}
 			varptr=varptr->next;
 		}
@@ -968,6 +1027,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 	}
 	else{
 		printf("Error in insertSymbolTable\n");
+		ERROR_FLAG=1;
 		return NULL;
 	}
 }
