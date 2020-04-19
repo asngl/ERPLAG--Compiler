@@ -213,8 +213,8 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		context.inputList=cloneParaListAsVariables(ptr->inputParaList,1);
 		context.outputList=cloneParaListAsVariables(ptr->outputParaList,0);
 		context.forbiddenVariables=NULL;
+		resetStringList();
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,0);
-		
 		VariableEntry *varptr=context.outputList;
 		while(varptr!=NULL)
 		{

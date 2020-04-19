@@ -16,6 +16,37 @@
 #define controlSize 20
 
 
+StringList *undeclaredVariables;
+
+void resetStringList(){
+    StringList *list,*ptr;
+	list=undeclaredVariables;
+	while(list!=NULL)
+	{
+		ptr=list->next;
+		free(list);
+		list=ptr;
+	}
+	undeclaredVariables=NULL;
+}
+
+int checkStringList(char *name)// returns 1 if name is present in string list
+{
+	StringList *list;
+	list=undeclaredVariables;
+	while(list!=NULL)
+	{
+		if(strcmp(list->varName,name)==0)return 1;
+		list=list->next;
+	}
+	StringList *newList;
+	newList=(StringList *)malloc(sizeof(StringList));
+	strcpy(newList->varName,name);
+	newList->next=undeclaredVariables;
+	undeclaredVariables=newList;
+	return 0;
+}
+
 LocalTable *newLocalTable(){
 	LocalTable *node;
 	node=(LocalTable *)malloc(sizeof(LocalTable));
@@ -59,6 +90,7 @@ int getWidthLocal(Type type){
 	return 0;
 }
 
+
 VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber){
     VariableEntry *currVar;
     currVar=context.outputList;
@@ -86,7 +118,8 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
         currVar=currVar->next;
     }
     if(parent->parent==NULL){
-        printf("Line %d : Variable %s is not declared\n",lineNumber,name);
+    	if(checkStringList(name)==0)
+        	printf("Line %d : Variable %s is not declared\n",lineNumber,name);
         ERROR_FLAG = 1;
         return NULL;
     }

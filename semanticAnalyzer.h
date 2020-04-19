@@ -13,6 +13,7 @@ extern VariableEntry *searchLocalTable(LocalTable *localTable,char *string);
 extern VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber);    //return 1 if no error else 0
 extern void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]);
 
-
+extern void resetStringList();
+extern int checkStringList(char *name);
 
 #endif

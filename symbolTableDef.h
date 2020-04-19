@@ -3,12 +3,13 @@
 #define _SYMBOLTABLEDEFH
 
 #include "ASTNodeDef.h"
+#define MAX_IDENTIFIER_LENGTH 25
 #define MOD 127
 //enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};
 extern int ERROR_FLAG;
 typedef union ArrayBound{
 	int bound;
-	char lexeme[25];
+	char lexeme[MAX_IDENTIFIER_LENGTH+1];
 }ArrayBound;
 
 typedef struct Type
@@ -41,7 +42,7 @@ typedef VariableEntry *VariableEntryTable[MOD];
 
 typedef struct ParameterList
 {
-	char varName[25];
+	char varName[MAX_IDENTIFIER_LENGTH+1];
 	Type type;
 	int initFlag;
 	int lineNumber;
@@ -67,7 +68,7 @@ typedef struct LocalTable
 }LocalTable;
 
 typedef struct FunctionTable{
-	char funcName[25];
+	char funcName[MAX_IDENTIFIER_LENGTH+1];
 	int declareFlag;
 	int defineFlag;
 	int useFlag;
@@ -90,10 +91,14 @@ typedef struct SymbolTableEntry{
 
 typedef SymbolTableEntry SymbolTable[MOD];
 
+typedef struct StringList{
+	char varName[MAX_IDENTIFIER_LENGTH+1];
+	struct StringList *next;
+}StringList;
 
 typedef struct Context{
 	SymbolTableEntry **symbolTable;
-	char funcName[25];
+	char funcName[MAX_IDENTIFIER_LENGTH+1];
 	VariableEntry *forbiddenVariables;
 	VariableEntry *inputList;
 	VariableEntry *outputList;
