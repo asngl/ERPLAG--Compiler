@@ -2,18 +2,18 @@
 
 <<<driver program>>>
 start
-	declare  m, n :integer;
-	declare s1, s2, s3:integer;
-	get_value(m);
-	get_value(n);
-	declare array_A: array[10..14] of integer;
-	declare array_B: array[m..n] of real;
-	get_value(array_A);
-	get_value(array_B);
+
+
+	declare a,b,c :integer;
+	get_value(a);
+	get_value(b);
+	declare A: array[a..5] of integer;
+	
+	get_value(A);
 	**[s1, s2, s3]:= use module array_parameter_demo with parameters array_A, array_B;**	
 **formal parameter C of the callee function array_parameter_demo receives the range values from the actual parameter array_B**		
-	print(array_A);
-	print(array_B);
+	print(A);
+
 	
 end
 
