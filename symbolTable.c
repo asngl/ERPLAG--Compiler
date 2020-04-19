@@ -261,6 +261,10 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 			}
 			if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
 				initNode->type.isStatic =1;
+				if(initNode->type.low.bound > initNode->type.high.bound){
+					printf("Line %d : Lower bound of an array cannot be greater than the upper bound\n",root->lineNumber);
+					ERROR_FLAG=1;
+				}
 			}else{
 				initNode->type.isStatic =0;
 			}
