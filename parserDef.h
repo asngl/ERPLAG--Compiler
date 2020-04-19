@@ -10,6 +10,7 @@ Ayush Singhal  2017A7PS0116P
 #include "grammar_InitDef.h"
 #include "lexerDef.h"
 
+extern int ERROR_FLAG;
 struct ParseTreeNode{
 	struct TaggedSymbol s;
 	struct ParseTreeNode *leftChild;// Leftmost child

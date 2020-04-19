@@ -12,6 +12,7 @@ Ayush Singhal  2017A7PS0116P
 #define MAX_LOOK_BACK_SIZE 2
 #define MAX_LEXEME_SIZE 25
 
+extern int ERROR_FLAG;
 unsigned int curr_lineno;
 
 char buffer[2][MAX_BUFFER_SIZE+1];//buffer[MAX_BUFFER_SIZE]='\0'

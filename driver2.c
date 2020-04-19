@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+int ERROR_FLAG;
+
 int main(int argc, char *argv[])
 {	
 	int input, flag=1;

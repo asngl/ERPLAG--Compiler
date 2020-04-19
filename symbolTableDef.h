@@ -5,7 +5,7 @@
 #include "ASTNodeDef.h"
 #define MOD 127
 //enum Datatype{DT_INTEGER,DT_REAL,DT_BOOLEAN,DT_ARRAY};
-
+extern int ERROR_FLAG;
 typedef union ArrayBound{
 	int bound;
 	char lexeme[25];
