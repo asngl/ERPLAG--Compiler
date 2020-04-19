@@ -1063,7 +1063,7 @@ void printArrayVar(VariableEntryTable varTable, char *funcName,Scope scope)
 				strncat(s,",",25);
 				if(ptr->type.tagHigh==0){
 					char int2[10];
-					strncat(s,to_string(ptr->type.low.bound,int2),25);
+					strncat(s,to_string(ptr->type.high.bound,int2),25);
 				}
 				else
 					strncat(s,ptr->type.high.lexeme,25);
