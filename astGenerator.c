@@ -113,53 +113,53 @@ void assignNext(struct ASTNode *left, struct ASTNode *right)//Utility fucntion t
 }
 struct ASTNode *createAST(struct ParseTreeNode *root)
 {
-    struct ASTNode *result;
-    struct ASTNode *tempAST;
-    struct ASTNode *ASTptr;
-    struct ParseTreeNode *typeNode;
-    enum Datatype dt;
-    int tmp;
-    switch(root->ruleNumber)
-    {
-        case 0:
-		result=createASTNode(PROGRAM_NODE);
-		result->lineNumber=1;
-		result->node.programNode.moduleDeclarations=createAST(getNthChild(root,1));
-		result->node.programNode.otherModules1=createAST(getNthChild(root,2));
-		result->node.programNode.driverModule=createAST(getNthChild(root,3));
-		result->node.programNode.otherModules2=createAST(getNthChild(root,4));
-		break;
-        case 1:
-		result=createAST(getNthChild(root,1));
-		result->node.moduleDeclareNode.next=createAST(getNthChild(root,2));
-		break;
-        case 2:
-		result=NULL;
-		break;
-        case 3:
-		result=createASTNode(MODULE_DECLARE_NODE);
-		strcpy(result->node.moduleDeclareNode.moduleName,getNthChild(root,3)->token_info.lexeme);
-		result->lineNumber=getNthChild(root,1)->token_info.lineno;
-		//next=0.next DONE IN PARENT in case 2
-		break;
-        case 4:
-		result=createAST(getNthChild(root,1));
-		result->node.moduleNode.next=createAST(getNthChild(root,2));
-		break;
+	struct ASTNode *result;
+	struct ASTNode *tempAST;
+	struct ASTNode *ASTptr;
+	struct ParseTreeNode *typeNode;
+	enum Datatype dt;
+	int tmp;
+	switch(root->ruleNumber)
+	{
+		case 0:
+			result=createASTNode(PROGRAM_NODE);
+			result->lineNumber=1;
+			result->node.programNode.moduleDeclarations=createAST(getNthChild(root,1));
+			result->node.programNode.otherModules1=createAST(getNthChild(root,2));
+			result->node.programNode.driverModule=createAST(getNthChild(root,3));
+			result->node.programNode.otherModules2=createAST(getNthChild(root,4));
+			break;
+		case 1:
+			result=createAST(getNthChild(root,1));
+			result->node.moduleDeclareNode.next=createAST(getNthChild(root,2));
+			break;
+		case 2:
+			result=NULL;
+			break;
+		case 3:
+			result=createASTNode(MODULE_DECLARE_NODE);
+			strcpy(result->node.moduleDeclareNode.moduleName,getNthChild(root,3)->token_info.lexeme);
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			//next=0.next DONE IN PARENT in case 2
+			break;
+		case 4:
+			result=createAST(getNthChild(root,1));
+			result->node.moduleNode.next=createAST(getNthChild(root,2));
+			break;
 		case 5:
 			result=NULL;
 			break;
 		case 6:
-            result=createASTNode(MODULE_NODE);
-            strcpy(result->node.moduleNode.moduleName, "driver");
-            result->node.moduleNode.inputList=NULL;
-            result->node.moduleNode.ret=NULL;
-            result->node.moduleNode.body=createAST(getNthChild(root,5));
-            result->node.moduleNode.startLine=getNthChild(getNthChild(root,5),1)->token_info.lineno;
-            result->node.moduleNode.endLine=getNthChild(getNthChild(root,5),3)->token_info.lineno;
-            result->node.moduleNode.next=NULL;
-            result->lineNumber=getNthChild(root,1)->token_info.lineno;
-            break;
+			result=createASTNode(MODULE_NODE);
+			strcpy(result->node.moduleNode.moduleName, "driver");
+			result->node.moduleNode.inputList=NULL;
+			result->node.moduleNode.ret=NULL;
+			result->node.moduleNode.body=createAST(getNthChild(root,5));
+			result->node.moduleNode.startLine=getNthChild(getNthChild(root,5),1)->token_info.lineno;
+			result->node.moduleNode.endLine=getNthChild(getNthChild(root,5),3)->token_info.lineno;
+			result->node.moduleNode.next=NULL;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 		case 7:
 			result=createASTNode(MODULE_NODE);
 			strcpy(result->node.moduleNode.moduleName, getNthChild(root,3)->token_info.lexeme);
@@ -440,14 +440,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			break;
 
 	    case 59:
-	    	result=createAST(getNthChild(root,1));
-	    	break;
+		    	result=createAST(getNthChild(root,1));
+		    	break;
 	    case 60:
-	    	result=createASTNode(UNARY_NODE);
-	    	result->node.unaryNode.op=getOperator(getNthChild(root,1));
-	    	result->node.unaryNode.expr=createAST(getNthChild(root,2));
-	    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
-	    	break;
+		    	result=createASTNode(UNARY_NODE);
+		    	result->node.unaryNode.op=getOperator(getNthChild(root,1));
+		    	result->node.unaryNode.expr=createAST(getNthChild(root,2));
+		    	result->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+		    	break;
 	    case 61:
 			result=createAST(getNthChild(root,2));
 			if(result==NULL)
@@ -466,8 +466,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
 			tempAST->node.binaryNode.expr1=NULL;
 			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	result=createAST(getNthChild(root,3));
-	    	if(result==NULL)
+		    	result=createAST(getNthChild(root,3));
+		    	if(result==NULL)
 			{
 				result=tempAST;
 			}
@@ -477,8 +477,8 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
 				ASTptr->node.binaryNode.expr1=tempAST;
 			}
-	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
-	    	break;
+		    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+		    	break;
 	    case 63:
 			result=NULL;
 			break;
@@ -490,15 +490,15 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				result->node.binaryNode.expr1=createAST(getNthChild(root,1));
 			break;
 	    case 65:
-	    	result=createASTNode(BOOL_NODE);
-	    	result->node.boolNode.value=BOOL_TRUE;
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	    	break;
+	    		result=createASTNode(BOOL_NODE);
+		    	result->node.boolNode.value=BOOL_TRUE;
+		    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+		    	break;
 	    case 66:
-	    	result=createASTNode(BOOL_NODE);
-	    	result->node.boolNode.value=BOOL_FALSE;
-	    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	    	break;
+		    	result=createASTNode(BOOL_NODE);
+		    	result->node.boolNode.value=BOOL_FALSE;
+		    	result->lineNumber=getNthChild(root,1)->token_info.lineno;
+		    	break;
 	    case 67:
 			result=createASTNode(BINARY_NODE);
 			result->node.binaryNode.op=getOperator(getNthChild(root,1));
@@ -509,7 +509,7 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 			result=NULL;
 			break;
 	    case 69:
-	        result=createAST(getNthChild(root,2));
+			result=createAST(getNthChild(root,2));
 			if(result==NULL)
 			{
 				result=createAST(getNthChild(root,1));
@@ -520,14 +520,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				while(tempAST->node.binaryNode.expr1!=NULL)tempAST=tempAST->node.binaryNode.expr1;
 				tempAST->node.binaryNode.expr1=createAST(getNthChild(root,1));
 			}
-	        break;
+			break;
 	    case 70:
-	        tempAST=createASTNode(BINARY_NODE);
+			tempAST=createASTNode(BINARY_NODE);
 			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
 			tempAST->node.binaryNode.expr1=NULL;
 			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	result=createAST(getNthChild(root,3));
-	    	if(result==NULL)
+	    		result=createAST(getNthChild(root,3));
+	    		if(result==NULL)
 			{
 				result=tempAST;
 			}
@@ -537,13 +537,13 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
 				ASTptr->node.binaryNode.expr1=tempAST;
 			}
-	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
-	        break;
+	    		tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+			break;
 	    case 71:
-	        result=NULL;
-	        break;
+			result=NULL;
+			break;
 	    case 72:
-	        result=createAST(getNthChild(root,2));
+			result=createAST(getNthChild(root,2));
 			if(result==NULL)
 			{
 				result=createAST(getNthChild(root,1));
@@ -554,14 +554,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				while(tempAST->node.binaryNode.expr1!=NULL)tempAST=tempAST->node.binaryNode.expr1;
 				tempAST->node.binaryNode.expr1=createAST(getNthChild(root,1));
 			}
-	        break;
+			break;
 	    case 73:
-	        tempAST=createASTNode(BINARY_NODE);
+			tempAST=createASTNode(BINARY_NODE);
 			tempAST->node.binaryNode.op=getOperator(getNthChild(root,1));
 			tempAST->node.binaryNode.expr1=NULL;
 			tempAST->node.binaryNode.expr2=createAST(getNthChild(root,2));
-	    	result=createAST(getNthChild(root,3));
-	    	if(result==NULL)
+		    	result=createAST(getNthChild(root,3));
+		    	if(result==NULL)
 			{
 				result=tempAST;
 			}
@@ -571,116 +571,116 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 				while(ASTptr->node.binaryNode.expr1!=NULL)ASTptr=ASTptr->node.binaryNode.expr1;
 				ASTptr->node.binaryNode.expr1=tempAST;
 			}
-	    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
-	        break;
+		    	tempAST->lineNumber=getNthChild(root,1)->leftChild->token_info.lineno;
+			break;
 	    case 74:
-	        result=NULL;
-	        break;
+			result=NULL;
+			break;
 	    case 75:
-	        result=createAST(getNthChild(root,1));
-	        break;
+			result=createAST(getNthChild(root,1));
+			break;
 	    case 76:
-	        result=createAST(getNthChild(root,2));
-	        break;
+			result=createAST(getNthChild(root,2));
+			break;
 	    //case 77-88 assigned in parent itself
 	    case 89:
-	    	result=createASTNode(DECLARE_NODE);
-	    	result->node.declareNode.idList=createAST(getNthChild(root,2));
+		    	result=createASTNode(DECLARE_NODE);
+		    	result->node.declareNode.idList=createAST(getNthChild(root,2));
 
-	       	typeNode=getNthChild(root,4);
-			dt=getDatatype(typeNode);
-			if(dt==DT_ARRAY)
-				result->node.declareNode.dataType=getType(getNthChild(typeNode,6));
-			else
-				result->node.declareNode.dataType=dt;
+		       	typeNode=getNthChild(root,4);
+				dt=getDatatype(typeNode);
+				if(dt==DT_ARRAY)
+					result->node.declareNode.dataType=getType(getNthChild(typeNode,6));
+				else
+					result->node.declareNode.dataType=dt;
 
-	        result->node.declareNode.Range=createAST(getNthChild(root,4));
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result->node.declareNode.Range=createAST(getNthChild(root,4));
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 90:
-	        result=createASTNode(CONDITION_NODE);
-	        strcpy(result->node.conditionNode.id,getNthChild(root,3)->token_info.lexeme);
-	        result->node.conditionNode.Case=createAST(getNthChild(root,6));
-	        result->node.conditionNode.Default=createAST(getNthChild(root,7));
-	        result->node.conditionNode.startLine=getNthChild(root,5)->token_info.lineno;
-	        result->node.conditionNode.endLine=getNthChild(root,8)->token_info.lineno;
-	        tmp=(getNthChild(root,7)->ruleNumber);
-	        if(tmp==98)
-	        	result->node.conditionNode.presentDefault=0;
-	        else
-	        	result->node.conditionNode.presentDefault=1;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(CONDITION_NODE);
+			strcpy(result->node.conditionNode.id,getNthChild(root,3)->token_info.lexeme);
+			result->node.conditionNode.Case=createAST(getNthChild(root,6));
+			result->node.conditionNode.Default=createAST(getNthChild(root,7));
+			result->node.conditionNode.startLine=getNthChild(root,5)->token_info.lineno;
+			result->node.conditionNode.endLine=getNthChild(root,8)->token_info.lineno;
+			tmp=(getNthChild(root,7)->ruleNumber);
+			if(tmp==98)
+				result->node.conditionNode.presentDefault=0;
+			else
+				result->node.conditionNode.presentDefault=1;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 91:
-	        result=createASTNode(CASE_NODE);
-	        result->node.caseNode.value=createAST(getNthChild(root,2));
-	        result->node.caseNode.stmt=createAST(getNthChild(root,4));
-	        result->node.caseNode.next=createAST(getNthChild(root,7));
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(CASE_NODE);
+			result->node.caseNode.value=createAST(getNthChild(root,2));
+			result->node.caseNode.stmt=createAST(getNthChild(root,4));
+			result->node.caseNode.next=createAST(getNthChild(root,7));
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 92:
-	        result=createASTNode(CASE_NODE);
-	        result->node.caseNode.value=createAST(getNthChild(root,2));
-	        result->node.caseNode.stmt=createAST(getNthChild(root,4));
-	        result->node.caseNode.next=createAST(getNthChild(root,7));
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(CASE_NODE);
+			result->node.caseNode.value=createAST(getNthChild(root,2));
+			result->node.caseNode.stmt=createAST(getNthChild(root,4));
+			result->node.caseNode.next=createAST(getNthChild(root,7));
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 93:
-	        result=NULL;
-	        break;
+			result=NULL;
+			break;
 	    case 94:
-	        result=createASTNode(NUM_NODE);
-	        result->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(NUM_NODE);
+			result->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 95:
-	        result=createASTNode(BOOL_NODE);
-	        result->node.boolNode.value=BOOL_TRUE;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(BOOL_NODE);
+			result->node.boolNode.value=BOOL_TRUE;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 96:
-	        result=createASTNode(BOOL_NODE);
-	        result->node.boolNode.value=BOOL_FALSE;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(BOOL_NODE);
+			result->node.boolNode.value=BOOL_FALSE;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 97:
-	        result=createAST(getNthChild(root,3));
-	        if(result!=NULL)
-	        	result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createAST(getNthChild(root,3));
+			if(result!=NULL)
+				result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 98:
-	        result=NULL;
-	        break;
+			result=NULL;
+			break;
 	    case 99:
-	        result=createASTNode(FOR_NODE);
-	        strcpy(result->node.forNode.id,getNthChild(root,3)->token_info.lexeme);
-	        result->node.forNode.range=createAST(getNthChild(root,5));
-	        result->node.forNode.stmt=createAST(getNthChild(root,8));
-	        result->node.forNode.startLine=getNthChild(root,7)->token_info.lineno;
-	        result->node.forNode.endLine=getNthChild(root,9)->token_info.lineno;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(FOR_NODE);
+			strcpy(result->node.forNode.id,getNthChild(root,3)->token_info.lexeme);
+			result->node.forNode.range=createAST(getNthChild(root,5));
+			result->node.forNode.stmt=createAST(getNthChild(root,8));
+			result->node.forNode.startLine=getNthChild(root,7)->token_info.lineno;
+			result->node.forNode.endLine=getNthChild(root,9)->token_info.lineno;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 100:
-	        result=createASTNode(WHILE_NODE);
-	        result->node.whileNode.expr=createAST(getNthChild(root,3));
-	        result->node.whileNode.stmt=createAST(getNthChild(root,6));
-	        result->node.whileNode.startLine=getNthChild(root,5)->token_info.lineno;
-	        result->node.whileNode.endLine=getNthChild(root,7)->token_info.lineno;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
+			result=createASTNode(WHILE_NODE);
+			result->node.whileNode.expr=createAST(getNthChild(root,3));
+			result->node.whileNode.stmt=createAST(getNthChild(root,6));
+			result->node.whileNode.startLine=getNthChild(root,5)->token_info.lineno;
+			result->node.whileNode.endLine=getNthChild(root,7)->token_info.lineno;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
 	    case 101:
-	        result=createASTNode(RANGE_NODE);
-	        result->node.rangeNode.Range1=createASTNode(NUM_NODE);
-	        result->node.rangeNode.Range1->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        result->node.rangeNode.Range1->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
+			result=createASTNode(RANGE_NODE);
+			result->node.rangeNode.Range1=createASTNode(NUM_NODE);
+			result->node.rangeNode.Range1->lineNumber=getNthChild(root,1)->token_info.lineno;
+			result->node.rangeNode.Range1->node.numNode.num=getNthChild(root,1)->token_info.value.value.num;
 
-	        result->node.rangeNode.Range2=createASTNode(NUM_NODE);
-	        result->node.rangeNode.Range2->node.numNode.num=getNthChild(root,3)->token_info.value.value.num;
-	        result->node.rangeNode.Range2->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        result->lineNumber=getNthChild(root,1)->token_info.lineno;
-	        break;
-    }
-    return result;
+			result->node.rangeNode.Range2=createASTNode(NUM_NODE);
+			result->node.rangeNode.Range2->node.numNode.num=getNthChild(root,3)->token_info.value.value.num;
+			result->node.rangeNode.Range2->lineNumber=getNthChild(root,1)->token_info.lineno;
+			result->lineNumber=getNthChild(root,1)->token_info.lineno;
+			break;
+	}
+	return result;
 }
 
 //Utility function for printing AST tree
@@ -807,7 +807,7 @@ void printInlineAstTree(struct ASTNode *root, int spaces){
 
 void countASTNodes(struct ASTNode *root, int *count)
 {
-	if(root == NULL)return;
+	if(root == NULL)	return;
 	*count+=1;
 	switch(root->tag){
 		case PROGRAM_NODE:

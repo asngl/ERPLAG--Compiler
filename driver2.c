@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 				//Generate ASM code
 				generateProgramCode(AST_root,argv[2]);
 				printf("Code generated.\nRun with:\n");
-				printf("	nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out\n",argv[2]);
+				printf("\tnasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out\n",argv[2]);
 			default:
 				break;
 		}
