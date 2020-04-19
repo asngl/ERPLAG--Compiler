@@ -372,7 +372,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 		if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 		{
 			ERROR_FLAG=1;
-			printf("SYNTAX ERROR:Encountered invalid token at end of file\n");
+			printf("Line %d : Syntax error : Encountered invalid token at end of file\n",token_info.lineno);
 			break;
 			//exit(0);
 		}
@@ -407,7 +407,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 				}
 				else
 					currNode=currNode->rightSibling;
-				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+				printf("Line %d : Synatax error : Encountered unexpected token %s while parsing\n",token_info.lineno,token_info.lexeme);
 				ERROR_FLAG=1;
 				readNextTokenFlag=0;
 				continue;
@@ -420,7 +420,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 			if(parsingTableEntry==-1)
 			{
 				// HANDLE ERROR
-				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+				printf("Line %d : Synatax error : Encountered unexpected token %s while parsing\n",token_info.lineno,token_info.lexeme);
 				ERROR_FLAG=1;
 				readNextTokenFlag=1;
 				continue;
@@ -430,7 +430,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 				// HANDLE SYN
 				if(debugMode)
 					printf("Trying to access parseTable:: %s,%s -> USE RULE %d\n",mapping[stackTopNonTerminal+NUM_OF_TERMINALS].str,mapping[readTerminal].str,parsingTableEntry+1);
-				printf("SYNTAX ERROR:Encountered unexpected token while parsing.\n\tLINE NUMBER %d: %s\n",token_info.lineno,token_info.lexeme);
+				printf("Line %d : Synatax error : Encountered unexpected token %s while parsing\n",token_info.lineno,token_info.lexeme);
 				ERROR_FLAG=1;
 				pop(stack);
 				currNode->errorFlag=1;
