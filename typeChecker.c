@@ -16,6 +16,7 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
         if(strcmp(ptr->varName,name)==0)
         {
             printf("Line %d : Attempt to modify variable %s used in a for loop at line %d\n",lineNumber,name,ptr->lineNumber);
+            ERROR_FLAG = 1;
             correct=0;
         }
         ptr=ptr->next;
@@ -68,6 +69,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			if(root->node.idNode.index!=NULL){
 			    if(leftType.arrayFlag==0){
 			        printf("Line %d : Cannot index a non-array variable %s\n",root->lineNumber,root->node.idNode.varName);
+			        ERROR_FLAG = 1;
 			        type.type=DT_ERROR;
 					type.arrayFlag=0;
 					return type;
@@ -77,6 +79,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(leftType.low.bound > root->node.idNode.index->node.numNode.num)
 			        {
 			            printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+				        ERROR_FLAG = 1;
 				        type.type=DT_ERROR;
 						type.arrayFlag=0;
 						return type;
@@ -84,6 +87,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(leftType.high.bound < root->node.idNode.index->node.numNode.num)
 			        {
 			            printf("Line %d : index %d used is out of bounds [%d,%d]\n",root->lineNumber,root->node.idNode.index->node.numNode.num,leftType.low.bound,leftType.high.bound);
+			            ERROR_FLAG = 1;
 			            type.type=DT_ERROR;
 						type.arrayFlag=0;
 						return type;
@@ -99,14 +103,17 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
                         if(varptr->type.type!=DT_INTEGER)
                         {
                             printf("Line %d : Index Variable %s is not of Integer type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                        	ERROR_FLAG = 1;
                         }
                         else if(varptr->type.arrayFlag==1)
                         {
                             printf("Line %d : Index Variable %s cannot be of Array type\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                        	ERROR_FLAG = 1;
                         }
                         else if(varptr->initFlag==0)
                         {
                             printf("Line %d : Index Variable %s not initialised\n",root->lineNumber,root->node.idNode.index->node.idNode.varName);
+                        	ERROR_FLAG = 1;
                         }
                     }
                 }
@@ -127,12 +134,14 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			if(type.type==DT_ERROR)return type;
 			if(type.type == DT_BOOLEAN){
 				printf("Line %d : unary operations cannot be applied on Boolean expressions\n",root->lineNumber);
+				ERROR_FLAG = 1;
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
 			}
 			if(type.arrayFlag==1){
 				printf("Line %d : unary operations cannot be applied on an array\n",root->lineNumber);
+				ERROR_FLAG = 1;
 				type.type=DT_ERROR;
 				type.arrayFlag=0;
 				return type;
@@ -151,6 +160,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			if(type.arrayFlag==1 || type2.arrayFlag==1 )
 			{
 			    printf("Line %d : binary operations cannot be applied on an array\n",root->lineNumber);
+			    ERROR_FLAG = 1;
 			    return type;
 			}
 			switch(root->node.binaryNode.op) //enum Operator{OP_PLUS,OP_MINUS,OP_MUL,OP_DIV,OP_AND,OP_OR,OP_LT, OP_LE, OP_GE, OP_GT, OP_EQ, OP_NE};
@@ -159,6 +169,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
 			            printf("Line %d : Cannot perform arithmetic operation on boolean type operands.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -166,6 +177,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        else if(type.type!=type2.type)
 			        {
 			            printf("Line %d : Cannot perform arithmetic operation with one int and one real operand.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -176,6 +188,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(type.type!=DT_BOOLEAN || type2.type!=DT_BOOLEAN)
 			        {
 			            printf("Line %d : Cannot perform logical operation on non-boolean type operands.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -186,6 +199,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(type.type==DT_BOOLEAN || type2.type==DT_BOOLEAN)
 			        {
 			            printf("Line %d : Cannot perform inequality operations on boolean type operands.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -193,6 +207,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        else if(type.type!=type2.type)
 			        {
 			            printf("Line %d : Cannot perform relational operations with one int and one real operand.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -204,6 +219,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 			        if(type.type!=type2.type)
 			        {
 			            printf("Line %d : Cannot perform equality operations with differing datatype operands.\n",root->lineNumber);
+                        ERROR_FLAG = 1;
                         type.type=DT_ERROR;
                         type.arrayFlag=0;
 			            return type;
@@ -281,6 +297,7 @@ int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *r
         return (setModifyFlagExpression(context,parent,root->node.binaryNode.expr1,bit) | setModifyFlagExpression(context,parent,root->node.binaryNode.expr2,bit));
     else{
         printf("Wrong node encountered in Expression in ast\n");
+        ERROR_FLAG = 1;
         return 0;
     }
 }
@@ -313,6 +330,7 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
     }
     if(parent->parent==NULL){
         printf("Line %d : Variable %s is not declared\n",lineNumber,name);
+        ERROR_FLAG = 1;
         return NULL;
     }
     return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);
@@ -392,12 +410,14 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             currfunc=searchSymbolTable(symbolTable,funcName);
             if(currfunc==NULL){
             	printf("Cannot access current function \n");
+            	ERROR_FLAG = 1;
             	return;
             }
             if(funcptr==NULL)
                 return;
             if(funcptr->defineFlag!=1){
                 printf("Line %d : Function : %s is declared but not defined\n",root->lineNumber,root->node.moduleReuseNode.id);
+                ERROR_FLAG = 1;
                 return;
             }
             ptr = root->node.moduleReuseNode.idList;
@@ -409,6 +429,7 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
                 	continue;
                 }
                 if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
+                    ERROR_FLAG = 1;
                     printf("Line %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
                 }
                 paraptr=paraptr->next;
@@ -416,9 +437,11 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
             }
             if(ptr!=NULL){
                 printf("Line %d : more input variables used in the statement than actual needed\n",root->lineNumber);
+            	ERROR_FLAG = 1;
             } 
             if(paraptr!=NULL){
                 printf("Line %d : less input variables used in the statement than actual needed\n",root->lineNumber);
+            	ERROR_FLAG = 1;
             }      
             ptr = root->node.moduleReuseNode.optional;
             paraptr = funcptr->outputParaList;
@@ -430,15 +453,18 @@ void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[]){
                 }
                 if(assertTypeEquality(paraptr->type,ptr->localTableEntry->type,ptr->lineNumber)==0){
                     printf("Line %d : type mismatch for input variable %s and parameter %s\n",ptr->lineNumber,ptr->node.idListNode.varName,paraptr->varName);
+                	ERROR_FLAG = 1;
                 }
                 paraptr=paraptr->next;
                 ptr=ptr->node.idListNode.next;
             }
             if(ptr!=NULL){
                 printf("Line %d : more output variables used in the statement than actual needed\n",root->lineNumber);
+            	ERROR_FLAG = 1;
             } 
             if(paraptr!=NULL){
                 printf("Line %d : less output variables used in the statement than actual needed\n",root->lineNumber);
+				ERROR_FLAG = 1;            
             }
             secondPass(root->node.moduleReuseNode.next,symbolTable,funcName);
             break;
