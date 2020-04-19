@@ -67,12 +67,22 @@ int main(int argc, char *argv[])
 				printInlineParseTree(root,1);
 				break;
 			case 3:
-				//Print AST 
+				//Print AST
+				if(stage1_errorflag)
+				{
+					printf("Lexical/Syntactical errors present---Invalid option");
+					break; 
+				}
 				printf("The Abstract Syntax Tree is traversed inorder\n");
 				printInlineAstTree(AST_root,1);
 				break;
 			case 4:
 				//Allocated Memory
+				if(stage1_errorflag)
+				{
+					printf("Lexical/Syntactical errors present---Invalid option");
+					break; 
+				}
 				countParseNodes(root,&parseNodes);
 				countASTNodes(AST_root,&astNodes);
 				parseMem=parseNodes*sizeof(struct ParseTreeNode);				    
@@ -87,7 +97,7 @@ int main(int argc, char *argv[])
 				//populate Symbol Table and print
 				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present---Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Invalid option");
 					break; 
 				}
 				printSymbolTable(mainTable);
@@ -96,7 +106,7 @@ int main(int argc, char *argv[])
 				//Print activation records and their width
 				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present---Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Invalid option");
 					break; 
 				}
 				printRecordWidth(mainTable);	
@@ -105,7 +115,7 @@ int main(int argc, char *argv[])
 				//Print array variables and their info
 				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present---Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Invalid option");
 					break; 
 				}
 				printArrayVariables(mainTable);
@@ -128,6 +138,7 @@ int main(int argc, char *argv[])
 				printf("Total CPU time in seconds = %F\n", total_CPU_time_in_seconds);
 				break;
 			case 9:
+				//Generate ASM code
 				generateProgramCode(AST_root,argv[2]);
 				printf("Code generated.\nRun with:\n");
 				printf("	nasm -felf64 %s -o out.o && gcc -no-pie out.o && ./a.out\n",argv[2]);
