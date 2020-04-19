@@ -25,10 +25,10 @@ int main(int argc, char *argv[])
 	SymbolTable *mainTable;
 	
 	root=parseInputSourceCode(argv[1]);
-	AST_root=createAST(root);
 	int stage1_errorflag=ERROR_FLAG;
 	if(!stage1_errorflag)
 	{
+		AST_root=createAST(root);
 		mainTable=populateSymbolTable(AST_root);
 	}
 	if(!ERROR_FLAG)
