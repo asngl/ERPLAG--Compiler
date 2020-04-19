@@ -350,8 +350,7 @@ struct ParseTreeNode *parseInputSourceCode(char *testFile)
 		{
 			if(topOfStack.s.tag==0 && topOfStack.s.symbol.T == FEOF)
 			{
-				if(ERROR_FLAG==0)
-				printf("Finished Parsing Successfully.\n");
+				// Finished Parsing Successfully.
 				break;
 			}
 			else if((topOfStack.s.tag==1 && parseTable[topOfStack.s.symbol.NT][readTerminal]<0)||(topOfStack.s.tag==0)) //If top of stack is not Nullable
