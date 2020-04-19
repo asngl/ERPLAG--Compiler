@@ -421,7 +421,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        push    rcx\n");
                     fprintf(fp,"        push    rbx\n");
                     fprintf(fp,"        push    rsi\n");
-                    fprintf(fp,"        mov    rax,qword [rsi-rbx*%d]\n",BOOLEAN_WIDTH);    
+                    fprintf(fp,"        imul    rax,rbx,%d\n",BOOLEAN_WIDTH);
+                    SUB(RSI,RAX);
+                    fprintf(fp,"        mov    rax,qword [rsi]\n");    
                     fprintf(fp,"        cmp    rax,0\n");
                     fprintf(fp,"        jz    _label%d\n",label1);
                     fprintf(fp,"        mov    rdi,_formatBooleanTrue\n");
@@ -586,7 +588,9 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        cmp    rcx,rsi\n");
                     fprintf(fp,"        jl    _indexerrorlabel_\n");
                     fprintf(fp,"        sub    rsi,rdx\n");
-                    fprintf(fp,"        mov   rax,qword [r8-rsi*%d]\n",BOOLEAN_WIDTH);
+                    fprintf(fp,"        imul    rax,rsi,%d\n",BOOLEAN_WIDTH);
+                    SUB(R8,RAX);
+                    fprintf(fp,"        mov   rax,qword [r8]\n");
                     int label,label2;
                     label=createLabel();
                     label2=createLabel();
@@ -887,7 +891,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"        jge     _label%d\n",label);
                         fprintf(fp,"        mov     rcx,1\n");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
@@ -908,7 +912,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"        jg      _label%d\n",label);
                         fprintf(fp,"        mov     rcx,1\n");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
@@ -929,7 +933,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"        jle     _label%d\n",label);
                         fprintf(fp,"        mov     rcx,1\n");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
@@ -948,9 +952,9 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         fprintf(fp,"        mov     rcx,0\n");
                         fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"        jl      _label%d",label);
-                        fprintf(fp,"        mov     rcx,1");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        jl      _label%d]\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
@@ -969,9 +973,9 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         fprintf(fp,"        mov     rcx,0\n");
                         fprintf(fp,"        cmp     rax,rbx\n");
                         label=createLabel();
-                        fprintf(fp,"        jnz     _label%d",label);
-                        fprintf(fp,"        mov     rcx,1");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"        jnz     _label%d\n",label);
+                        fprintf(fp,"        mov     rcx,1\n");
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth);
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
@@ -992,7 +996,7 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
                         label=createLabel();
                         fprintf(fp,"        jz      _label%d\n",label);
                         fprintf(fp,"        mov     rcx,1\n");
-                        fprintf(fp,"_label%d:",label);
+                        fprintf(fp,"_label%d:\n",label);
                         fprintf(fp,"        mov     [_booltmp%d],rcx\n",depth); 
                     }else{
                         fprintf(fp,"        movsd   xmm0,qword [_flttmp%d]\n",depth+1);
