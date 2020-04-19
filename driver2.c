@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
 	
 	root=parseInputSourceCode(argv[1]);
 	AST_root=createAST(root);
-	if(!ERROR_FLAG)
+	int stage1_errorflag=ERROR_FLAG;
+	if(!stage1_errorflag)
 	{
 		mainTable=populateSymbolTable(AST_root);
 	}
@@ -84,27 +85,27 @@ int main(int argc, char *argv[])
 				break;
 			case 5:
 				//populate Symbol Table and print
-				if(ERROR_FLAG)
+				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Symbol Table not populated");
 					break; 
 				}
 				printSymbolTable(mainTable);
 				break;
 			case 6:
 				//Print activation records and their width
-				if(ERROR_FLAG)
+				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Symbol Table not populated");
 					break; 
 				}
 				printRecordWidth(mainTable);	
 				break;
 			case 7:
 				//Print array variables and their info
-				if(ERROR_FLAG)
+				if(stage1_errorflag)
 				{
-					printf("Lexical/Syntactical errors present; Symbol Table not populated");
+					printf("Lexical/Syntactical errors present---Symbol Table not populated");
 					break; 
 				}
 				printArrayVariables(mainTable);
@@ -112,9 +113,8 @@ int main(int argc, char *argv[])
 			case 8:
 				// Print both total_CPU_time and total_CPU_time_in_seconds 
 				start_time = clock();
-				ERROR_FLAG=0;
 			    	root=parseInputSourceCode(argv[1]);
-				if(!ERROR_FLAG)
+				if(!stage1_errorflag)
 				{	
 					AST_root=createAST(root);
 					mainTable=populateSymbolTable(AST_root);
