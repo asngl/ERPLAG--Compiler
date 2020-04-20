@@ -396,14 +396,24 @@ void printArrayPL(ParameterList *list,char *funcName,Scope scope)
 		if(list->type.arrayFlag) //array type variable
 		{
 			char scope_string[25];
-			printf("\t%-21s%-25s%-21s%-20s",funcName,scopeToString(scope_string,scope.startLine,scope.endLine),list->varName,"static array");
+			printf("\t%-21s%-25s%-21s%-20s",funcName,scopeToString(scope_string,scope.startLine,scope.endLine),list->varName,list->type.isStatic?"static array":"dynamic array");
 			char s[25];
-			char int1[10],int2[10];
 			s[0]='[';
 			s[1]='\0';
-			strncat(s,to_string(list->type.low.bound,int1),25);
+			if(list->type.tagLow==0)
+			{
+				char int1[10];
+				strncat(s,to_string(list->type.low.bound,int1),25);
+			}
+			else
+				strncat(s,list->type.low.lexeme,25);
 			strncat(s,",",25);
-			strncat(s,to_string(list->type.high.bound,int2),25);
+			if(list->type.tagHigh==0){
+				char int2[10];
+				strncat(s,to_string(list->type.high.bound,int2),25);
+			}
+			else
+				strncat(s,list->type.high.lexeme,25);
 			strncat(s,"]",25);
 			printf("%-30s",s);
 			switch(list->type.type) //type of array variable
