@@ -13,6 +13,7 @@ Ayush Singhal  2017A7PS0116P
 
 struct stackItem ERR_stackItem;
 
+//Function to initialize stack
 struct STACK *createStack(int capacity){
 	struct STACK *s;
 	s=(struct STACK *)malloc(sizeof(struct STACK));
@@ -22,11 +23,13 @@ struct STACK *createStack(int capacity){
 	return s;
 }
 
+//Function to check if stack is empty
 int isEmpty(struct STACK *s){
 	if(s->top == -1) return 1;
 	return 0;
 }
 
+//Function to push item onto stack
 int push(struct STACK *s, struct stackItem item) //0 for success and 1 for failure
 { 
     if (s->top+1 >= s->capacity) 
