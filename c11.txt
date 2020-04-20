@@ -6,13 +6,13 @@ Multiple modules with the driver module with single level of nesting
 
 **
 <<module array_parameter_demo>>
-takes input[ B: array[10..14] ofinteger, C:array[low..high] of integer];
+takes input[ B: array[10..14] of integer, C:array[low..high] of integer];
 returns [sum1:integer, sum2: integer, sum3:integer];
 start
 	print(B);
 	print(C);               
 
-	declare k, i, p, q: integer;
+	declare k, i, p, q,j,index: integer;
 	get_value(p);	
 	get_value(q);
 	declare A, D: array[10..14] of integer;                          
