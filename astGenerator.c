@@ -17,6 +17,7 @@ Ayush Singhal  2017A7PS0116P
 #include <string.h>
 
 
+//Converts enum used for operators in Parse Tree to enum used for operators in AST
 enum Operator getOperator(struct ParseTreeNode *root)
 {
 	switch(root->leftChild->token_info.token)
@@ -52,6 +53,8 @@ enum Operator getOperator(struct ParseTreeNode *root)
 	return OP_PLUS;
 }
 
+
+//Utility function to initialize struct ASTNode pointer 
 struct ASTNode *createASTNode(enum NodeType nodeType)
 {
     struct ASTNode *node=malloc(sizeof(struct ASTNode));
@@ -59,6 +62,9 @@ struct ASTNode *createASTNode(enum NodeType nodeType)
     node->lineNumber=-1;
     return node;
 }
+
+
+//Retrieves Nth child of Parse Tree Node while traversing its children starting from left
 struct ParseTreeNode *getNthChild(struct ParseTreeNode *parent,int childNumber)
 {
     struct ParseTreeNode *result=parent->leftChild;
@@ -66,7 +72,11 @@ struct ParseTreeNode *getNthChild(struct ParseTreeNode *parent,int childNumber)
     while(childNumber--)result=result->rightSibling;
     return result;
 }
-enum Datatype getDatatype(struct ParseTreeNode* pt)//Only works if the nonterminal expanded is 'datatype' not 'type'
+
+
+//Utility function to retrieve datatype while traversing output parameter list
+//Note : Only works if the nonterminal expanded is 'datatype' not 'type'
+enum Datatype getDatatype(struct ParseTreeNode* pt)
 {
 	if(pt->ruleNumber==16)return DT_INTEGER;
 	else if(pt->ruleNumber==17)return DT_REAL;
@@ -78,7 +88,10 @@ enum Datatype getDatatype(struct ParseTreeNode* pt)//Only works if the nontermin
 		return DT_INTEGER;
 	}
 }
-enum Datatype getType(struct ParseTreeNode* pt)//Only works if the nonterminal expanded is 'type' not 'datatype'
+
+//Utility function to retrieve datatype while traversing input parameter list
+//Note : Only works if the nonterminal expanded is 'type' not 'datatype'
+enum Datatype getType(struct ParseTreeNode* pt)
 {
 	if(pt->ruleNumber==21)return DT_INTEGER;
 	else if(pt->ruleNumber==22)return DT_REAL;
@@ -89,7 +102,10 @@ enum Datatype getType(struct ParseTreeNode* pt)//Only works if the nonterminal e
 		return DT_INTEGER;
 	}
 }
-void assignNext(struct ASTNode *left, struct ASTNode *right)//Utility fucntion to assign the next field of any of the statements node
+
+
+//Utility fucntion to assign the next field of any of the statements node
+void assignNext(struct ASTNode *left, struct ASTNode *right)
 {
 	switch(left->tag)
 	{
@@ -117,6 +133,10 @@ void assignNext(struct ASTNode *left, struct ASTNode *right)//Utility fucntion t
 			return;
 	}
 }
+
+
+
+//Creates Abstract Syntax Tree in a recursive manner
 struct ASTNode *createAST(struct ParseTreeNode *root)
 {
 	struct ASTNode *result;
@@ -689,11 +709,14 @@ struct ASTNode *createAST(struct ParseTreeNode *root)
 	return result;
 }
 
-//Utility function for printing AST tree
+//Utility function for printing AST
 void printSpaces2(int n)
 {
 	while(n--)printf("--");
 }
+
+
+//Prints the Abstract Syntax tree using inorder traversal
 void printInlineAstTree(struct ASTNode *root, int spaces){
 
 	if(root == NULL)return;
@@ -811,6 +834,8 @@ void printInlineAstTree(struct ASTNode *root, int spaces){
 	}
 }
 
+
+//count total nodes present in the AST in a recursive fashion
 void countASTNodes(struct ASTNode *root, int *count)
 {
 	if(root == NULL)	return;

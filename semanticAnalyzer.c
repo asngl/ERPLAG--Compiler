@@ -23,8 +23,9 @@ Ayush Singhal  2017A7PS0116P
 #define controlSize 20
 
 
-StringList *undeclaredVariables;
+StringList *undeclaredVariables;	//List of undeclared variables
 
+//Utlity function to free up the undeclaredVariables list
 void resetStringList()
 {
 	StringList *list,*ptr;
@@ -38,7 +39,9 @@ void resetStringList()
 	undeclaredVariables=NULL;
 }
 
-int checkStringList(char *name)// returns 1 if name is present in string list
+
+// Search for variable in undeclaredVariables, return 1 if found
+int checkStringList(char *name)
 {
 	StringList *list;
 	list=undeclaredVariables;
@@ -55,6 +58,8 @@ int checkStringList(char *name)// returns 1 if name is present in string list
 	return 0;
 }
 
+
+//Initialize LocalTable pointer
 LocalTable *newLocalTable(){
 	LocalTable *node;
 	node=(LocalTable *)malloc(sizeof(LocalTable));
@@ -71,6 +76,7 @@ LocalTable *newLocalTable(){
 }
 
 
+//Return width of local variable
 int getWidthLocal(Type type){
 	if(type.arrayFlag ==1){
 		if(type.isStatic==0)
@@ -98,7 +104,7 @@ int getWidthLocal(Type type){
 	return 0;
 }
 
-
+//Check if variable has been declared before use and return VariableEntry, if not raise error
 VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, char name[], int lineNumber){
 	VariableEntry *currVar;
 	currVar=context.outputList;
@@ -129,10 +135,10 @@ VariableEntry *checkDeclarationBeforeUse(Context context,LocalTable *parent, cha
 		ERROR_FLAG = 1;
 		return NULL;
 	}
-	return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);
-    
+	return checkDeclarationBeforeUse(context,parent->parent,name,lineNumber);    
 }
 
+//Search LocalTable for variable using variable name, return pointer to VariableEntry if found
 VariableEntry *searchLocalTable(LocalTable *localTable,char *string)
 {
 	int hash;
@@ -149,8 +155,8 @@ VariableEntry *searchLocalTable(LocalTable *localTable,char *string)
 }
 
 
-
-int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root,int baseOffset)	//returns offset after allocation
+//Insert all declared variables in LocalTable and raise errors appropriately
+int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root,int baseOffset)	
 {
 	struct ASTNode *currVar;
 	VariableEntry *varptr;
@@ -274,7 +280,7 @@ int insertLocalTable(Context context,LocalTable *localTable,struct ASTNode *root
 }
 
 
-
+//Add LocalTable to tree ofo LocalTables if new block/scope is being formed within function
 void addChild(LocalTable *parent, LocalTable *child)
 {
 	LocalTable *ptr;
@@ -292,6 +298,7 @@ void addChild(LocalTable *parent, LocalTable *child)
 	child->parent=parent;
 	return;
 }
+
 
 
 LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *head,int baseOffset)
@@ -685,7 +692,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							}
 							if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
 							{
-								printf("Line %d : index %d used is out of bounds \n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
+								printf("Line %d : index %d used is out of bounds ",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
 								printf("[%d,%d]\n",leftType.low.bound,leftType.high.bound);
 								ERROR_FLAG=1;
 							}
@@ -949,6 +956,8 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 	return parent;
 }
 
+
+//
 void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[])
 {
 
