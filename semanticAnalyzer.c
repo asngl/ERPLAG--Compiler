@@ -299,8 +299,7 @@ void addChild(LocalTable *parent, LocalTable *child)
 	return;
 }
 
-
-
+//Function to populate variables for the scope of a given condition node, implemented differently as all case nodes need to have same scope
 LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *parentOfparent,struct ASTNode *head,int baseOffset)
 {
 	LocalTable *parent=newLocalTable();
@@ -638,7 +637,7 @@ LocalTable *populateConditionNodeLocalTable(struct Context context,LocalTable *p
 	return parent;
 }
 
-
+//Function to populate symbol table for a given scope
 LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct ASTNode *root,int baseOffset)
 {
 	LocalTable *parent=newLocalTable();
@@ -957,7 +956,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 }
 
 
-//
+//Function to implement type checking in second pass, includes type and parameter matching for a given function call
 void secondPass(struct ASTNode *root, SymbolTable symbolTable,char funcName[])
 {
 
