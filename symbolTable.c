@@ -22,7 +22,9 @@ Ayush Singhal  2017A7PS0116P
 #define boolWidth 1
 #define controlSize 20
 
-int computeHashFromString(char *str){
+//finds the bucket in hash table
+//used in searchSymbolTable and insertSymbolTable
+int computeHashFromString(char *str){ 
 	int sum=0,i=0;
 	while(str[i]!='\0'){
 		sum+=str[i];
@@ -32,6 +34,8 @@ int computeHashFromString(char *str){
 	return sum;
 }
 
+//search a function in symbolTable
+//returns FunctionTable pointer if found, else NULL
 FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string){
 	int hash;
 	hash=computeHashFromString(string);
@@ -46,6 +50,7 @@ FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string){
 	return NULL;
 }
 
+//Initializes a FunctionTable node
 FunctionTable *newFunctionNode(char *funcName){
 	FunctionTable *newNode;
 	newNode=(FunctionTable *)malloc(sizeof(FunctionTable));
@@ -66,6 +71,7 @@ FunctionTable *newFunctionNode(char *funcName){
 	return newNode;
 }
 
+//returns the width of datatype
 int getWidth(Type type){
 	if(type.arrayFlag ==1){
 		return arrayWidth+2*intWidth;
@@ -83,7 +89,7 @@ int getWidth(Type type){
 
 
 
-
+//populates input and output parameter list and returns its pointer
 ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
 	if (root==NULL)
 	{
@@ -93,40 +99,40 @@ ParameterList *populateParaList(struct ASTNode *root,int baseOffset){
 	initNode=(ParameterList *)malloc(sizeof(ParameterList));
 	strcpy(initNode->varName,root->node.paraListNode.name);
 	initNode->type.type=root->node.paraListNode.type;
-	if(root->node.paraListNode.Range==NULL){
+	if(root->node.paraListNode.Range==NULL){ //non-array type
 		initNode->type.arrayFlag=0;
 	}
 	else{
 		initNode->type.arrayFlag=1;
 		if(root->node.paraListNode.Range->node.rangeNode.Range1->tag == ID_NODE){
-			initNode->type.tagLow=1;
+			initNode->type.tagLow=1; //lower bound is dynamic
 			strcpy(initNode->type.low.lexeme,root->node.paraListNode.Range->node.rangeNode.Range1->node.idNode.varName);
 		}else{
-			initNode->type.tagLow=0;
+			initNode->type.tagLow=0; //lower bound is static
 			initNode->type.low.bound=root->node.paraListNode.Range->node.rangeNode.Range1->node.numNode.num;
 		}
 		if(root->node.paraListNode.Range->node.rangeNode.Range2->tag == ID_NODE){
-			initNode->type.tagHigh=1;
+			initNode->type.tagHigh=1; //high bound is dynamic
 			strcpy(initNode->type.high.lexeme,root->node.paraListNode.Range->node.rangeNode.Range2->node.idNode.varName);
 		}else{
-			initNode->type.tagHigh=0;
+			initNode->type.tagHigh=0; //high bound is static
 			initNode->type.high.bound=root->node.paraListNode.Range->node.rangeNode.Range2->node.numNode.num;
 		}	
 		if(initNode->type.tagLow==0 && initNode->type.tagHigh==0){
-			initNode->type.isStatic =1;
+			initNode->type.isStatic =1; //if both low and high bound is static, isStatic equals 1
 		}else{
 			initNode->type.isStatic =0;
 		}
 	}
-	initNode->initFlag=0;
+	initNode->initFlag=0; //used to check if all output parameters are initialized 
 	initNode->lineNumber=root->lineNumber;
 	initNode->offset=baseOffset;
 	initNode->width = getWidth(initNode->type);
-	initNode->next=populateParaList(root->node.paraListNode.next,baseOffset+initNode->width);
-	return initNode;
+	initNode->next=populateParaList(root->node.paraListNode.next,baseOffset+initNode->width); //recusive call to populate next paraList node
+	return initNode; 
 }
 
-
+//clones ParameterList as VariableEntry 
 VariableEntry *cloneParaListAsVariables(ParameterList *list,int bit)
 {
 	if(list==NULL)
@@ -136,54 +142,55 @@ VariableEntry *cloneParaListAsVariables(ParameterList *list,int bit)
 	varptr->type=list->type;
 	varptr->offset=list->offset;
 	varptr->width=list->width;
-	varptr->initFlag=bit;
-	varptr->isParameter=1;
+	varptr->initFlag=bit; //1 if variable is initialized
+	varptr->isParameter=1; //1 for parameter
 	varptr->lineNumber=list->lineNumber;
-	varptr->next=cloneParaListAsVariables(list->next,bit);
+	varptr->next=cloneParaListAsVariables(list->next,bit); //recursive call to clone next paraList node to variableEntry node
 	return varptr;
 }
 
+//inserts a function in symbolTable
 FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
-	if(root->tag==MODULE_DECLARE_NODE){
+	if(root->tag==MODULE_DECLARE_NODE){ 
 		FunctionTable *ptr;
 		ptr=searchSymbolTable(symbolTable,root->node.moduleDeclareNode.moduleName);
-		if(ptr!=NULL){
+		if(ptr!=NULL){ //re-declaration of a function
 			printf("Line %d : Variable %s is already declared on line %d",root->lineNumber,root->node.moduleDeclareNode.moduleName,ptr->lineNumber);
 			ERROR_FLAG=1;
 			return NULL;
 		}
-		ptr = newFunctionNode(root->node.moduleDeclareNode.moduleName);
-		ptr->declareFlag=1;
+		ptr = newFunctionNode(root->node.moduleDeclareNode.moduleName); //new FunctionTable node
+		ptr->declareFlag=1; //function is decalared
 		ptr->lineNumber=root->lineNumber;
 		int hash;
-		hash=computeHashFromString(root->node.moduleDeclareNode.moduleName);
+		hash=computeHashFromString(root->node.moduleDeclareNode.moduleName); //compute the bucket for hashing 
 		FunctionTable *tmp;
-		tmp=symbolTable[hash].pointer;
+		tmp=symbolTable[hash].pointer; //retrieve the head of linked list
 		ptr->next=tmp;
-		symbolTable[hash].pointer=ptr;
-		return ptr;
+		symbolTable[hash].pointer=ptr; //insert at beginning of linked list
+		return ptr; //returns FunctionTable pointer 
 
 	}else
-	if (root->tag==MODULE_NODE)
+	if (root->tag==MODULE_NODE) //module definition
 	{
-		FunctionTable *ptr;
+		FunctionTable *ptr; 
 		ptr=searchSymbolTable(symbolTable,root->node.moduleNode.moduleName);
-		if(ptr==NULL){
+		if(ptr==NULL){ //not declared or defined before
 			ptr = newFunctionNode(root->node.moduleNode.moduleName);
 			ptr->lineNumberDef=root->lineNumber;
 			int hash;
-			hash=computeHashFromString(root->node.moduleNode.moduleName);
+			hash=computeHashFromString(root->node.moduleNode.moduleName); //compute the bucket for hashing 
 			FunctionTable *tmp;
 			tmp=symbolTable[hash].pointer;
 			ptr->next=tmp;
-			symbolTable[hash].pointer=ptr;
+			symbolTable[hash].pointer=ptr; //insert at beginning of linked list
 		}
-		if(ptr->defineFlag==1){
+		if(ptr->defineFlag==1){ //already defined 
 			printf("Line %d : Module %s is already defined on line %d\n",root->lineNumber, root->node.moduleNode.moduleName,ptr->lineNumberDef);
 			ERROR_FLAG=1;
 			return NULL;
 		}
-		if(ptr->declareFlag==1 && ptr->useFlag==-1){
+		if(ptr->declareFlag==1 && ptr->useFlag==-1){ //declared and defined but not used in between
 			printf("Line %d : Module %s definition and declaration are redundant\n", root->lineNumber, root->node.moduleNode.moduleName);
 			ERROR_FLAG=1;
 		}
@@ -191,7 +198,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->lineNumberDef=root->lineNumber;
 		ptr->scope.startLine=root->node.moduleNode.startLine;
 		ptr->scope.endLine=root->node.moduleNode.endLine;
-		ptr->inputParaList = populateParaList(root->node.moduleNode.inputList,0);
+		ptr->inputParaList = populateParaList(root->node.moduleNode.inputList,0); //populate inputParaList
 		int offset=0;
 		if(ptr->inputParaList==NULL){
 			offset=0;
@@ -201,9 +208,9 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 			tmp=ptr->inputParaList;
 			while(tmp->next!=NULL)
 				tmp=tmp->next;
-			offset=tmp->offset+tmp->width;
+			offset=tmp->offset+tmp->width; //Offset change
 		}
-		ptr->outputParaList = populateParaList(root->node.moduleNode.ret,offset);//Offset change
+		ptr->outputParaList = populateParaList(root->node.moduleNode.ret,offset); //populate outputParaList
 		if(ptr->outputParaList==NULL){}
 		else{
 			ParameterList *tmp;
@@ -223,8 +230,8 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->localTable = populateLocalTable(context,NULL,root->node.moduleNode.body,0);
 		VariableEntry *varptr=context.outputList;
 		while(varptr!=NULL)
-		{
-			if(varptr->initFlag==0)
+		{	//check initFlag to see if output parameter is assigned a value inside function definition or not
+			if(varptr->initFlag==0) 
 			{
 				printf("Line %d : Output paramter %s of Module %s is not assigned any value inside function definition.\n",ptr->scope.endLine,varptr->varName,context.funcName);
 				ERROR_FLAG=1;
@@ -237,7 +244,7 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 		ptr->activationRecordSize = ptr->localTable->size;
 		ptr->fsize+=ptr->activationRecordSize;
 		root->node.moduleNode.localVariablesSize= ptr->localTable->size;
-		return ptr;
+		return ptr; //returns FunctionTable pointer
 	}
 	else{
 		printf("Error in insertSymbolTable\n");
@@ -246,29 +253,31 @@ FunctionTable *insertSymbolTable(SymbolTable symbolTable,struct ASTNode *root){
 	}
 }
 
+//populates symbol table and returns its pointer
 SymbolTable *populateSymbolTable(struct ASTNode *root){
     SymbolTable *mainTable;
-    mainTable=(SymbolTable *)malloc(sizeof(SymbolTable));
+    mainTable=(SymbolTable *)malloc(sizeof(SymbolTable)); //allocate memory for symbol table
     for (int i = 0; i < MOD; ++i)
     {
     	(*mainTable)[i].pointer =NULL;
     }
+    //insert FunctionTable for each function in symbol table
     struct ASTNode *currNode;
     currNode=root->node.programNode.moduleDeclarations;
     while(currNode!=NULL){
-        insertSymbolTable(*mainTable,currNode);
+        insertSymbolTable(*mainTable,currNode); //module declarations
         currNode=currNode->node.moduleDeclareNode.next;
     }
     currNode=root->node.programNode.otherModules1;
     while(currNode!=NULL){        
-        insertSymbolTable(*mainTable,currNode);
+        insertSymbolTable(*mainTable,currNode); //module definitions
         currNode=currNode->node.moduleNode.next;
     }
     currNode=root->node.programNode.driverModule;
-    insertSymbolTable(*mainTable,currNode);
+    insertSymbolTable(*mainTable,currNode);  //driver module
     currNode=root->node.programNode.otherModules2;
     while(currNode!=NULL){        
-        insertSymbolTable(*mainTable,currNode);
+        insertSymbolTable(*mainTable,currNode); //module definitions
         currNode=currNode->node.moduleNode.next;
     }
     secondPass(root,*mainTable,"");
@@ -312,6 +321,7 @@ char *scopeToString(char *s,int start,int end)
 	return s;
 }
 
+//used in printArrayLT to print local array variables 
 void printArrayVar(VariableEntryTable varTable, char *funcName,Scope scope)
 {
 	VariableEntry *ptr;
@@ -365,7 +375,7 @@ void printArrayVar(VariableEntryTable varTable, char *funcName,Scope scope)
 
 
 
-
+//print local array variables of function funcName
 void printArrayLT(LocalTable *node, char *funcName)
 {
 	if(node==NULL)	return;
@@ -377,11 +387,13 @@ void printArrayLT(LocalTable *node, char *funcName)
 		node=node->rightSibling;
 	}
 }
+
+//prints array variables in parameter list for function funcName
 void printArrayPL(ParameterList *list,char *funcName,Scope scope)
 {
 	while(list!=NULL)
 	{
-		if(list->type.arrayFlag)
+		if(list->type.arrayFlag) //array type variable
 		{
 			char scope_string[25];
 			printf("\t%-21s%-25s%-21s%-20s",funcName,scopeToString(scope_string,scope.startLine,scope.endLine),list->varName,"static array");
@@ -394,7 +406,7 @@ void printArrayPL(ParameterList *list,char *funcName,Scope scope)
 			strncat(s,to_string(list->type.high.bound,int2),25);
 			strncat(s,"]",25);
 			printf("%-30s",s);
-			switch(list->type.type)
+			switch(list->type.type) //type of array variable
 			{
 				case DT_INTEGER:
 					printf("%-20s\n","integer");
@@ -423,14 +435,15 @@ void printArrayFT(FunctionTable *table)
 	printArrayLT(table->localTable,table->funcName);
 }
 
+//prints the array variables
 void printArrayVariables(SymbolTable *symbolTable)
 {
 	printf("\nPRINTING ARRAY VARIABLES:\n");
 	printf("\t%-21s%-25s%-21s%-20s%-30s%-20s\n","Scope(module_name)","Scope(line_numbers)","Array name","Static/Dynamic","Range","Type");
-	for(int i=0;i<MOD;i++)
+	for(int i=0;i<MOD;i++) //traverse complete symbolTable
 	{
 		FunctionTable* funTable=(*symbolTable)[i].pointer;
-		while(funTable!=NULL)
+		while(funTable!=NULL) //traverse the linked list for given bucket
 		{
 		    printArrayFT(funTable);
 		    funTable=funTable->next;
@@ -438,6 +451,7 @@ void printArrayVariables(SymbolTable *symbolTable)
 	}
 }
 
+//prints activation record width for all functions 
 void printRecordWidth(SymbolTable *symbolTable)
 {
 	printf("\nPRINTING ACTIVATION RECORD WIDTHS:\n");
@@ -453,16 +467,17 @@ void printRecordWidth(SymbolTable *symbolTable)
 	}	
 } 
 
+//prints Type
 void printType(Type type)
 {
     printf("%-10s",type.arrayFlag?"yes":"no");
-    if(type.arrayFlag==1)
+    if(type.arrayFlag==1) //array datatype
     {
     	char s[25];
 	char int1[10],int2[10];
 	s[0]='[';
 	s[1]='\0';
-    	if(type.isStatic==1)
+    	if(type.isStatic==1) //static array
     	{
 		printf("%-15s","static array");
 		strncat(s,to_string(type.low.bound,int1),25);
@@ -471,9 +486,9 @@ void printType(Type type)
 		strncat(s,"]",25);
 		printf("%-30s",s);;
         }
-        else
+        else //dynamic array
         {
-		printf("%-15s","dynamic array");
+		printf("%-15s","dynamic array"); 
 		if(type.tagLow==0)
 		{
 			char int1[10];
@@ -512,6 +527,7 @@ void printType(Type type)
     }
 }
 
+//prints VariableTable for function funcName
 void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Scope scope,int depth)
 {
     VariableEntry *entry;
@@ -532,18 +548,20 @@ void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Sc
     }
 }
 
-
+//prints LocalTable for function funcName at depth
+//called in printFunctionTable
 void printLocalTable(LocalTable *localTable,char *funcName,int depth)
 {
     printVariableTable(localTable->variableTable,funcName,localTable->scope,depth);
     LocalTable *child=localTable->leftChild;
     while(child!=NULL)
     {
-        printLocalTable(child,funcName,depth+1);
+        printLocalTable(child,funcName,depth+1); //recursive call to print localTable with depth+1
         child=child->rightSibling;
     }
 }
 
+//prints ParameterList, called in printFunctionTable
 void printParameterList(ParameterList *list, char *funcName,Scope scope)
 {
     while(list!=NULL){
@@ -557,6 +575,8 @@ void printParameterList(ParameterList *list, char *funcName,Scope scope)
         list=list->next;
     }
 }
+
+//prints FunctionTable, called in printSymbolTable
 void printFunctionTable(FunctionTable *funTable)
 {
     if(funTable == NULL) return;
@@ -566,6 +586,7 @@ void printFunctionTable(FunctionTable *funTable)
     
 }
 
+//prints symbol table
 void printSymbolTable(SymbolTable *symbolTable)
 {
     printf("\nPRINTING SYMBOL TABLE:\n");
@@ -573,9 +594,9 @@ void printSymbolTable(SymbolTable *symbolTable)
     for(int i=0;i<MOD;i++)
     {
         FunctionTable* funTable=(*symbolTable)[i].pointer;
-        while(funTable!=NULL)
+        while(funTable!=NULL) //traverse the complete linked list
         {
-            printFunctionTable(funTable);
+            printFunctionTable(funTable); //prints FunctionTable
             funTable=funTable->next;
         }
     }
