@@ -678,7 +678,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							}
 							if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
 							{
-								printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
+								printf("Line %d : index %d used is out of bounds ",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
 								printf("[%d,%d]\n",leftType.low.bound,leftType.high.bound);
 								ERROR_FLAG=1;
 							}
