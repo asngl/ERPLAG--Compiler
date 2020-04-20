@@ -1,3 +1,10 @@
+/* Group Number 2
+Yashdeep Gupta 2017A7PS0114P
+Saksham Gupta  2017A7PS0218P
+Pratik Kakade  2017A7PS0086P
+Bhoomi Sawant  2017A7PS0001P
+Ayush Singhal  2017A7PS0116P
+*/
 #ifndef _SEMANTICANALYZERC
 #define _SEMANTICANALYZERC
 
@@ -678,7 +685,7 @@ LocalTable *populateLocalTable(Context context,LocalTable *parentOfparent,struct
 							}
 							if(leftType.high.bound < ptr->node.idNode.index->node.numNode.num)
 							{
-								printf("Line %d : index %d used is out of bounds [%d,%d]\n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
+								printf("Line %d : index %d used is out of bounds \n",ptr->lineNumber,ptr->node.idNode.index->node.numNode.num);
 								printf("[%d,%d]\n",leftType.low.bound,leftType.high.bound);
 								ERROR_FLAG=1;
 							}
