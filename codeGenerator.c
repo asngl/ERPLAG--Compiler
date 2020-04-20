@@ -233,7 +233,7 @@ void generateInputCode(struct ASTNode *root)
 {
     VariableEntry *ptr=root->localTableEntry;
     
-    if(ptr->type.arrayFlag==1)
+    if(ptr->type.arrayFlag==1)                  //If the the given variables is an array
     {
         getValue(RAX,root);
         getLow(RDX,root);
@@ -440,9 +440,9 @@ void generateOutputCode(struct ASTNode *root){
         fprintf(fp,"        pop     rbp\n");
     }else
     {
-        VariableEntry *ptr = root->localTableEntry;
-        if(ptr->type.arrayFlag==1){
-            if(root->node.idNode.index==NULL){
+        VariableEntry *ptr = root->localTableEntry;             
+        if(ptr->type.arrayFlag==1){ 
+            if(root->node.idNode.index==NULL){                         //If the given variable is an array without an index
                 if(ptr->type.type==DT_BOOLEAN){
                     fprintf(fp,"        mov    rbx,0\n");
                     getLow(RCX,root);
@@ -544,7 +544,7 @@ void generateOutputCode(struct ASTNode *root){
                     fprintf(fp,"        jle    _label%d\n",label);
                 }
             }else
-            if(root->node.idNode.index->tag==NUM_NODE){
+            if(root->node.idNode.index->tag==NUM_NODE){                     //If the given array variable has a numeric index
                 if(ptr->type.type==DT_BOOLEAN){
                     getLow(RDX,root);
                     getHigh(RCX,root);
@@ -612,7 +612,7 @@ void generateOutputCode(struct ASTNode *root){
                 }
             }else
             {
-                VariableEntry *indexptr;
+                VariableEntry *indexptr;                                        //If the given array variable has a variable index
                 indexptr=root->node.idNode.index->localTableEntry;
                 if (ptr->type.type==DT_BOOLEAN)
                 {
