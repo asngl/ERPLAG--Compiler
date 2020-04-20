@@ -22,7 +22,7 @@ Ayush Singhal  2017A7PS0116P
 #define boolWidth 1
 #define controlSize 20
 
-//finds the bucket in hash table
+//finds the bucket in hash table corresponding to function str
 //used in searchSymbolTable and insertSymbolTable
 int computeHashFromString(char *str){ 
 	int sum=0,i=0;
@@ -34,7 +34,7 @@ int computeHashFromString(char *str){
 	return sum;
 }
 
-//search a function in symbolTable
+//search a function in symbol table
 //returns FunctionTable pointer if found, else NULL
 FunctionTable *searchSymbolTable(SymbolTable symbolTable,char *string){
 	int hash;
@@ -527,7 +527,7 @@ void printType(Type type)
     }
 }
 
-//prints VariableTable for function funcName
+//prints VariableTable for function funcName in a given scope
 void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Scope scope,int depth)
 {
     VariableEntry *entry;
@@ -548,7 +548,7 @@ void printVariableTable(VariableEntryTable variableEntryTable,char *funcName, Sc
     }
 }
 
-//prints LocalTable for function funcName at depth
+//prints LocalTable for function funcName
 //called in printFunctionTable
 void printLocalTable(LocalTable *localTable,char *funcName,int depth)
 {
