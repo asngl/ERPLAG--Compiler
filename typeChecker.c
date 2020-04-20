@@ -5,6 +5,7 @@ Pratik Kakade  2017A7PS0086P
 Bhoomi Sawant  2017A7PS0001P
 Ayush Singhal  2017A7PS0116P
 */
+
 #ifndef _TYPECHECKERC
 #define _TYPECHECKERC
 #include "symbolTableDef.h"
@@ -15,6 +16,8 @@ Ayush Singhal  2017A7PS0116P
 #include <stdlib.h>
 #include "typeChecker.h"
 #include "semanticAnalyzer.h"
+
+//Function to check if a given variable is forbidden or not, that is, it is part of for loop condition or not
 int assertNotForbidden(Context context,char name[], int lineNumber)
 {
 	VariableEntry* ptr=context.forbiddenVariables;
@@ -32,6 +35,7 @@ int assertNotForbidden(Context context,char name[], int lineNumber)
 	return correct;
 }
 
+//Function to check type equality for two variables or expressions
 int assertTypeEquality(Type type1, Type type2, int lineNumber)
 {
 	if(type1.type==DT_ERROR || type2.type==DT_ERROR)
@@ -59,6 +63,7 @@ int assertTypeEquality(Type type1, Type type2, int lineNumber)
 	return 0;
 }             
 
+//Function to check whether a given expression is valid or not checking for type and other constraints
 Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
 {    
 	Type type,leftType,type2;
@@ -262,7 +267,7 @@ Type validateExpression(Context context,LocalTable *parent,struct ASTNode *root)
     	return type;
 }
 
-
+//Function to return the symbol table entry pointer for a given variable
 VariableEntry *getVariableEntry(Context context,LocalTable *parent, char name[], int lineNumber){
 	VariableEntry *currVar;
 	currVar=context.outputList;
@@ -291,7 +296,7 @@ VariableEntry *getVariableEntry(Context context,LocalTable *parent, char name[],
     
 }
     
-      
+//Function to check and set the modify flag for the given while loop variables to check the semantic that while loop variables are modified     
 int setModifyFlagExpression(Context context,LocalTable *parent,struct ASTNode *root,int bit)
 {
 	if(root->tag==NUM_NODE || root->tag==RNUM_NODE || root->tag==BOOL_NODE)
