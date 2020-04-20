@@ -18,25 +18,35 @@ Ayush Singhal  2017A7PS0116P
 #include "ASTNodeDef.h"
 
 #define MAX_NUM_FLOAT_CONSTANTS 1000
+
+//Function to print error for type mismatch
 void assertNodeType(enum NodeType a,enum NodeType b)
 {
 	if(a!=b)
 		printf("\n\tASSERTION ERROR, Expected %d Found %d \n",a,b);
 }
+
+
 int LABEL_COUNTER;
 int TEMPORARY_COUNTER;
 int NUM_FLOAT_CONSTANTS;
 double floatConstants[MAX_NUM_FLOAT_CONSTANTS];
 FILE *fp;
+
+//Function to initiating labels for asm program
 void initLabelGenerator()
 {
 	LABEL_COUNTER=0;
 }
+
+//Function to generate new labels for asm program
 int createLabel()// 37  _label37
 {
 	LABEL_COUNTER++;
 	return LABEL_COUNTER;
 }
+
+//Function to generate float constants for printing
 int createFloatConstant(double t)
 {
 	floatConstants[NUM_FLOAT_CONSTANTS]=t;
@@ -52,7 +62,9 @@ int FLOAT_WIDTH=32;
 enum FloatRegister{XMM0,XMM1,XMM2,XMM3};
 char *floatRegMap[]={"xmm0","xmm1","xmm2","xmm3"};
 
-void generateScopeCode(struct ASTNode *root);
+void generateScopeCode(struct ASTNode *root);   //Declaration for scope code generaion function
+
+//Function to input float value in the given register from memory
 void getFloatValue(enum FloatRegister reg,struct ASTNode *root)
 {
     VariableEntry *varptr=root->localTableEntry;
@@ -66,6 +78,7 @@ void getFloatValue(enum FloatRegister reg,struct ASTNode *root)
     }
 }
 
+//Function to output the float value from the given register into memory
 void setFloatValue(enum FloatRegister reg,struct ASTNode *root)
 {
     VariableEntry *varptr=root->localTableEntry;
@@ -79,6 +92,7 @@ void setFloatValue(enum FloatRegister reg,struct ASTNode *root)
     }
 }
 
+//Utility functions for basic asm tasks
 void PUSH(enum Register reg)
 {
     fprintf(fp,"        push    %s\n",regMap[reg]);
@@ -95,6 +109,8 @@ void SUB(enum Register reg1,enum Register reg2)
 {
     fprintf(fp,"        sub     %s,%s\n",regMap[reg1],regMap[reg2]);
 }
+
+//Function to input value from given memory to register
 void getValue(enum Register reg,struct ASTNode *root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -108,6 +124,8 @@ void getValue(enum Register reg,struct ASTNode *root)
         fprintf(fp,"        mov     %s,qword [rbp-8-%d]\n",regMap[reg],varptr->offset*8);
     }
 }
+
+//Function to input value of given index into the register
 void getIndex(enum Register reg,struct ASTNode *root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -121,6 +139,8 @@ void getIndex(enum Register reg,struct ASTNode *root)
         getValue(RAX,root);
     }
 }
+
+//Function to output value of given register into the memory
 void setValue(enum Register reg,struct ASTNode *root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -134,6 +154,8 @@ void setValue(enum Register reg,struct ASTNode *root)
         fprintf(fp,"        mov     qword [rbp-8-%d], %s\n",varptr->offset*8,regMap[reg]);
     }
 }
+
+//Function to load address of given memory into the register
 void getAddress(enum Register reg,struct ASTNode *root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -147,6 +169,8 @@ void getAddress(enum Register reg,struct ASTNode *root)
         fprintf(fp,"        lea     %s,[rbp-8-%d]\n",regMap[reg],varptr->offset*8);
     }
 }
+
+//Function to load lower bound of an array into the given register
 void getLow(enum Register reg,struct ASTNode *root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -174,6 +198,8 @@ void getLow(enum Register reg,struct ASTNode *root)
         }
     }
 }
+
+//Function to load higher bound of an array into the given register
 void getHigh(enum Register reg,struct ASTNode* root)
 {
     //assertNodeType(root->tag,ID_NODE);
@@ -202,6 +228,7 @@ void getHigh(enum Register reg,struct ASTNode* root)
     }
 }
 
+//Function to generate code for an input node
 void generateInputCode(struct ASTNode *root)
 {
     VariableEntry *ptr=root->localTableEntry;
@@ -374,6 +401,8 @@ void generateInputCode(struct ASTNode *root)
         }
     }
 }
+
+//Function to generate code for an output node
 void generateOutputCode(struct ASTNode *root){
     fprintf(fp,"        call    _output_\n");
     if(root->tag==BOOL_NODE){
@@ -690,6 +719,8 @@ void generateOutputCode(struct ASTNode *root){
     }
     fprintf(fp,"        call    _newline_\n");
 }
+
+//Function to generate code for an input node
 void generateConditionCode(struct ASTNode * root){ 
     VariableEntry *ptr;
     ptr=root->localTableEntry;
@@ -730,7 +761,7 @@ void generateConditionCode(struct ASTNode * root){
     fprintf(fp,"_label%d:\n",endlabel);
 }
 
-
+//Function to generate code for an expression node
 void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in temporary number depth _inttmp0
 {
     if(depth>=TEMPORARY_COUNTER)
@@ -1022,6 +1053,8 @@ void generateExpressionCode(int depth,struct ASTNode *root)// Stores result in t
             break;
     }
 }
+
+//Function to generate code for an assigment node
 void generateAssignmentCode(struct ASTNode* root)
 {
     VariableEntry *varptr;
@@ -1104,6 +1137,7 @@ void generateAssignmentCode(struct ASTNode* root)
     }
 }
 
+//Function to push parameters before function calling
 void pushReverseParameters(struct ASTNode *root){
     if(root==NULL){
         return;
@@ -1142,7 +1176,7 @@ void pushReverseParameters(struct ASTNode *root){
     }
 }
 
-
+//Function to generate code for an modulereuse node
 void generateModuleReuseCode(struct ASTNode *root){
     struct ASTNode *nodeptr;
     
@@ -1221,7 +1255,7 @@ void generateModuleReuseCode(struct ASTNode *root){
     
 }
 
-
+//Function to generate code for a given scope
 void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
 {
     VariableEntry *varptr;
@@ -1367,6 +1401,8 @@ void generateScopeCode(struct ASTNode *root)//Must maintain RBP and RDX
     fprintf(fp,"        pop     rdx\n");
     return;
 }
+
+//Function to generate code for start of an asm program
 void printStartingCode()
 {
 	fprintf(fp,"        global  main\n");
@@ -1391,6 +1427,8 @@ void printStartingCode()
 	fprintf(fp,"        \n");
 	fprintf(fp,"        ret\n");
 }
+
+//Function to generate code for a error output
 void  generateErrorHandlingCode()
 {
     fprintf(fp,"_output_:\n");
@@ -1463,6 +1501,8 @@ void  generateErrorHandlingCode()
     fprintf(fp,"_errorString3:\n");
     fprintf(fp,"        db  \"Aborting Execution\",10,0\n");
 }
+
+//Function to generate code for a debugger
 void generateDebuggerCode()
 {
     fprintf(fp,"_debugger:; use as call _debugger\n");
@@ -1554,6 +1594,8 @@ void generateDebuggerCode()
     fprintf(fp,"        db  \"rsi= %%ld , rdi = %%ld \",10,0\n");
 
 }
+
+//Function to generate code for data location in the given asm program
 void generateDataCode()
 {
 	fprintf(fp,"	SECTION .data\n");
@@ -1615,7 +1657,7 @@ void generateDataCode()
     fprintf(fp,"        db \"Output: \",0\n");
 } 
 
-
+//Function to generate code for a module
 void generateModuleCode(struct ASTNode *root)
 {
 	assertNodeType(MODULE_NODE,root->tag);
@@ -1632,6 +1674,8 @@ void generateModuleCode(struct ASTNode *root)
 	return;
 }
 
+
+//Function to generate code for the given program
 void generateProgramCode(struct ASTNode *root,char *filename)
 {
 	struct ASTNode *ASTptr;
